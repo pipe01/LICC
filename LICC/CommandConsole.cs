@@ -34,15 +34,15 @@ namespace LICC
             }
             catch (CommandNotFoundException ex)
             {
-                LConsole.WriteLine(ex.Message);
+                LConsole.WriteLine(ex.Message, Color.Red);
             }
             catch (ParameterMismatchException ex)
             {
-                LConsole.WriteLine(ex.Message);
+                LConsole.WriteLine(ex.Message, Color.Red);
             }
             catch (ParameterConversionException ex)
             {
-                LConsole.WriteLine(ex.Message);
+                LConsole.WriteLine(ex.Message, Color.Red);
             }
         }
 

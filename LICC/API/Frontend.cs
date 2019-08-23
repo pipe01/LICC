@@ -8,7 +8,11 @@
 
         protected void OnLineInput(string line) => LineInput?.Invoke(line);
 
-        public abstract void Write(string str);
+        public virtual void Write(string str) => Write(str, Color.White);
+        public abstract void Write(string str, Color color);
+
+
         public virtual void WriteLine(string str) => Write(str + "\n");
+        public virtual void WriteLine(string str, Color color) => Write(str + "\n", color);
     }
 }

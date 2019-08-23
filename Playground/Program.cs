@@ -15,9 +15,9 @@ namespace Playground
         }
 
         [Command]
-        public static void Test(int number, string str)
+        public static void Test(int number, string str = "default")
         {
-            LConsole.WriteLine($"Hello {number} {str}");
+            LConsole.WriteLine($"Hello {number} {str}", Color.Blue);
         }
     }
 }

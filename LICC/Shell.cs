@@ -45,9 +45,9 @@ namespace LICC
                 if (strArgs.Length < nonOptionalParamCount || strArgs.Length > cmd.Params.Length)
                     throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length);
 
-                cmdArgs = new object[strArgs.Length];
+                cmdArgs = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
 
-                for (int i = 0; i < cmdArgs.Length; i++)
+                for (int i = 0; i < strArgs.Length; i++)
                 {
                     var (success, value) = ValueConverter.TryConvertValue(cmd.Params[i].Type, strArgs[i]);
 
