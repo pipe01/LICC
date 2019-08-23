@@ -174,7 +174,11 @@ namespace LICC.Console
         {
             var frontend = new ConsoleImplementation();
             var console = new CommandConsole(frontend);
-            console.Commands.RegisterCommandsIn(Assembly.GetCallingAssembly());
+
+            foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                console.Commands.RegisterCommandsIn(item);
+            }
 
             frontend.BeginRead();
         }

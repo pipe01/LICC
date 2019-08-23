@@ -7,7 +7,7 @@ namespace LICC.Exceptions
         public string ParamName { get; }
         public Type ParamType { get; }
 
-        public override string Message => $"Cannot convert argument {ParamName} into a {ParamType.Name}";
+        public override string Message => $"Cannot convert argument '{ParamName}' into a {ParamType.Name}";
 
         public ParameterConversionException(string paramName, Type paramType)
         {
