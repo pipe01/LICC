@@ -11,7 +11,13 @@ using System.Threading.Tasks;
 
 namespace LICC
 {
-    internal class Shell
+    internal interface IShell
+    {
+        void ExecuteLsf(string path);
+        void ExecuteLine(string line);
+    }
+
+    internal class Shell : IShell
     {
         private readonly IValueConverter ValueConverter;
         private readonly IWriteableHistory History;

@@ -12,11 +12,11 @@ namespace LICC
 
         public CommandRegistry Commands { get; } = new CommandRegistry();
 
-        internal readonly Shell Shell;
+        internal readonly IShell Shell;
         internal readonly ConsoleConfiguration Config;
         internal readonly IFileSystem FileSystem;
 
-        public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ConsoleConfiguration config = null)
+        private CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, IShell shell, ConsoleConfiguration config)
         {
             Current = this;
             LConsole.Frontend = frontend;
@@ -26,13 +26,18 @@ namespace LICC
 
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
-            this.Shell = new Shell(valueConverter, history, fileSystem, Commands, this.Config);
+            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, Commands, config);
 
             frontend.LineInput += Frontend_LineInput;
 
             Commands.RegisterCommandsIn(this.GetType().Assembly);
 
             frontend.Init();
+        }
+
+        public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ConsoleConfiguration config = null)
+            : this(frontend, valueConverter, fileSystem, null, config ?? new ConsoleConfiguration())
+        {
         }
 
         public CommandConsole(Frontend frontend, ConsoleConfiguration config = null)
