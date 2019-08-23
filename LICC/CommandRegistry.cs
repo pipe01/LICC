@@ -15,14 +15,14 @@ namespace LICC
         {
             public string Name { get; }
             public string Usage { get; }
-            public (string Name, Type Type)[] Params { get; }
+            public (string Name, Type Type, bool Optional)[] Params { get; }
             public MethodInfo Method { get; }
 
             public Command(string name, string usage, MethodInfo method)
             {
-                this.Name = name ?? method.Name.ToLower();
+                this.Name = name;
                 this.Usage = usage;
-                this.Params = method.GetParameters().Where(o => o.Name != "__out").Select(o => (o.Name, o.ParameterType)).ToArray();
+                this.Params = method.GetParameters().Select(o => (o.Name, o.ParameterType, o.HasDefaultValue)).ToArray();
                 this.Method = method;
             }
         }
@@ -45,7 +45,9 @@ namespace LICC
                     throw new InvalidCommandMethodException("Command methods must be decorated with the [Command] attribute");
             }
 
-            if (Commands.ContainsKey(attr.Name))
+            string name = attr.Name ?? method.Name.ToLower();
+
+            if (Commands.ContainsKey(name))
             {
                 if (ignoreInvalid)
                     return;
@@ -53,14 +55,14 @@ namespace LICC
                     throw new InvalidCommandMethodException("That command name is already in use");
             }
 
-            Commands.Add(attr.Name, new Command(attr.Name, attr.Usage, method));
+            Commands.Add(name, new Command(name, attr.Usage, method));
         }
 
         public void RegisterCommand(MethodInfo method) => RegisterCommand(method, false);
 
         public void RegisterCommandsIn(Type type)
         {
-            foreach (var item in type.GetMethods(BindingFlags.Static))
+            foreach (var item in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
             {
                 RegisterCommand(item, true);
             }
@@ -74,11 +76,17 @@ namespace LICC
             }
         }
 
-        public void RegisterCommandsInExecutingAssembly() => RegisterCommandsIn(Assembly.GetExecutingAssembly());
-
-        public bool TryExecuteCommand(string commandName, string[] args)
+        internal bool TryGetCommand(string name, out Command cmd, bool ignoreCase = false)
         {
-            return true;
+            if (ignoreCase)
+            {
+                cmd = Commands.SingleOrDefault(o => o.Key.Equals(name, StringComparison.OrdinalIgnoreCase)).Value;
+                return cmd.Name != null;
+            }
+            else
+            {
+                return Commands.TryGetValue(name, out cmd);
+            }
         }
     }
 }

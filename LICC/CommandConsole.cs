@@ -1,4 +1,5 @@
 ﻿using LICC.API;
+using LICC.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +14,36 @@ namespace LICC
         public CommandRegistry Commands { get; } = new CommandRegistry();
 
         private readonly IValueConverter ValueConverter;
+        private readonly Shell Shell;
 
         public CommandConsole(Frontend frontend, IValueConverter valueConverter)
         {
             LConsole.Frontend = frontend;
 
             this.ValueConverter = valueConverter;
+            this.Shell = new Shell(valueConverter, Commands);
+
+            frontend.LineInput += Frontend_LineInput;
+        }
+
+        private void Frontend_LineInput(string line)
+        {
+            try
+            {
+                Shell.ExecuteLine(line);
+            }
+            catch (CommandNotFoundException ex)
+            {
+                LConsole.WriteLine(ex.Message);
+            }
+            catch (ParameterMismatchException ex)
+            {
+                LConsole.WriteLine(ex.Message);
+            }
+            catch (ParameterConversionException ex)
+            {
+                LConsole.WriteLine(ex.Message);
+            }
         }
 
         public CommandConsole(Frontend frontend) : this(frontend, new DefaultValueConverter())

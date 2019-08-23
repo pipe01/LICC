@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LICC", "LICC\LICC.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LICC.Console", "LICC.Console\LICC.Console.csproj", "{D63F86FB-CFE3-47A3-A6BB-094F07C7C186}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "Playground\Playground.csproj", "{0F6B219E-611D-4A73-B52F-3BCC71BA3EB9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D63F86FB-CFE3-47A3-A6BB-094F07C7C186}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D63F86FB-CFE3-47A3-A6BB-094F07C7C186}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D63F86FB-CFE3-47A3-A6BB-094F07C7C186}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F6B219E-611D-4A73-B52F-3BCC71BA3EB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F6B219E-611D-4A73-B52F-3BCC71BA3EB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F6B219E-611D-4A73-B52F-3BCC71BA3EB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F6B219E-611D-4A73-B52F-3BCC71BA3EB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
