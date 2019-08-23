@@ -12,7 +12,7 @@ namespace LICC
         {
             if (command == null)
             {
-                var cmds = CommandConsole.Current.Commands.GetCommands();
+                var cmds = CommandConsole.Current.CommandRegistry.GetCommands();
                 int maxLength = cmds.Max(o => o.Name.Length);
 
                 LConsole.WriteLine("Available commands:", Color.Magenta);
@@ -32,7 +32,7 @@ namespace LICC
             }
             else
             {
-                if (!CommandConsole.Current.Commands.TryGetCommand(command, out var cmd, !CommandConsole.Current.Config.CaseSensitiveCommandNames))
+                if (!CommandConsole.Current.CommandRegistry.TryGetCommand(command, out var cmd, !CommandConsole.Current.Config.CaseSensitiveCommandNames))
                 {
                     LConsole.WriteLine($"Cannot find command with name '{command}'", Color.Red);
                     return;
