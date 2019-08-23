@@ -9,6 +9,10 @@ namespace LICC
 
         public string Usage { get; set; }
 
+        public CommandAttribute()
+        {
+        }
+
         public CommandAttribute(string name)
         {
             this.Name = name;

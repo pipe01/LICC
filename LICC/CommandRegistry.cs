@@ -9,38 +9,21 @@ using System.Threading.Tasks;
 
 namespace LICC
 {
-    public interface ICommandRegistry
-    {
-        void RegisterCommandsInExecutingAssembly();
-        void RegisterCommandsIn(Assembly assembly);
-        void RegisterCommandsIn(Type type);
-        void RegisterCommand(MethodInfo method);
-    }
-
-    public class CommandRegistry : ICommandRegistry
+    public sealed class CommandRegistry
     {
         internal struct Command
         {
             public string Name { get; }
             public string Usage { get; }
             public (string Name, Type Type)[] Params { get; }
-
-            private readonly Action<object[]> Caller;
+            public MethodInfo Method { get; }
 
             public Command(string name, string usage, MethodInfo method)
             {
-                this.Name = name;
+                this.Name = name ?? method.Name.ToLower();
                 this.Usage = usage;
-                this.Params = method.GetParameters().Select(o => (o.Name, o.ParameterType)).ToArray();
-
-                var paramsParam = Expression.Parameter(typeof(object[]), "params");
-                Caller = Expression.Lambda<Action<object[]>>(
-                    Expression.Call(
-                        method,
-                        method.GetParameters().Select((o, i) =>
-                                            Expression.Convert(
-                                                Expression.ArrayAccess(paramsParam, Expression.Constant(i)),
-                                                o.ParameterType)))).Compile();
+                this.Params = method.GetParameters().Where(o => o.Name != "__out").Select(o => (o.Name, o.ParameterType)).ToArray();
+                this.Method = method;
             }
         }
 
@@ -92,5 +75,10 @@ namespace LICC
         }
 
         public void RegisterCommandsInExecutingAssembly() => RegisterCommandsIn(Assembly.GetExecutingAssembly());
+
+        public bool TryExecuteCommand(string commandName, string[] args)
+        {
+            return true;
+        }
     }
 }
