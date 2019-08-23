@@ -18,14 +18,17 @@ namespace LICC.Console
 
         private bool IsInputPaused;
 
-        public void BeginRead()
+        protected override void Init()
         {
             SConsole.TreatControlCAsInput = true;
 
             Buffer = "";
             StartPos = (SConsole.CursorLeft, SConsole.CursorTop);
             RewriteBuffer("");
+        }
 
+        public void BeginRead()
+        {
             while (true)
             {
                 var key = SConsole.ReadKey(true);
@@ -212,15 +215,17 @@ namespace LICC.Console
             SConsole.ForegroundColor = prev;
         }
 
-        public static void StartDefault()
+        public static void StartDefault(string fileSystemRoot = null)
         {
             var frontend = new ConsoleImplementation();
-            var console = new CommandConsole(frontend);
+            var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
 
             foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
             {
                 console.Commands.RegisterCommandsIn(item);
             }
+
+            console.RunAutoexec();
 
             frontend.BeginRead();
         }

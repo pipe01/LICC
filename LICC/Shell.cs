@@ -2,7 +2,10 @@
 using LICC.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,17 +15,77 @@ namespace LICC
     {
         private readonly IValueConverter ValueConverter;
         private readonly IWriteableHistory History;
+        private readonly IFileSystem FileSystem;
         private readonly CommandRegistry CommandRegistry;
         private readonly ConsoleConfiguration Config;
 
-        public Shell(IValueConverter valueConverter, IWriteableHistory history, CommandRegistry commandRegistry, ConsoleConfiguration config = null)
+        private Exception LastException;
+
+        public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem, CommandRegistry commandRegistry, ConsoleConfiguration config = null)
         {
             this.ValueConverter = valueConverter;
             this.History = history;
+            this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
             this.Config = config ?? new ConsoleConfiguration();
         }
 
+        public void ExecuteLsf(string path)
+        {
+            if (FileSystem == null)
+                throw new Exception("File system not defined");
+
+            if (Path.GetExtension(path) == "")
+                path += ".lsf";
+
+            if (!FileSystem.FileExists(path))
+                throw new FileNotFoundException(path);
+
+            using (var file = FileSystem.OpenRead(path))
+            {
+                int lineNumber = 1;
+
+                while (!file.EndOfStream)
+                {
+                    string line = file.ReadLine().Trim();
+
+                    if (line.StartsWith("#"))
+                        continue;
+
+                    try
+                    {
+                        ExecuteLine(line);
+                    }
+                    catch (Exception ex) when (ex is CommandNotFoundException || ex is ParameterMismatchException
+                                            || ex is ParameterConversionException || ex is ParserException)
+                    {
+                        PrintError(ex.Message);
+                        return;
+                    }
+
+                    lineNumber++;
+                }
+
+                void PrintError(string msg)
+                {
+                    using (var writer = LConsole.BeginWrite())
+                    {
+                        writer.Write("Error executing file ", Color.Red);
+                        writer.Write($"'{path}'", Color.DarkRed);
+                        writer.Write(" near line ", Color.Red);
+                        writer.Write(lineNumber, Color.DarkYellow);
+                        writer.Write(": ", Color.Red);
+                        writer.Write(msg[0].ToString().ToLower() + msg.Substring(1), Color.DarkCyan);
+                    }
+                }
+            }
+        }
+
+        ///<summary>Executes a single line</summary>
+        /// <exception cref="CommandNotFoundException"></exception>
+        /// <exception cref="ParameterMismatchException"></exception>
+        /// <exception cref="ParameterConversionException"></exception>
+        /// <exception cref="ParserException"></exception>
         public void ExecuteLine(string line)
         {
             if (string.IsNullOrWhiteSpace(line))
@@ -65,7 +128,28 @@ namespace LICC
                 throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, 0, cmd);
             }
 
-            cmd.Method.Invoke(null, cmdArgs);
+            try
+            {
+                cmd.Method.Invoke(null, cmdArgs);
+            }
+            catch (TargetInvocationException ex)
+            {
+                LastException = ex.InnerException;
+
+                LConsole.BeginWrite()
+                    .Write("An exception occurred while executing the command: ", Color.Red)
+                    .Write(ex.InnerException.Message, Color.DarkRed)
+                    .End();
+            }
+            catch (Exception ex)
+            {
+                LastException = ex;
+
+                LConsole.BeginWrite()
+                    .Write("An exception occurred while executing the command: ", Color.Red)
+                    .Write(ex.Message, Color.DarkRed)
+                    .End();
+            }
         }
 
         private IEnumerable<string> GetArgs(string str)

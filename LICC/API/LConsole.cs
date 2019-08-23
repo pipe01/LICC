@@ -66,7 +66,9 @@ namespace LICC.API
             return this;
         }
 
+        public LineWriter Write(object obj) => Write(obj?.ToString());
         public LineWriter Write(string str) => RunIfNotDisposed(() => LConsole.Write(str));
+        public LineWriter Write(object obj, Color color) => Write(obj?.ToString(), color);
         public LineWriter Write(string str, Color color) => RunIfNotDisposed(() => LConsole.Write(str, color));
         public LineWriter Write(string format, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, args));
         public LineWriter Write(string format, Color color, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, color, args));

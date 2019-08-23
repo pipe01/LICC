@@ -10,6 +10,8 @@
 
         protected void OnLineInput(string line) => LineInput?.Invoke(line);
 
+        protected internal virtual void Init() { }
+
         protected internal virtual void PauseInput() { }
         protected internal virtual void ResumeInput() { }
 

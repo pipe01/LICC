@@ -30,10 +30,14 @@ namespace LICC
         {
             if (cmd.Description != null)
                 LConsole.WriteLine(cmd.Description, Color.Cyan);
-            LConsole.Write("Usage: ", Color.DarkYellow);
 
-            string usage = cmd.Name + " " + string.Join(" ", cmd.Params.Select(o => (o.Optional ? "[" : "<") + o.Type.Name + " " + o.Name + (o.Optional ? "]" : ">")));
-            LConsole.WriteLine(usage, Color.Cyan);
+            using (var writer = LConsole.BeginWrite())
+            {
+                writer.Write("Usage: ", Color.DarkYellow);
+
+                string usage = cmd.Name + " " + string.Join(" ", cmd.Params.Select(o => (o.Optional ? "[" : "<") + o.Type.Name + " " + o.Name + (o.Optional ? "]" : ">")));
+                writer.Write(usage, Color.Cyan);
+            }
         }
     }
 }
