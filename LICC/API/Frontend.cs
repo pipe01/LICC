@@ -10,6 +10,9 @@
 
         protected void OnLineInput(string line) => LineInput?.Invoke(line);
 
+        protected internal virtual void PauseInput() { }
+        protected internal virtual void ResumeInput() { }
+
         public virtual void Write(string str) => Write(str, Color.White);
         public abstract void Write(string str, Color color);
 

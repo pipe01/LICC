@@ -1,6 +1,7 @@
 ﻿using LICC.API;
 using SimpleConsoleColor;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SConsole = System.Console;
@@ -9,157 +10,184 @@ namespace LICC.Console
 {
     public class ConsoleImplementation : Frontend
     {
+        private (int X, int Y) StartPos;
+        private string Buffer;
+        private int CursorPos;
+
+        private bool IsInputPaused;
+        private Queue<ConsoleKeyInfo> QueuedKeys = new Queue<ConsoleKeyInfo>();
+
         public void BeginRead()
         {
-            (int X, int Y) startPos;
-            string buffer;
-            int cursorPos;
+            Buffer = "";
+            StartPos = (SConsole.CursorLeft, SConsole.CursorTop);
+            RewriteBuffer("");
 
             while (true)
             {
-                ConsoleKeyInfo key;
+                var key = SConsole.ReadKey(true);
 
-                buffer = "";
-                cursorPos = 0;
+                if (IsInputPaused)
+                    QueuedKeys.Enqueue(key);
+                else
+                    HandleKey(key);
+            }
+        }
 
-                Write("> ", ConsoleColor.DarkYellow);
-                startPos = (SConsole.CursorLeft, SConsole.CursorTop);
-
-                while ((key = SConsole.ReadKey(true)).Key != ConsoleKey.Enter)
+        private void HandleKey(ConsoleKeyInfo key)
+        {
+            if (key.Key == ConsoleKey.Backspace)
+            {
+                if (Buffer.Length > 0 && CursorPos > 0)
                 {
-                    if (key.Key == ConsoleKey.Backspace)
+                    int charsToDelete = 1;
+
+                    if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
                     {
-                        if (buffer.Length > 0 && cursorPos > 0)
-                        {
-                            int charsToDelete = 1;
+                        int spaceIndex = Buffer.LastIndexOf(' ', CursorPos - 1);
 
-                            if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
-                            {
-                                int spaceIndex = buffer.LastIndexOf(' ', cursorPos - 1);
-
-                                charsToDelete = spaceIndex != -1 ? buffer.Length - spaceIndex : cursorPos;
-                            }
-
-                            SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft, 1, SConsole.CursorLeft - charsToDelete, SConsole.CursorTop);
-
-                            SConsole.CursorLeft -= charsToDelete;
-                            cursorPos -= charsToDelete;
-
-                            buffer = buffer.Substring(0, buffer.Length - charsToDelete);
-                        }
+                        charsToDelete = spaceIndex != -1 ? Buffer.Length - spaceIndex : CursorPos;
                     }
-                    else if (key.Key == ConsoleKey.Delete)
-                    {
-                        if (buffer.Length > 0)
-                        {
-                            int charsToDelete = 1;
 
-                            if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
-                            {
-                                int spaceIndex = buffer.IndexOf(' ', cursorPos);
+                    SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft, 1, SConsole.CursorLeft - charsToDelete, SConsole.CursorTop);
 
-                                charsToDelete = spaceIndex != -1 ? spaceIndex - cursorPos : buffer.Length - cursorPos;
-                            }
+                    SConsole.CursorLeft -= charsToDelete;
+                    CursorPos -= charsToDelete;
 
-                            buffer = buffer.Substring(0, cursorPos) + buffer.Substring(cursorPos + charsToDelete);
-                            SConsole.MoveBufferArea(SConsole.CursorLeft + charsToDelete, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft - charsToDelete, 1, SConsole.CursorLeft, SConsole.CursorTop);
-                        }
-                    }
-                    else if (key.Key == ConsoleKey.LeftArrow)
-                    {
-                        if (cursorPos > 0)
-                        {
-                            int charsToMove = 1;
-
-                            if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
-                            {
-                                int spaceIndex = buffer.LastIndexOf(' ', cursorPos - 2);
-
-                                charsToMove = spaceIndex != -1 ? cursorPos - spaceIndex - 1 : cursorPos;
-                            }
-
-                            cursorPos -= charsToMove;
-                            SConsole.CursorLeft -= charsToMove;
-                        }
-                    }
-                    else if (key.Key == ConsoleKey.RightArrow)
-                    {
-                        if (cursorPos < buffer.Length)
-                        {
-                            int charsToMove = 1;
-
-                            if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
-                            {
-                                int spaceIndex = buffer.IndexOf(' ', cursorPos + 1);
-
-                                charsToMove = spaceIndex != -1 ? spaceIndex - cursorPos : buffer.Length - cursorPos;
-                            }
-
-                            cursorPos += charsToMove;
-                            SConsole.CursorLeft += charsToMove;
-                        }
-                    }
-                    else if (key.Key == ConsoleKey.UpArrow)
-                    {
-                        string histItem = History.GetPrevious();
-
-                        if (histItem != null)
-                            RewriteBuffer(histItem);
-                    }
-                    else if (key.Key == ConsoleKey.DownArrow)
-                    {
-                        string histItem = History.GetNext();
-
-                        if (histItem != null)
-                            RewriteBuffer(histItem);
-                    }
-                    else if (key.KeyChar != '\0' && !char.IsControl(key.KeyChar))
-                    {
-                        SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - 1 - SConsole.CursorLeft, 1, SConsole.CursorLeft + 1, SConsole.CursorTop);
-
-                        using (buffer.IndexOf(' ', 0, cursorPos) == -1 ? SimpleConsoleColors.Yellow : SimpleConsoleColors.Cyan)
-                            Write(key.KeyChar);
-
-                        buffer = buffer.Insert(cursorPos, key.KeyChar.ToString());
-
-                        cursorPos++;
-                    }
+                    Buffer = Buffer.Substring(0, Buffer.Length - charsToDelete);
                 }
+            }
+            else if (key.Key == ConsoleKey.Delete)
+            {
+                if (Buffer.Length > 0)
+                {
+                    int charsToDelete = 1;
 
+                    if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
+                    {
+                        int spaceIndex = Buffer.IndexOf(' ', CursorPos);
+
+                        charsToDelete = spaceIndex != -1 ? spaceIndex - CursorPos : Buffer.Length - CursorPos;
+                    }
+
+                    Buffer = Buffer.Substring(0, CursorPos) + Buffer.Substring(CursorPos + charsToDelete);
+                    SConsole.MoveBufferArea(SConsole.CursorLeft + charsToDelete, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft - charsToDelete, 1, SConsole.CursorLeft, SConsole.CursorTop);
+                }
+            }
+            else if (key.Key == ConsoleKey.LeftArrow)
+            {
+                if (CursorPos > 0)
+                {
+                    int charsToMove = 1;
+
+                    if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
+                    {
+                        int spaceIndex = Buffer.LastIndexOf(' ', CursorPos - 2);
+
+                        charsToMove = spaceIndex != -1 ? CursorPos - spaceIndex - 1 : CursorPos;
+                    }
+
+                    CursorPos -= charsToMove;
+                    SConsole.CursorLeft -= charsToMove;
+                }
+            }
+            else if (key.Key == ConsoleKey.RightArrow)
+            {
+                if (CursorPos < Buffer.Length)
+                {
+                    int charsToMove = 1;
+
+                    if ((key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control)
+                    {
+                        int spaceIndex = Buffer.IndexOf(' ', CursorPos + 1);
+
+                        charsToMove = spaceIndex != -1 ? spaceIndex - CursorPos : Buffer.Length - CursorPos;
+                    }
+
+                    CursorPos += charsToMove;
+                    SConsole.CursorLeft += charsToMove;
+                }
+            }
+            else if (key.Key == ConsoleKey.UpArrow)
+            {
+                string histItem = History.GetPrevious();
+
+                if (histItem != null)
+                    RewriteBuffer(histItem);
+            }
+            else if (key.Key == ConsoleKey.DownArrow)
+            {
+                string histItem = History.GetNext();
+
+                if (histItem != null)
+                    RewriteBuffer(histItem);
+            }
+            else if (key.Key == ConsoleKey.Enter)
+            {
                 SConsole.WriteLine();
-                OnLineInput(buffer);
-            }
+                StartPos = (SConsole.CursorLeft, SConsole.CursorTop);
 
-            void RewriteBuffer(string newStr)
+                OnLineInput(Buffer);
+
+                RewriteBuffer("");
+            }
+            else if (key.KeyChar != '\0' && !char.IsControl(key.KeyChar))
             {
-                string prevBuffer = buffer;
-                buffer = newStr;
+                SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - 1 - SConsole.CursorLeft, 1, SConsole.CursorLeft + 1, SConsole.CursorTop);
 
-                int spaceIndex = newStr.IndexOf(' ');
-                string cmdName = spaceIndex == -1 ? newStr : newStr.Substring(0, spaceIndex);
-                string rest = spaceIndex == -1 ? "" : newStr.Substring(spaceIndex);
+                using (Buffer.IndexOf(' ', 0, CursorPos) == -1 ? SimpleConsoleColors.Yellow : SimpleConsoleColors.Cyan)
+                    SConsole.Write(key.KeyChar.ToString());
 
-                SConsole.SetCursorPosition(startPos.X, startPos.Y);
-                Write(cmdName, ConsoleColor.Yellow);
-                Write(rest, ConsoleColor.Cyan);
+                Buffer = Buffer.Insert(CursorPos, key.KeyChar.ToString());
 
-                if (newStr.Length < prevBuffer.Length)
-                    SConsole.Write(new string(' ', prevBuffer.Length - newStr.Length));
-
-                cursorPos = newStr.Length;
-                SConsole.SetCursorPosition(startPos.X + cursorPos, startPos.Y);
+                CursorPos++;
             }
+        }
 
-            void Write(object obj, ConsoleColor? color = null)
-            {
-                ConsoleColor prev = SConsole.ForegroundColor;
-                if (color != null)
-                {
-                    SConsole.ForegroundColor = color.Value;
-                }
-                SConsole.Write(obj);
-                SConsole.ForegroundColor = prev;
-            }
+        private void RewriteBuffer(string newStr)
+        {
+            string prevBuffer = Buffer;
+            Buffer = newStr;
+
+            int spaceIndex = newStr.IndexOf(' ');
+            string cmdName = spaceIndex == -1 ? newStr : newStr.Substring(0, spaceIndex);
+            string rest = spaceIndex == -1 ? "" : newStr.Substring(spaceIndex);
+
+            SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
+            Write("> ", Color.DarkYellow);
+            Write(cmdName, Color.Yellow);
+            Write(rest, Color.Cyan);
+
+            if (newStr.Length < prevBuffer.Length)
+                SConsole.Write(new string(' ', prevBuffer.Length - newStr.Length));
+
+            CursorPos = newStr.Length;
+            SConsole.SetCursorPosition(StartPos.X + CursorPos + 2, StartPos.Y);
+        }
+
+        protected override void PauseInput()
+        {
+            IsInputPaused = true;
+
+            SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
+            SConsole.Write(new string(' ', Buffer.Length + 2));
+            SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
+        }
+
+        protected override void ResumeInput()
+        {
+            IsInputPaused = false;
+
+            StartPos = (SConsole.CursorLeft, SConsole.CursorTop);
+            RewriteBuffer(Buffer);
+
+            while (QueuedKeys.Count > 0)
+                HandleKey(QueuedKeys.Dequeue());
+        }
+
+        public override void WriteLine(string str)
+        {
+            SConsole.WriteLine(str);
         }
 
         public override void Write(string str, Color color)

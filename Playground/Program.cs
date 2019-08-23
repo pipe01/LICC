@@ -4,6 +4,7 @@ using LICC.Console;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Playground
 {
@@ -11,6 +12,18 @@ namespace Playground
     {
         static void Main(string[] args)
         {
+            new Thread(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    LConsole.WriteLine("hello");
+                }
+            })
+            {
+                IsBackground = true
+            }.Start();
+
             ConsoleImplementation.StartDefault();
         }
 
