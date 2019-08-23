@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace LICC
 {
@@ -22,10 +23,10 @@ namespace LICC
                 return T(byte.TryParse(arg, out var i), i);
 
             else if (targetType == typeof(float))
-                return T(float.TryParse(arg, out var i), i);
+                return T(float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var i), i);
 
             else if (targetType == typeof(double))
-                return T(double.TryParse(arg, out var i), i);
+                return T(double.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out var i), i);
 
             else if (targetType == typeof(bool))
                 return T(bool.TryParse(arg, out var i), i);
