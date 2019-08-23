@@ -108,7 +108,7 @@ namespace LICC
             if (!CommandRegistry.TryGetCommand(cmdName, out var cmd, !Config.CaseSensitiveCommandNames))
                 throw new CommandNotFoundException(cmdName);
 
-            int nonOptionalParamCount = cmd.Params.Count(o => !o.Optional);
+            int requiredParamCount = cmd.Params.Count(o => !o.Optional);
 
             object[] cmdArgs = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
 
@@ -124,8 +124,8 @@ namespace LICC
                 {
                     var strArgs = GetArgs(argsLine).ToArray();
 
-                    if (strArgs.Length < nonOptionalParamCount || strArgs.Length > cmd.Params.Length)
-                        throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length, cmd);
+                    if (strArgs.Length < requiredParamCount || strArgs.Length > cmd.Params.Length)
+                        throw new ParameterMismatchException(requiredParamCount, cmd.Params.Length, strArgs.Length, cmd);
 
                     for (int i = 0; i < strArgs.Length; i++)
                     {
@@ -138,9 +138,9 @@ namespace LICC
                     }
                 }
             }
-            else if (nonOptionalParamCount > 0)
+            else if (requiredParamCount > 0)
             {
-                throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, 0, cmd);
+                throw new ParameterMismatchException(requiredParamCount, cmd.Params.Length, 0, cmd);
             }
 
             try
@@ -149,6 +149,9 @@ namespace LICC
             }
             catch (TargetInvocationException ex)
             {
+                if (ex.InnerException.GetType().Name == "SuccessException")
+                    throw ex.InnerException;
+
                 LastException = ex.InnerException;
 
                 LConsole.BeginWrite()

@@ -12,7 +12,8 @@ namespace LICC
     internal interface ICommandRegistryInternal : ICommandRegistry
     {
         IEnumerable<Command> GetCommands();
-        bool TryGetCommand(string name, out Command cmd, bool ignoreCase = false);
+        bool TryGetCommand(string name, out Command cmd);
+        bool TryGetCommand(string name, out Command cmd, bool ignoreCase);
 
         void RegisterCommand(MethodInfo method, bool ignoreInvalid);
     }
@@ -60,7 +61,9 @@ namespace LICC
             Commands.Add(name, new Command(name, attr.Description, method));
         }
 
-        bool ICommandRegistryInternal.TryGetCommand(string name, out Command cmd, bool ignoreCase = false)
+        bool ICommandRegistryInternal.TryGetCommand(string name, out Command cmd) => Internal.TryGetCommand(name, out cmd, false);
+
+        bool ICommandRegistryInternal.TryGetCommand(string name, out Command cmd, bool ignoreCase)
         {
             if (ignoreCase)
             {
