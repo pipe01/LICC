@@ -57,7 +57,7 @@ namespace LICC
                     }
                     else
                     {
-                        LConsole.WriteLine("");
+                        LConsole.WriteLine();
                     }
                 }
             }
@@ -93,6 +93,15 @@ namespace LICC
             catch (ParameterConversionException ex)
             {
                 LConsole.WriteLine(ex.Message, Color.Red);
+            }
+            catch (ParserException ex)
+            {
+                LConsole.WriteLine("Error when parsing command: " + ex.Message, Color.Red);
+            }
+            catch (Exception ex)
+            {
+                LConsole.WriteLine("An error occurred when executing this command:", Color.Red);
+                LConsole.WriteLine(ex.ToString(), Color.Red);
             }
             finally
             {

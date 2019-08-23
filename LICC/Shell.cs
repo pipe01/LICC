@@ -119,7 +119,7 @@ namespace LICC
                 }
 
                 if (!foundDelimiter && !allowEndOfString)
-                    throw new ParserException("Missing closing delimiter at end of line");
+                    throw new ParserException("missing closing delimiter at end of line");
 
                 return buffer;
             }
