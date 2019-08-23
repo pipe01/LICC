@@ -13,17 +13,22 @@ namespace LICC
     {
         public CommandRegistry Commands { get; } = new CommandRegistry();
 
-        private readonly IValueConverter ValueConverter;
         private readonly Shell Shell;
 
         public CommandConsole(Frontend frontend, IValueConverter valueConverter)
         {
             LConsole.Frontend = frontend;
 
-            this.ValueConverter = valueConverter;
-            this.Shell = new Shell(valueConverter, Commands);
+            var history = new History();
+            frontend.History = history;
+
+            this.Shell = new Shell(valueConverter, history, Commands);
 
             frontend.LineInput += Frontend_LineInput;
+        }
+
+        public CommandConsole(Frontend frontend) : this(frontend, new DefaultValueConverter())
+        {
         }
 
         private void Frontend_LineInput(string line)
@@ -44,10 +49,6 @@ namespace LICC
             {
                 LConsole.WriteLine(ex.Message, Color.Red);
             }
-        }
-
-        public CommandConsole(Frontend frontend) : this(frontend, new DefaultValueConverter())
-        {
         }
     }
 }

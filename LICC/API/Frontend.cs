@@ -6,6 +6,8 @@
     {
         internal event LineInputDelegate LineInput;
 
+        protected internal IHistory History { get; internal set; }
+
         protected void OnLineInput(string line) => LineInput?.Invoke(line);
 
         public virtual void Write(string str) => Write(str, Color.White);

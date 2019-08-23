@@ -1,4 +1,5 @@
-﻿using LICC.Exceptions;
+﻿using LICC.API;
+using LICC.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,14 @@ namespace LICC
     internal class Shell
     {
         private readonly IValueConverter ValueConverter;
+        private readonly IWriteableHistory History;
         private readonly CommandRegistry CommandRegistry;
         private readonly ConsoleConfiguration Config;
 
-        public Shell(IValueConverter valueConverter, CommandRegistry commandRegistry, ConsoleConfiguration config = null)
+        public Shell(IValueConverter valueConverter, IWriteableHistory history, CommandRegistry commandRegistry, ConsoleConfiguration config = null)
         {
             this.ValueConverter = valueConverter;
+            this.History = history;
             this.CommandRegistry = commandRegistry;
             this.Config = config ?? new ConsoleConfiguration();
         }
@@ -26,6 +29,8 @@ namespace LICC
                 return;
 
             line = line.Trim();
+
+            History.AddNewItem(line);
 
             int cmdNameSeparatorIndex = line.IndexOf(' ');
             string cmdName = cmdNameSeparatorIndex == -1 ? line.Substring(0) : line.Substring(0, cmdNameSeparatorIndex);

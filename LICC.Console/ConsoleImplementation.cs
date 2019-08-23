@@ -1,4 +1,5 @@
 ﻿using LICC.API;
+using SimpleConsoleColor;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -10,13 +11,19 @@ namespace LICC.Console
     {
         public void BeginRead()
         {
+            (int X, int Y) startPos;
+            string buffer;
+            int cursorPos;
+
             while (true)
             {
-                string buffer = "";
                 ConsoleKeyInfo key;
-                int cursorPos = 0;
+
+                buffer = "";
+                cursorPos = 0;
 
                 Write("> ", ConsoleColor.DarkYellow);
+                startPos = (SConsole.CursorLeft, SConsole.CursorTop);
 
                 while ((key = SConsole.ReadKey(true)).Key != ConsoleKey.Enter)
                 {
@@ -92,10 +99,26 @@ namespace LICC.Console
                             SConsole.CursorLeft += charsToMove;
                         }
                     }
+                    else if (key.Key == ConsoleKey.UpArrow)
+                    {
+                        string histItem = History.GetPrevious();
+
+                        if (histItem != null)
+                            RewriteBuffer(histItem);
+                    }
+                    else if (key.Key == ConsoleKey.DownArrow)
+                    {
+                        string histItem = History.GetNext();
+
+                        if (histItem != null)
+                            RewriteBuffer(histItem);
+                    }
                     else if (key.KeyChar != '\0' && !char.IsControl(key.KeyChar))
                     {
                         SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - 1 - SConsole.CursorLeft, 1, SConsole.CursorLeft + 1, SConsole.CursorTop);
-                        Write(key.KeyChar, buffer.IndexOf(' ', 0, cursorPos) == -1 ? ConsoleColor.Yellow : ConsoleColor.Cyan);
+
+                        using (buffer.IndexOf(' ', 0, cursorPos) == -1 ? SimpleConsoleColors.Yellow : SimpleConsoleColors.Cyan)
+                            Write(key.KeyChar);
 
                         buffer = buffer.Insert(cursorPos, key.KeyChar.ToString());
 
@@ -105,6 +128,26 @@ namespace LICC.Console
 
                 SConsole.WriteLine();
                 OnLineInput(buffer);
+            }
+
+            void RewriteBuffer(string newStr)
+            {
+                string prevBuffer = buffer;
+                buffer = newStr;
+
+                int spaceIndex = newStr.IndexOf(' ');
+                string cmdName = spaceIndex == -1 ? newStr : newStr.Substring(0, spaceIndex);
+                string rest = spaceIndex == -1 ? "" : newStr.Substring(spaceIndex);
+
+                SConsole.SetCursorPosition(startPos.X, startPos.Y);
+                Write(cmdName, ConsoleColor.Yellow);
+                Write(rest, ConsoleColor.Cyan);
+
+                if (newStr.Length < prevBuffer.Length)
+                    SConsole.Write(new string(' ', prevBuffer.Length - newStr.Length));
+
+                cursorPos = newStr.Length;
+                SConsole.SetCursorPosition(startPos.X + cursorPos, startPos.Y);
             }
 
             void Write(object obj, ConsoleColor? color = null)
