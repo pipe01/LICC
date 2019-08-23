@@ -8,13 +8,13 @@ namespace LICC
 {
     public sealed class CommandConsole
     {
-        private static CommandConsole Current;
+        internal static CommandConsole Current { get; private set; }
 
         public CommandRegistry Commands { get; } = new CommandRegistry();
 
-        private readonly Shell Shell;
-        private readonly ConsoleConfiguration Config;
-        private readonly IFileSystem FileSystem;
+        internal readonly Shell Shell;
+        internal readonly ConsoleConfiguration Config;
+        internal readonly IFileSystem FileSystem;
 
         public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ConsoleConfiguration config = null)
         {
@@ -79,47 +79,6 @@ namespace LICC
                 LConsole.WriteLine("An error occurred when executing this command:", Color.Red);
                 LConsole.WriteLine(ex.ToString(), Color.Red);
             }
-        }
-
-        [Command("help", Description = "Lists all commands or prints help for a command")]
-        private static void HelpCommand(string command = null)
-        {
-            if (command == null)
-            {
-                var cmds = Current.Commands.GetCommands();
-                int maxLength = cmds.Max(o => o.Name.Length);
-
-                LConsole.WriteLine("Available commands:", Color.Magenta);
-                foreach (var cmd in cmds)
-                {
-                    using (var writer = LConsole.BeginWrite())
-                    {
-                        writer.Write(cmd.Name.PadLeft(maxLength), Color.Blue);
-
-                        if (cmd.Description != null)
-                        {
-                            writer.Write(": ", Color.DarkGray);
-                            writer.Write(cmd.Description, Color.DarkYellow);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (!Current.Commands.TryGetCommand(command, out var cmd, !Current.Config.CaseSensitiveCommandNames))
-                {
-                    LConsole.WriteLine($"Cannot find command with name '{command}'", Color.Red);
-                    return;
-                }
-
-                cmd.PrintUsage();
-            }
-        }
-
-        [Command]
-        private static void Exec(string fileName)
-        {
-            Current.Shell.ExecuteLsf(fileName);
         }
     }
 }
