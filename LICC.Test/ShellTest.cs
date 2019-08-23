@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,9 +12,15 @@ namespace LICC.Test
 {
     public class ShellTest
     {
+        private static ICommandRegistryInternal RegistryWithCommand(string name, string methodName)
+            => RegistryWithCommand(name, typeof(ShellTest).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static));
+
         private static ICommandRegistryInternal RegistryWithCommand(string name, Action action)
+            => RegistryWithCommand(name, action.Method);
+
+        private static ICommandRegistryInternal RegistryWithCommand(string name, MethodInfo method)
         {
-            var cmd = new Command(name, null, action.Method);
+            var cmd = new Command(name, null, method);
             var registryMock = new Mock<ICommandRegistryInternal>();
             registryMock.Setup(o => o.TryGetCommand(name, out cmd, It.IsAny<bool>())).Returns(true);
 
@@ -38,6 +45,44 @@ namespace LICC.Test
             shell.ExecuteLine("test");
 
             Assert.Fail("Command not called");
+        }
+
+        [Test]
+        public void OneIntParameter()
+        {
+            var converterMock = new Mock<IValueConverter>();
+            converterMock.Setup(o => o.TryConvertValue(typeof(int), "123")).Returns((true, 123));
+
+            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", nameof(OneIntParameter_Callback)));
+
+            shell.ExecuteLine("test 123");
+
+            Assert.Fail("Command not called");
+        }
+
+        private static void OneIntParameter_Callback(int number)
+        {
+            Assert.AreEqual(123, number);
+            Assert.Pass();
+        }
+
+        [Test]
+        public void OneUnquotedStringParameter()
+        {
+            var converterMock = new Mock<IValueConverter>();
+            converterMock.Setup(o => o.TryConvertValue(typeof(string), It.IsAny<string>())).Returns((Type _, string str) => (true, str));
+
+            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", nameof(OneUnquotedStringParameter_Callback)));
+
+            shell.ExecuteLine("test testing string");
+
+            Assert.Fail("Command not called");
+        }
+
+        private static void OneUnquotedStringParameter_Callback(string text)
+        {
+            Assert.AreEqual("testing string", text);
+            Assert.Pass();
         }
     }
 }
