@@ -2,13 +2,11 @@
 using SimpleConsoleColor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using SConsole = System.Console;
 
 namespace LICC.Console
 {
-    public class ConsoleImplementation : Frontend
+    public class ConsoleFrontend : Frontend
     {
         private (int X, int Y) StartPos;
         private string Buffer;
@@ -217,7 +215,7 @@ namespace LICC.Console
 
         public static void StartDefault(string fileSystemRoot = null)
         {
-            var frontend = new ConsoleImplementation();
+            var frontend = new ConsoleFrontend();
             var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
 
             foreach (var item in AppDomain.CurrentDomain.GetAssemblies())

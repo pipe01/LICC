@@ -12,7 +12,7 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            ConsoleImplementation.StartDefault("cfg");
+            ConsoleFrontend.StartDefault("cfg");
         }
 
         [Command]
