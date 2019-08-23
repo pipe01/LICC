@@ -108,19 +108,27 @@ namespace LICC
             if (cmdNameSeparatorIndex != -1)
             {
                 string argsLine = line.Substring(cmdNameSeparatorIndex + 1);
-                var strArgs = GetArgs(argsLine).ToArray();
 
-                if (strArgs.Length < nonOptionalParamCount || strArgs.Length > cmd.Params.Length)
-                    throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length, cmd);
-
-                for (int i = 0; i < strArgs.Length; i++)
+                if (cmd.Params.Length == 1 && cmd.Params[0].Type == typeof(string))
                 {
-                    var (success, value) = ValueConverter.TryConvertValue(cmd.Params[i].Type, strArgs[i]);
+                    cmdArgs[0] = argsLine;
+                }
+                else
+                {
+                    var strArgs = GetArgs(argsLine).ToArray();
 
-                    if (!success)
-                        throw new ParameterConversionException(cmd.Params[i].Name, cmd.Params[i].Type);
-                    else
-                        cmdArgs[i] = value;
+                    if (strArgs.Length < nonOptionalParamCount || strArgs.Length > cmd.Params.Length)
+                        throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length, cmd);
+
+                    for (int i = 0; i < strArgs.Length; i++)
+                    {
+                        var (success, value) = ValueConverter.TryConvertValue(cmd.Params[i].Type, strArgs[i]);
+
+                        if (!success)
+                            throw new ParameterConversionException(cmd.Params[i].Name, cmd.Params[i].Type);
+                        else
+                            cmdArgs[i] = value;
+                    }
                 }
             }
             else if (nonOptionalParamCount > 0)
