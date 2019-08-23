@@ -168,6 +168,10 @@ namespace LICC
                 {
                     yield return TakeDelimitedString('\'');
                 }
+                else if (c == '#')
+                {
+                    break;
+                }
                 else if (c != ' ')
                 {
                     i--;
