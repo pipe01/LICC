@@ -54,12 +54,11 @@ namespace LICC.Console
                             charsToDelete = spaceIndex != -1 ? Buffer.Length - spaceIndex : CursorPos;
                         }
 
-                        SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft, 1, SConsole.CursorLeft - charsToDelete, SConsole.CursorTop);
+                        Buffer = Buffer.Remove(CursorPos - 1, charsToDelete);
 
+                        SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft, 1, SConsole.CursorLeft - charsToDelete, SConsole.CursorTop);
                         SConsole.CursorLeft -= charsToDelete;
                         CursorPos -= charsToDelete;
-
-                        Buffer = Buffer.Substring(0, Buffer.Length - charsToDelete);
                     }
                     break;
 
@@ -75,7 +74,7 @@ namespace LICC.Console
                             charsToDelete = spaceIndex != -1 ? spaceIndex - CursorPos : Buffer.Length - CursorPos;
                         }
 
-                        Buffer = Buffer.Substring(0, CursorPos) + Buffer.Substring(CursorPos + charsToDelete);
+                        Buffer = Buffer.Remove(CursorPos, charsToDelete);
                         SConsole.MoveBufferArea(SConsole.CursorLeft + charsToDelete, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft - charsToDelete, 1, SConsole.CursorLeft, SConsole.CursorTop);
                     }
                     break;
