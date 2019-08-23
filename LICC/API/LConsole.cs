@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace LICC.API
 {
@@ -35,10 +36,13 @@ namespace LICC.API
 
     public class LineWriter : IDisposable
     {
+        private static readonly SemaphoreSlim WriteSemaphore = new SemaphoreSlim(1);
+
         private bool Disposed;
 
         internal LineWriter()
         {
+            WriteSemaphore.Wait();
             LConsole.Frontend.PauseInput();
         }
 
@@ -47,10 +51,11 @@ namespace LICC.API
         public void End()
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
-
             LConsole.Frontend.WriteLine("");
             LConsole.Frontend.ResumeInput();
             Disposed = true;
+
+            WriteSemaphore.Release();
         }
 
         private LineWriter RunIfNotDisposed(Action action)
