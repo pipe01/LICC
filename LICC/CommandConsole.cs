@@ -10,13 +10,15 @@ namespace LICC
     {
         internal static CommandConsole Current { get; private set; }
 
-        public CommandRegistry Commands { get; } = new CommandRegistry();
+        public ICommandRegistry Commands => CommandRegistry;
 
         internal readonly IShell Shell;
         internal readonly ConsoleConfiguration Config;
         internal readonly IFileSystem FileSystem;
+        internal readonly ICommandRegistryInternal CommandRegistry;
 
-        private CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, IShell shell, ConsoleConfiguration config)
+        internal CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem,
+            IShell shell, ICommandRegistryInternal commandRegistry, ConsoleConfiguration config)
         {
             Current = this;
             LConsole.Frontend = frontend;
@@ -26,7 +28,8 @@ namespace LICC
 
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
-            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, Commands, config);
+            this.CommandRegistry = commandRegistry;
+            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, commandRegistry, config);
 
             frontend.LineInput += Frontend_LineInput;
 
@@ -36,7 +39,7 @@ namespace LICC
         }
 
         public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ConsoleConfiguration config = null)
-            : this(frontend, valueConverter, fileSystem, null, config ?? new ConsoleConfiguration())
+            : this(frontend, valueConverter, fileSystem, null, new CommandRegistry(), config ?? new ConsoleConfiguration())
         {
         }
 

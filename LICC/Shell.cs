@@ -22,12 +22,13 @@ namespace LICC
         private readonly IValueConverter ValueConverter;
         private readonly IWriteableHistory History;
         private readonly IFileSystem FileSystem;
-        private readonly CommandRegistry CommandRegistry;
+        private readonly ICommandRegistryInternal CommandRegistry;
         private readonly ConsoleConfiguration Config;
 
         private Exception LastException;
 
-        public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem, CommandRegistry commandRegistry, ConsoleConfiguration config = null)
+        public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem,
+            ICommandRegistryInternal commandRegistry, ConsoleConfiguration config = null)
         {
             this.ValueConverter = valueConverter;
             this.History = history;

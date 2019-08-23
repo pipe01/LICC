@@ -9,17 +9,33 @@ using System.Threading.Tasks;
 
 namespace LICC
 {
-    public sealed class CommandRegistry
+    internal interface ICommandRegistryInternal : ICommandRegistry
+    {
+        IEnumerable<Command> GetCommands();
+        bool TryGetCommand(string name, out Command cmd, bool ignoreCase = false);
+
+        void RegisterCommand(MethodInfo method, bool ignoreInvalid);
+    }
+
+    public interface ICommandRegistry
+    {
+        void RegisterCommandsIn(Type type);
+        void RegisterCommandsIn(Assembly assembly);
+    }
+
+    public sealed class CommandRegistry : ICommandRegistryInternal
     {
         private readonly IDictionary<string, Command> Commands = new Dictionary<string, Command>();
+
+        private ICommandRegistryInternal Internal => this;
 
         internal CommandRegistry()
         {
         }
 
-        internal IEnumerable<Command> GetCommands() => Commands.Values;
+        IEnumerable<Command> ICommandRegistryInternal.GetCommands() => Commands.Values;
 
-        internal void RegisterCommand(MethodInfo method, bool ignoreInvalid)
+        void ICommandRegistryInternal.RegisterCommand(MethodInfo method, bool ignoreInvalid)
         {
             var attr = method.GetCustomAttribute<CommandAttribute>();
 
@@ -44,25 +60,7 @@ namespace LICC
             Commands.Add(name, new Command(name, attr.Description, method));
         }
 
-        public void RegisterCommand(MethodInfo method) => RegisterCommand(method, false);
-
-        public void RegisterCommandsIn(Type type)
-        {
-            foreach (var item in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
-            {
-                RegisterCommand(item, true);
-            }
-        }
-
-        public void RegisterCommandsIn(Assembly assembly)
-        {
-            foreach (var item in assembly.GetTypes())
-            {
-                RegisterCommandsIn(item);
-            }
-        }
-
-        internal bool TryGetCommand(string name, out Command cmd, bool ignoreCase = false)
+        bool ICommandRegistryInternal.TryGetCommand(string name, out Command cmd, bool ignoreCase = false)
         {
             if (ignoreCase)
             {
@@ -72,6 +70,24 @@ namespace LICC
             else
             {
                 return Commands.TryGetValue(name, out cmd);
+            }
+        }
+
+        public void RegisterCommand(MethodInfo method) => Internal.RegisterCommand(method, false);
+
+        public void RegisterCommandsIn(Type type)
+        {
+            foreach (var item in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                Internal.RegisterCommand(item, true);
+            }
+        }
+
+        public void RegisterCommandsIn(Assembly assembly)
+        {
+            foreach (var item in assembly.GetTypes())
+            {
+                RegisterCommandsIn(item);
             }
         }
     }
