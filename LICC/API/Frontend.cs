@@ -1,4 +1,6 @@
-﻿namespace LICC.API
+﻿using System;
+
+namespace LICC.API
 {
     internal delegate void LineInputDelegate(string line);
 
@@ -19,7 +21,7 @@
         public abstract void Write(string str, Color color);
 
 
-        public virtual void WriteLine(string str) => Write(str + "\n");
-        public virtual void WriteLine(string str, Color color) => Write(str + "\n", color);
+        public virtual void WriteLine(string str) => Write(str + Environment.NewLine);
+        public virtual void WriteLine(string str, Color color) => Write(str + Environment.NewLine, color);
     }
 }
