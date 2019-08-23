@@ -48,7 +48,7 @@ namespace LICC
                 var strArgs = GetArgs(argsLine).ToArray();
 
                 if (strArgs.Length < nonOptionalParamCount || strArgs.Length > cmd.Params.Length)
-                    throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length);
+                    throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length, cmd);
 
                 for (int i = 0; i < strArgs.Length; i++)
                 {
@@ -62,7 +62,7 @@ namespace LICC
             }
             else if (nonOptionalParamCount > 0)
             {
-                throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, 0);
+                throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, 0, cmd);
             }
 
             cmd.Method.Invoke(null, cmdArgs);

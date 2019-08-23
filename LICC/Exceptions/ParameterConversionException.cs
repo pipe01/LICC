@@ -2,7 +2,7 @@
 
 namespace LICC.Exceptions
 {
-    public sealed class ParameterConversionException : Exception
+    internal sealed class ParameterConversionException : Exception
     {
         public string ParamName { get; }
         public Type ParamType { get; }

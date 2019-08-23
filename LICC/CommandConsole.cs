@@ -88,6 +88,7 @@ namespace LICC
             catch (ParameterMismatchException ex)
             {
                 LConsole.WriteLine(ex.Message, Color.Red);
+                ex.Command.PrintUsage();
             }
             catch (ParameterConversionException ex)
             {

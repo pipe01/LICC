@@ -2,7 +2,7 @@
 
 namespace LICC.Exceptions
 {
-    public sealed class InvalidCommandMethodException : Exception
+    internal sealed class InvalidCommandMethodException : Exception
     {
         public InvalidCommandMethodException()
         {

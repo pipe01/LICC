@@ -2,7 +2,7 @@
 
 namespace LICC.Exceptions
 {
-    public sealed class CommandNotFoundException : Exception
+    internal sealed class CommandNotFoundException : Exception
     {
         public string CommandName { get; }
 
