@@ -40,7 +40,7 @@ namespace LICC
 
             int nonOptionalParamCount = cmd.Params.Count(o => !o.Optional);
 
-            object[] cmdArgs = null;
+            object[] cmdArgs = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
 
             if (cmdNameSeparatorIndex != -1)
             {
@@ -49,8 +49,6 @@ namespace LICC
 
                 if (strArgs.Length < nonOptionalParamCount || strArgs.Length > cmd.Params.Length)
                     throw new ParameterMismatchException(nonOptionalParamCount, cmd.Params.Length, strArgs.Length);
-
-                cmdArgs = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
 
                 for (int i = 0; i < strArgs.Length; i++)
                 {

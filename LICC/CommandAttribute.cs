@@ -7,7 +7,7 @@ namespace LICC
     {
         public string Name { get; }
 
-        public string Usage { get; set; }
+        public string Description { get; set; }
 
         public CommandAttribute()
         {

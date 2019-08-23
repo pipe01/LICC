@@ -11,29 +11,15 @@ namespace LICC
 {
     public sealed class CommandRegistry
     {
-        internal struct Command
-        {
-            public string Name { get; }
-            public string Usage { get; }
-            public (string Name, Type Type, bool Optional)[] Params { get; }
-            public MethodInfo Method { get; }
-
-            public Command(string name, string usage, MethodInfo method)
-            {
-                this.Name = name;
-                this.Usage = usage;
-                this.Params = method.GetParameters().Select(o => (o.Name, o.ParameterType, o.HasDefaultValue)).ToArray();
-                this.Method = method;
-            }
-        }
-
         private readonly IDictionary<string, Command> Commands = new Dictionary<string, Command>();
 
         internal CommandRegistry()
         {
         }
 
-        private void RegisterCommand(MethodInfo method, bool ignoreInvalid)
+        internal IEnumerable<Command> GetCommands() => Commands.Values;
+
+        internal void RegisterCommand(MethodInfo method, bool ignoreInvalid)
         {
             var attr = method.GetCustomAttribute<CommandAttribute>();
 
@@ -55,7 +41,7 @@ namespace LICC
                     throw new InvalidCommandMethodException("That command name is already in use");
             }
 
-            Commands.Add(name, new Command(name, attr.Usage, method));
+            Commands.Add(name, new Command(name, attr.Description, method));
         }
 
         public void RegisterCommand(MethodInfo method) => RegisterCommand(method, false);
