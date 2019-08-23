@@ -1,7 +1,8 @@
-﻿using System;
+﻿using LICC.API;
+using System;
 using System.Threading;
 
-namespace LICC.API
+namespace LICC
 {
     public static class LConsole
     {
