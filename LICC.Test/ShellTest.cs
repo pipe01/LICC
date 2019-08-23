@@ -20,14 +20,18 @@ namespace LICC.Test
             return registryMock.Object;
         }
 
+        
+        [OneTimeSetUp]
+        public static void Setup()
+        {
+            LConsole.Frontend = new Mock<Frontend>().Object;
+        }
+
         [Test]
         public void NoParameters()
         {
             var converterMock = new Mock<IValueConverter>();
             converterMock.Setup(o => o.TryConvertValue(It.IsAny<Type>(), It.IsAny<string>())).Returns((true, null));
-
-            var frontendMock = new Mock<Frontend>();
-            LConsole.Frontend = frontendMock.Object;
 
             var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", Assert.Pass));
 
