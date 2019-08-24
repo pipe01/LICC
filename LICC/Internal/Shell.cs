@@ -14,10 +14,10 @@ namespace LICC.Internal
     internal interface IShell
     {
         IEnvironment Environment { get; }
-
         Exception LastException { get; }
+
         void ExecuteLsf(string path);
-        void ExecuteLine(string line);
+        void ExecuteLine(string line, bool addToHistory = true);
     }
 
     internal class Shell : IShell
@@ -69,7 +69,7 @@ namespace LICC.Internal
 
                     try
                     {
-                        ExecuteLine(line);
+                        ExecuteLine(line, false);
                     }
                     catch (Exception ex) when (ex is CommandNotFoundException || ex is ParameterMismatchException
                                             || ex is ParameterConversionException || ex is ParserException)
@@ -101,14 +101,15 @@ namespace LICC.Internal
         /// <exception cref="ParameterMismatchException"></exception>
         /// <exception cref="ParameterConversionException"></exception>
         /// <exception cref="ParserException"></exception>
-        public void ExecuteLine(string line)
+        public void ExecuteLine(string line, bool addToHistory = true)
         {
             if (string.IsNullOrWhiteSpace(line))
                 return;
 
             line = line.Trim();
 
-            History.AddNewItem(line);
+            if (addToHistory)
+                History.AddNewItem(line);
 
             int cmdNameSeparatorIndex = line.IndexOf(' ');
             string cmdName = cmdNameSeparatorIndex == -1 ? line.Substring(0) : line.Substring(0, cmdNameSeparatorIndex).Trim();

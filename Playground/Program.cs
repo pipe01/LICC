@@ -12,13 +12,13 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            ConsoleFrontend.StartDefault("cfg");
+            ConsoleFrontend.StartDefault("cfg", true);
         }
 
         [Command]
-        public static void Test(string str = "default")
+        public static void Test(int num, string str = "default")
         {
-            LConsole.WriteLine($"Hello {str}", Color.Blue);
+            LConsole.WriteLine($"Hello {num}, {str}", ConsoleColor.Blue);
         }
     }
 }
