@@ -4,7 +4,7 @@ using System.Drawing;
 
 namespace LICC.API
 {
-    public readonly struct CColor
+    public readonly partial struct CColor
     {
         private static readonly CColor[] ConsoleColors = {
             new CColor(0x0C0C0C), //Black = 0
