@@ -255,33 +255,17 @@ namespace LICC.Console
             SConsole.WriteLine(str);
         }
 
-        public override void Write(string str, Color color)
+        public override void Write(string str, CColor color)
         {
             if (VTConsole.IsEnabled)
             {
-                VTConsole.Write(str, color);
-                VTConsole.SetColorForeground(ConsoleColor.Gray.ToRGB());
+                VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
+                VTConsole.SetColorForeground(CColor.FromConsoleColor(ConsoleColor.Gray).ToDrawingColor());
             }
             else
             {
                 var prev = SConsole.ForegroundColor;
                 SConsole.ForegroundColor = color.ToConsoleColor();
-                SConsole.Write(str);
-                SConsole.ForegroundColor = prev;
-            }
-        }
-
-        public override void Write(string str, ConsoleColor color)
-        {
-            if (VTConsole.IsEnabled)
-            {
-                VTConsole.Write(str, color.ToRGB());
-                VTConsole.SetColorForeground(ConsoleColor.Gray.ToRGB());
-            }
-            else
-            {
-                var prev = SConsole.ForegroundColor;
-                SConsole.ForegroundColor = color;
                 SConsole.Write(str);
                 SConsole.ForegroundColor = prev;
             }

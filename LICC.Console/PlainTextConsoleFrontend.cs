@@ -20,7 +20,7 @@ namespace LICC.Console
             }
         }
 
-        public override void Write(string str, Color color)
+        public override void Write(string str, CColor color)
         {
             var prev = SConsole.ForegroundColor;
             SConsole.ForegroundColor = color.ToConsoleColor();

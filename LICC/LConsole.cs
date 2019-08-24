@@ -1,6 +1,8 @@
 ﻿using LICC.API;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 
 namespace LICC
@@ -98,11 +100,15 @@ namespace LICC
         private static readonly SemaphoreSlim WriteSemaphore = new SemaphoreSlim(1);
 
         private bool Disposed;
+        private IList<(string Text, CColor? Color)> TextRegions = new List<(string Text, CColor? Color)>();
 
         internal LineWriter()
         {
-            WriteSemaphore.Wait();
-            LConsole.Frontend.PauseInput();
+            if (LConsole.Frontend.SupportsPartialLines)
+            {
+                WriteSemaphore.Wait();
+                LConsole.Frontend.PauseInput();
+            }
         }
 
         void IDisposable.Dispose() => End();
@@ -113,33 +119,54 @@ namespace LICC
         public void End()
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
-            LConsole.Frontend.WriteLine("");
-            LConsole.Frontend.ResumeInput();
-            Disposed = true;
 
-            WriteSemaphore.Release();
+            if (LConsole.Frontend.SupportsPartialLines)
+            {
+                WriteSemaphore.Release();
+                LConsole.Frontend.WriteLine("");
+                LConsole.Frontend.ResumeInput();
+            }
+            else
+            {
+                LConsole.Frontend.WriteLineWithRegions(TextRegions.ToArray());
+            }
+
+            Disposed = true;
         }
 
-        private LineWriter RunIfNotDisposed(Action action)
+        private LineWriter RunIfNotDisposed(Action partialAction, Func<(string, CColor?)> nonPartialRegionGetter = null)
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
-            action();
+            if (LConsole.Frontend.SupportsPartialLines)
+                partialAction();
+            else if (nonPartialRegionGetter != null)
+                TextRegions.Add(nonPartialRegionGetter());
+
             return this;
         }
 
-        public LineWriter Write(object obj) => Write(obj?.ToString());
-        public LineWriter Write(string str) => RunIfNotDisposed(() => LConsole.Write(str));
+        public LineWriter Write(object obj)
+            => Write(obj?.ToString());
+        public LineWriter Write(string str)
+            => RunIfNotDisposed(() => LConsole.Write(str), () => (str, null));
 
-        public LineWriter Write(object obj, Color color) => Write(obj?.ToString(), color);
-        public LineWriter Write(object obj, ConsoleColor color) => Write(obj?.ToString(), color);
+        public LineWriter Write(object obj, Color color)
+            => Write(obj?.ToString(), color);
+        public LineWriter Write(object obj, ConsoleColor color)
+            => Write(obj?.ToString(), color);
 
-        public LineWriter Write(string str, Color color) => RunIfNotDisposed(() => LConsole.Write(str, color));
-        public LineWriter Write(string str, ConsoleColor color) => RunIfNotDisposed(() => LConsole.Write(str, color));
+        public LineWriter Write(string str, Color color)
+            => RunIfNotDisposed(() => LConsole.Write(str, color), () => (str, color));
+        public LineWriter Write(string str, ConsoleColor color)
+            => RunIfNotDisposed(() => LConsole.Write(str, color), () => (str, color));
 
-        public LineWriter Write(string format, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, args));
+        public LineWriter Write(string format, params object[] args)
+            => RunIfNotDisposed(() => LConsole.Write(format, args), () => (string.Format(format, args), null));
 
-        public LineWriter Write(string format, Color color, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, color, args));
-        public LineWriter Write(string format, ConsoleColor color, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, color, args));
+        public LineWriter Write(string format, Color color, params object[] args)
+            => RunIfNotDisposed(() => LConsole.Write(format, color, args), () => (string.Format(format, args), color));
+        public LineWriter Write(string format, ConsoleColor color, params object[] args)
+            => RunIfNotDisposed(() => LConsole.Write(format, color, args), () => (string.Format(format, args), color));
     }
 }

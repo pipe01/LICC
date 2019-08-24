@@ -12,6 +12,8 @@ namespace LICC.API
     {
         internal event LineInputDelegate LineInput;
 
+        public virtual bool SupportsPartialLines { get; } = true;
+
         /// <summary>
         /// Command history for the current session.
         /// </summary>
@@ -47,13 +49,7 @@ namespace LICC.API
         /// </summary>
         /// <param name="str">The string to write</param>
         /// <param name="color">The color to give to the string.</param>
-        public abstract void Write(string str, Color color);
-        /// <summary>
-        /// Writes a colored string to the output.
-        /// </summary>
-        /// <param name="str">The string to write</param>
-        /// <param name="color">The color to give to the string.</param>
-        public virtual void Write(string str, ConsoleColor color) => Write(str, color.ToRGB());
+        public abstract void Write(string str, CColor color);
 
         /// <summary>
         /// Writes a newline-terminated uncolored string to the output.
@@ -66,13 +62,9 @@ namespace LICC.API
         /// </summary>
         /// <param name="str">The line to write.</param>
         /// <param name="color">The color to give to the line.</param>
-        public virtual void WriteLine(string str, Color color) => Write(str + Environment.NewLine, color);
+        public virtual void WriteLine(string str, CColor color) => Write(str + Environment.NewLine, color);
 
-        /// <summary>
-        /// Writes a newline-terminated colored string to the output.
-        /// </summary>
-        /// <param name="str">The line to write.</param>
-        /// <param name="color">The color to give to the line.</param>
-        public virtual void WriteLine(string str, ConsoleColor color) => Write(str + Environment.NewLine, color);
+        public virtual void WriteLineWithRegions((string Text, CColor? Color)[] regions)
+            => throw new InvalidOperationException($"This class doesn't support partial lines but doesn't override the {nameof(WriteLineWithRegions)} method");
     }
 }
