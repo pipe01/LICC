@@ -1,7 +1,25 @@
-﻿namespace LICC.API
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+namespace LICC.API
 {
     public partial struct CColor
     {
+        internal static IDictionary<string, CColor> ColorsByName { get; } = new Dictionary<string, CColor>();
+
+        static CColor()
+        {
+            foreach (var item in typeof(CColor).GetFields(BindingFlags.Public | BindingFlags.Static)
+                .Where(o => o.IsInitOnly && o.FieldType == typeof(CColor)))
+            {
+                ColorsByName[item.Name] = (CColor)item.GetValue(null);
+            }
+        }
+
+        public static CColor FromName(string name)
+            => ColorsByName.TryGetValue(name, out var color) ? color : default;
+
         public static readonly CColor AbsoluteZero = new CColor(0, 72, 186);
         public static readonly CColor Acajou = new CColor(76, 47, 39);
         public static readonly CColor AcidGreen = new CColor(176, 191, 26);

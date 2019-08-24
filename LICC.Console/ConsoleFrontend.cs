@@ -115,7 +115,7 @@ namespace LICC.Console
                     break;
 
                 case ConsoleKey.Delete:
-                    if (Buffer.Length > 0)
+                    if (Buffer.Length > 0 && CursorPos < Buffer.Length)
                     {
                         int charsToDelete = 1;
 
@@ -260,7 +260,7 @@ namespace LICC.Console
             if (VTConsole.IsEnabled)
             {
                 VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
-                VTConsole.SetColorForeground(CColor.FromConsoleColor(ConsoleColor.Gray).ToDrawingColor());
+                //VTConsole.SetColorForeground(CColor.FromConsoleColor(ConsoleColor.Gray).ToDrawingColor());
             }
             else
             {

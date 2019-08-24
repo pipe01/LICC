@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace LICC.API
 {
@@ -45,11 +44,7 @@ namespace LICC.API
 
         public static implicit operator CColor(ConsoleColor consoleColor) => FromConsoleColor(consoleColor);
 
-        public static implicit operator CColor(Color color) => new CColor(color.R, color.G, color.B);
-
         public static CColor FromConsoleColor(ConsoleColor consoleColor) => ConsoleColors[(int)consoleColor];
-
-        public Color ToDrawingColor() => Color.FromArgb(R, G, B);
 
         public ConsoleColor ToConsoleColor()
         {
@@ -70,7 +65,7 @@ namespace LICC.API
                 foreach (ConsoleColor cc in Enum.GetValues(typeof(ConsoleColor)))
                 {
                     var n = Enum.GetName(typeof(ConsoleColor), cc);
-                    var c = Color.FromName(n == "DarkYellow" ? "Orange" : n); // bug fix
+                    var c = CColor.FromName(n == "DarkYellow" ? "Orange" : n); // bug fix
                     var t = Math.Pow(c.R - rr, 2.0) + Math.Pow(c.G - gg, 2.0) + Math.Pow(c.B - bb, 2.0);
                     if (t == 0.0)
                         return cc;

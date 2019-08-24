@@ -132,7 +132,6 @@ namespace LICC.Internal
 
             if (cmdNameSeparatorIndex != -1)
             {
-
                 if (cmd.Params.Length == 1 && cmd.Params[0].Type == typeof(string))
                 {
                     cmdArgs[0] = argsLine;
