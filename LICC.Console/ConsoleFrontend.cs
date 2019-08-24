@@ -260,7 +260,9 @@ namespace LICC.Console
             if (VTConsole.IsEnabled)
             {
                 VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
-                //VTConsole.SetColorForeground(CColor.FromConsoleColor(ConsoleColor.Gray).ToDrawingColor());
+
+                var c = CColor.FromConsoleColor(ConsoleColor.Gray);
+                VTConsole.SetColorForeground(Color.FromArgb(c.R, c.G, c.B));
             }
             else
             {
