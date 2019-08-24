@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace LICC.API
+namespace LICC
 {
     public readonly partial struct CColor
     {
