@@ -57,7 +57,7 @@ namespace LICC.Console
                             charsToDelete = spaceIndex != -1 ? Buffer.Length - spaceIndex : CursorPos;
                         }
 
-                        Buffer = Buffer.Remove(CursorPos - 1, charsToDelete);
+                        Buffer = Buffer.Remove(CursorPos - charsToDelete, charsToDelete);
 
                         SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - SConsole.CursorLeft, 1, SConsole.CursorLeft - charsToDelete, SConsole.CursorTop);
                         SConsole.CursorLeft -= charsToDelete;
