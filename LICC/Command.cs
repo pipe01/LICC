@@ -31,7 +31,7 @@ namespace LICC
             if (cmd.Description != null)
                 LConsole.WriteLine(cmd.Description, Color.Cyan);
 
-            using (var writer = LConsole.BeginWrite())
+            using (var writer = LConsole.BeginLine())
             {
                 writer.Write("Usage: ", Color.DarkYellow);
 

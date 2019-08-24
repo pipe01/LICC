@@ -3,12 +3,18 @@ using System.Text;
 
 namespace LICC.API
 {
+    /// <summary>
+    /// Represents a virtual file system.
+    /// </summary>
     public interface IFileSystem
     {
         bool FileExists(string path);
         StreamReader OpenRead(string path);
     }
 
+    /// <summary>
+    /// File system with System.IO as backend.
+    /// </summary>
     public class SystemIOFilesystem : IFileSystem
     {
         private readonly string RootPath;

@@ -4,6 +4,10 @@ using System.Threading;
 
 namespace LICC
 {
+    /// <summary>
+    /// Replacement for <see cref="System.Console"/>, meant to provide a frontend-independant way of outputting
+    /// colorful text.
+    /// </summary>
     public static class LConsole
     {
         internal static Frontend Frontend { get; set; }
@@ -13,10 +17,21 @@ namespace LICC
         internal static void Write(string format, params object[] args) => Write(string.Format(format, args));
         internal static void Write(string format, Color color, params object[] args) => Write(string.Format(format, args), color);
 
-        public static LineWriter BeginWrite() => new LineWriter();
+        /// <summary>
+        /// Makes and returns a new line writer. This must be used if you want to write a line with different
+        /// colored words.
+        /// </summary>
+        public static LineWriter BeginLine() => new LineWriter();
 
+        /// <summary>
+        /// Writes a newline separator.
+        /// </summary>
         public static void WriteLine() => WriteLine("");
 
+        /// <summary>
+        /// Writes a string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="str">The line to write.</param>
         public static void WriteLine(string str)
         {
             Frontend.PauseInput();
@@ -24,6 +39,11 @@ namespace LICC
             Frontend.ResumeInput();
         }
 
+        /// <summary>
+        /// Writes a colored string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="str">The line to write.</param>
+        /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(string str, Color color)
         {
             Frontend.PauseInput();
@@ -31,10 +51,25 @@ namespace LICC
             Frontend.ResumeInput();
         }
 
+        /// <summary>
+        /// Writes a formatted string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="format">The format string.</param>
+        /// <param name="args">The arguments to format the string with.</param>
         public static void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
+
+        /// <summary>
+        /// Writes a colored formatted string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="format">The format string.</param>
+        /// <param name="color">The color to write this line in.</param>
+        /// <param name="args">The arguments to format the string with.</param>
         public static void WriteLine(string format, Color color, params object[] args) => WriteLine(string.Format(format, args), color);
     }
 
+    /// <summary>
+    /// Class used to write a line containing multiple differently-colored segments.
+    /// </summary>
     public class LineWriter : IDisposable
     {
         private static readonly SemaphoreSlim WriteSemaphore = new SemaphoreSlim(1);
@@ -49,6 +84,9 @@ namespace LICC
 
         void IDisposable.Dispose() => End();
 
+        /// <summary>
+        /// Finishes and writes the line.
+        /// </summary>
         public void End()
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");

@@ -75,7 +75,7 @@ namespace LICC
 
                 void PrintError(string msg)
                 {
-                    using (var writer = LConsole.BeginWrite())
+                    using (var writer = LConsole.BeginLine())
                     {
                         writer.Write("Error executing file ", Color.Red);
                         writer.Write($"'{path}'", Color.DarkRed);
@@ -154,7 +154,7 @@ namespace LICC
 
                 LastException = ex.InnerException;
 
-                LConsole.BeginWrite()
+                LConsole.BeginLine()
                     .Write("An exception occurred while executing the command: ", Color.Red)
                     .Write(ex.InnerException.Message, Color.DarkRed)
                     .End();
@@ -163,7 +163,7 @@ namespace LICC
             {
                 LastException = ex;
 
-                LConsole.BeginWrite()
+                LConsole.BeginLine()
                     .Write("An exception occurred while executing the command: ", Color.Red)
                     .Write(ex.Message, Color.DarkRed)
                     .End();

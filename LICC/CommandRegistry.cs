@@ -18,13 +18,19 @@ namespace LICC
         void RegisterCommand(MethodInfo method, bool ignoreInvalid);
     }
 
+    /// <summary>
+    /// Public interface for a command registry.
+    /// </summary>
     public interface ICommandRegistry
     {
+        /// <summary>
+        /// Registers all command methods in <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type containin methods marked with the <see cref="CommandAttribute"/> attribute.</param>
         void RegisterCommandsIn(Type type);
-        void RegisterCommandsIn(Assembly assembly);
     }
 
-    public sealed class CommandRegistry : ICommandRegistryInternal
+    internal sealed class CommandRegistry : ICommandRegistryInternal
     {
         private readonly IDictionary<string, Command> Commands = new Dictionary<string, Command>();
 
@@ -83,14 +89,6 @@ namespace LICC
             foreach (var item in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
             {
                 Internal.RegisterCommand(item, true);
-            }
-        }
-
-        public void RegisterCommandsIn(Assembly assembly)
-        {
-            foreach (var item in assembly.GetTypes())
-            {
-                RegisterCommandsIn(item);
             }
         }
     }

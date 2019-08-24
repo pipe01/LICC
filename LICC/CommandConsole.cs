@@ -6,10 +6,16 @@ using System.Reflection;
 
 namespace LICC
 {
+    /// <summary>
+    /// The main console class.
+    /// </summary>
     public sealed class CommandConsole
     {
         internal static CommandConsole Current { get; private set; }
 
+        /// <summary>
+        /// Command registry instance, used to register commands.
+        /// </summary>
         public ICommandRegistry Commands => CommandRegistry;
 
         internal readonly IShell Shell;
@@ -38,21 +44,42 @@ namespace LICC
             frontend.Init();
         }
 
+        /// <summary>
+        /// Instantiate a new <see cref="CommandConsole"/> instance.
+        /// </summary>
+        /// <param name="frontend">The frontend to use for this console.</param>
+        /// <param name="valueConverter">The value converter to use for command arguments.</param>
+        /// <param name="fileSystem">The file system for commands like exec.</param>
+        /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ConsoleConfiguration config = null)
             : this(frontend, valueConverter, fileSystem, null, new CommandRegistry(), config ?? new ConsoleConfiguration())
         {
         }
 
-        public CommandConsole(Frontend frontend, ConsoleConfiguration config = null)
-            : this(frontend, new DefaultValueConverter(), null, config)
-        {
-        }
-        
+        /// <summary>
+        /// Instantiate a new <see cref="CommandConsole"/> instance.
+        /// </summary>
+        /// <param name="frontend">The frontend to use for this console.</param>
+        /// <param name="filesRootPath">The root folder for commands like exec.</param>
+        /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, string filesRootPath, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), config)
         {
         }
 
+        /// <summary>
+        /// Instantiate a new <see cref="CommandConsole"/> instance.
+        /// </summary>
+        /// <param name="frontend">The frontend to use for this console.</param>
+        /// <param name="config">The console configuration.</param>
+        public CommandConsole(Frontend frontend, ConsoleConfiguration config = null)
+            : this(frontend, new DefaultValueConverter(), null, config)
+        {
+        }
+
+        /// <summary>
+        /// Runs the autoexec.lsf file if it exists.
+        /// </summary>
         public void RunAutoexec()
         {
             if (FileSystem?.FileExists("autoexec.lsf") ?? false)

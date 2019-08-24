@@ -18,7 +18,7 @@ namespace LICC
                 LConsole.WriteLine("Available commands:", Color.Magenta);
                 foreach (var cmd in cmds)
                 {
-                    using (var writer = LConsole.BeginWrite())
+                    using (var writer = LConsole.BeginLine())
                     {
                         writer.Write(cmd.Name.PadLeft(maxLength), Color.Blue);
 
