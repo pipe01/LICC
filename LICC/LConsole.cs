@@ -1,11 +1,12 @@
 ﻿using LICC.API;
 using System;
+using System.Drawing;
 using System.Threading;
 
 namespace LICC
 {
     /// <summary>
-    /// Replacement for <see cref="System.Console"/>, meant to provide a frontend-independant way of outputting
+    /// Replacement for <see cref="Console"/>, meant to provide a frontend-independant way of outputting
     /// colorful text.
     /// </summary>
     public static class LConsole
@@ -14,8 +15,10 @@ namespace LICC
 
         internal static void Write(string str) => Frontend.Write(str);
         internal static void Write(string str, Color color) => Frontend.Write(str, color);
+        internal static void Write(string str, ConsoleColor color) => Frontend.Write(str, color);
         internal static void Write(string format, params object[] args) => Write(string.Format(format, args));
         internal static void Write(string format, Color color, params object[] args) => Write(string.Format(format, args), color);
+        internal static void Write(string format, ConsoleColor color, params object[] args) => Write(string.Format(format, args), color);
 
         /// <summary>
         /// Makes and returns a new line writer. This must be used if you want to write a line with different
@@ -52,6 +55,18 @@ namespace LICC
         }
 
         /// <summary>
+        /// Writes a colored string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="str">The line to write.</param>
+        /// <param name="color">The color to write this line in.</param>
+        public static void WriteLine(string str, ConsoleColor color)
+        {
+            Frontend.PauseInput();
+            Frontend.WriteLine(str, color);
+            Frontend.ResumeInput();
+        }
+
+        /// <summary>
         /// Writes a formatted string, delimited by a newline separator at the end.
         /// </summary>
         /// <param name="format">The format string.</param>
@@ -65,6 +80,14 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         /// <param name="args">The arguments to format the string with.</param>
         public static void WriteLine(string format, Color color, params object[] args) => WriteLine(string.Format(format, args), color);
+
+        /// <summary>
+        /// Writes a colored formatted string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="format">The format string.</param>
+        /// <param name="color">The color to write this line in.</param>
+        /// <param name="args">The arguments to format the string with.</param>
+        public static void WriteLine(string format, ConsoleColor color, params object[] args) => WriteLine(string.Format(format, args), color);
     }
 
     /// <summary>
@@ -107,9 +130,16 @@ namespace LICC
 
         public LineWriter Write(object obj) => Write(obj?.ToString());
         public LineWriter Write(string str) => RunIfNotDisposed(() => LConsole.Write(str));
+
         public LineWriter Write(object obj, Color color) => Write(obj?.ToString(), color);
+        public LineWriter Write(object obj, ConsoleColor color) => Write(obj?.ToString(), color);
+
         public LineWriter Write(string str, Color color) => RunIfNotDisposed(() => LConsole.Write(str, color));
+        public LineWriter Write(string str, ConsoleColor color) => RunIfNotDisposed(() => LConsole.Write(str, color));
+
         public LineWriter Write(string format, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, args));
+
         public LineWriter Write(string format, Color color, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, color, args));
+        public LineWriter Write(string format, ConsoleColor color, params object[] args) => RunIfNotDisposed(() => LConsole.Write(format, color, args));
     }
 }

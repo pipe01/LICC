@@ -85,12 +85,12 @@ namespace LICC.Internal
                 {
                     using (var writer = LConsole.BeginLine())
                     {
-                        writer.Write("Error executing file ", Color.Red);
-                        writer.Write($"'{path}'", Color.DarkRed);
-                        writer.Write(" near line ", Color.Red);
-                        writer.Write(lineNumber, Color.DarkYellow);
-                        writer.Write(": ", Color.Red);
-                        writer.Write(msg[0].ToString().ToLower() + msg.Substring(1), Color.DarkCyan);
+                        writer.Write("Error executing file ", ConsoleColor.Red);
+                        writer.Write($"'{path}'", ConsoleColor.DarkRed);
+                        writer.Write(" near line ", ConsoleColor.Red);
+                        writer.Write(lineNumber, ConsoleColor.DarkYellow);
+                        writer.Write(": ", ConsoleColor.Red);
+                        writer.Write(msg[0].ToString().ToLower() + msg.Substring(1), ConsoleColor.DarkCyan);
                     }
                 }
             }
@@ -171,8 +171,8 @@ namespace LICC.Internal
                 _LastException = ex.InnerException;
 
                 LConsole.BeginLine()
-                    .Write("An exception occurred while executing the command: ", Color.Red)
-                    .Write(ex.InnerException.Message, Color.DarkRed)
+                    .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
+                    .Write(ex.InnerException.Message, ConsoleColor.DarkRed)
                     .End();
             }
             catch (Exception ex)
@@ -180,8 +180,8 @@ namespace LICC.Internal
                 _LastException = ex;
 
                 LConsole.BeginLine()
-                    .Write("An exception occurred while executing the command: ", Color.Red)
-                    .Write(ex.Message, Color.DarkRed)
+                    .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
+                    .Write(ex.Message, ConsoleColor.DarkRed)
                     .End();
             }
         }
@@ -224,7 +224,7 @@ namespace LICC.Internal
         {
             if (!Config.EnableVariables)
             {
-                LConsole.WriteLine("Variables are disabled", Color.Red);
+                LConsole.WriteLine("Variables are disabled", ConsoleColor.Red);
                 return;
             }
 
@@ -234,7 +234,7 @@ namespace LICC.Internal
             {
                 if (!exists)
                 {
-                    LConsole.WriteLine($"No variable found with name '{varName}'", Color.Red);
+                    LConsole.WriteLine($"No variable found with name '{varName}'", ConsoleColor.Red);
                     return;
                 }
             }
@@ -255,8 +255,8 @@ namespace LICC.Internal
             }
 
             LConsole.BeginLine()
-                .Write(varName, Color.DarkYellow)
-                .Write(" = ", Color.DarkGray)
+                .Write(varName, ConsoleColor.DarkYellow)
+                .Write(" = ", ConsoleColor.DarkGray)
                 .Write(value)
                 .End();
         }

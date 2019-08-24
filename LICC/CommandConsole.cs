@@ -96,25 +96,25 @@ namespace LICC
             }
             catch (CommandNotFoundException ex)
             {
-                LConsole.WriteLine(ex.Message, Color.Red);
+                LConsole.WriteLine(ex.Message, ConsoleColor.Red);
             }
             catch (ParameterMismatchException ex)
             {
-                LConsole.WriteLine(ex.Message, Color.Red);
+                LConsole.WriteLine(ex.Message, ConsoleColor.Red);
                 ex.Command.PrintUsage();
             }
             catch (ParameterConversionException ex)
             {
-                LConsole.WriteLine(ex.Message, Color.Red);
+                LConsole.WriteLine(ex.Message, ConsoleColor.Red);
             }
             catch (ParserException ex)
             {
-                LConsole.WriteLine("Error when parsing command: " + ex.Message, Color.Red);
+                LConsole.WriteLine("Error when parsing command: " + ex.Message, ConsoleColor.Red);
             }
             catch (Exception ex)
             {
-                LConsole.WriteLine("An error occurred when executing this command:", Color.Red);
-                LConsole.WriteLine(ex.ToString(), Color.Red);
+                LConsole.WriteLine("An error occurred when executing this command:", ConsoleColor.Red);
+                LConsole.WriteLine(ex.ToString(), ConsoleColor.Red);
             }
         }
     }

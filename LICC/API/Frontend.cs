@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 namespace LICC.API
 {
@@ -32,7 +33,7 @@ namespace LICC.API
         /// </summary>
         protected internal virtual void PauseInput() { }
         /// <summary>
-        /// Resume input, only needed for one-screen frontends like <see cref="System.Console"/>.
+        /// Resume input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
         protected internal virtual void ResumeInput() { }
 
@@ -40,13 +41,19 @@ namespace LICC.API
         /// Writes an uncolored string to the output.
         /// </summary>
         /// <param name="str">The string to write</param>
-        public virtual void Write(string str) => Write(str, Color.White);
+        public virtual void Write(string str) => this.Write(str, Color.White);
         /// <summary>
         /// Writes a colored string to the output.
         /// </summary>
         /// <param name="str">The string to write</param>
         /// <param name="color">The color to give to the string.</param>
         public abstract void Write(string str, Color color);
+        /// <summary>
+        /// Writes a colored string to the output.
+        /// </summary>
+        /// <param name="str">The string to write</param>
+        /// <param name="color">The color to give to the string.</param>
+        public virtual void Write(string str, ConsoleColor color) => Write(str, color.ToRGB());
 
         /// <summary>
         /// Writes a newline-terminated uncolored string to the output.
@@ -60,5 +67,12 @@ namespace LICC.API
         /// <param name="str">The line to write.</param>
         /// <param name="color">The color to give to the line.</param>
         public virtual void WriteLine(string str, Color color) => Write(str + Environment.NewLine, color);
+
+        /// <summary>
+        /// Writes a newline-terminated colored string to the output.
+        /// </summary>
+        /// <param name="str">The line to write.</param>
+        /// <param name="color">The color to give to the line.</param>
+        public virtual void WriteLine(string str, ConsoleColor color) => Write(str + Environment.NewLine, color);
     }
 }

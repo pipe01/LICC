@@ -1,5 +1,6 @@
 ﻿using LICC.API;
 using System;
+using System.Drawing;
 using SConsole = System.Console;
 
 namespace LICC.Console
@@ -22,7 +23,7 @@ namespace LICC.Console
         public override void Write(string str, Color color)
         {
             var prev = SConsole.ForegroundColor;
-            SConsole.ForegroundColor = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), color.ToString());
+            SConsole.ForegroundColor = color.ToConsoleColor();
             SConsole.Write(str);
             SConsole.ForegroundColor = prev;
         }

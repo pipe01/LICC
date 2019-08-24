@@ -1,4 +1,5 @@
 ﻿using LICC.Internal;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -16,17 +17,17 @@ namespace LICC
                 var cmds = CommandConsole.Current.CommandRegistry.GetCommands();
                 int maxLength = cmds.Max(o => o.Name.Length);
 
-                LConsole.WriteLine("Available commands:", Color.Magenta);
+                LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
                 foreach (var cmd in cmds)
                 {
                     using (var writer = LConsole.BeginLine())
                     {
-                        writer.Write(cmd.Name.PadLeft(maxLength), Color.Blue);
+                        writer.Write(cmd.Name.PadLeft(maxLength), ConsoleColor.Blue);
 
                         if (cmd.Description != null)
                         {
-                            writer.Write(": ", Color.DarkGray);
-                            writer.Write(cmd.Description, Color.DarkYellow);
+                            writer.Write(": ", ConsoleColor.DarkGray);
+                            writer.Write(cmd.Description, ConsoleColor.DarkYellow);
                         }
                     }
                 }
@@ -35,7 +36,7 @@ namespace LICC
             {
                 if (!CommandConsole.Current.CommandRegistry.TryGetCommand(command, out var cmd, !CommandConsole.Current.Config.CaseSensitiveCommandNames))
                 {
-                    LConsole.WriteLine($"Cannot find command with name '{command}'", Color.Red);
+                    LConsole.WriteLine($"Cannot find command with name '{command}'", ConsoleColor.Red);
                     return;
                 }
 
@@ -52,7 +53,7 @@ namespace LICC
             }
             catch (FileNotFoundException)
             {
-                LConsole.WriteLine("File not found", Color.Red);
+                LConsole.WriteLine("File not found", ConsoleColor.Red);
             }
         }
 
@@ -69,7 +70,7 @@ namespace LICC
 
             if (ex == null)
             {
-                LConsole.WriteLine("No exception has occurred so far!", Color.Green);
+                LConsole.WriteLine("No exception has occurred so far!", ConsoleColor.Green);
             }
             else
             {
@@ -82,15 +83,15 @@ namespace LICC
         {
             if (!CommandConsole.Current.Config.EnableVariables)
             {
-                LConsole.WriteLine("Variables are disabled", Color.Red);
+                LConsole.WriteLine("Variables are disabled", ConsoleColor.Red);
                 return;
             }
 
             foreach (var item in CommandConsole.Current.Shell.Environment.GetAll())
             {
                 LConsole.BeginLine()
-                    .Write(item.Key, Color.DarkGreen)
-                    .Write(" = ", Color.DarkGray)
+                    .Write(item.Key, ConsoleColor.DarkGreen)
+                    .Write(" = ", ConsoleColor.DarkGray)
                     .Write(item.Value)
                     .End();
             }

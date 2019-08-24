@@ -2,6 +2,8 @@
 using SimpleConsoleColor;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using TrueColorConsole;
 using SConsole = System.Console;
 
 namespace LICC.Console
@@ -14,11 +16,20 @@ namespace LICC.Console
 
         private readonly Queue<ConsoleKeyInfo> QueuedKeys = new Queue<ConsoleKeyInfo>();
 
+        private bool VTModeEnabled;
         private bool IsInputPaused;
+
+        public ConsoleFrontend(bool enableVTMode)
+        {
+            this.VTModeEnabled = enableVTMode && VTConsole.IsSupported;
+        }
 
         protected override void Init()
         {
             SConsole.TreatControlCAsInput = true;
+
+            if (VTModeEnabled)
+                VTModeEnabled = VTConsole.Enable();
 
             Buffer = "";
             StartPos = (SConsole.CursorLeft, SConsole.CursorTop);
@@ -33,6 +44,44 @@ namespace LICC.Console
             while (true)
             {
                 var key = SConsole.ReadKey(true);
+                bool ctrl = (key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control;
+
+                if (VTModeEnabled)
+                {
+                    if (key.KeyChar == 27)
+                    {
+                        string keySeq = "" + SConsole.ReadKey(true).KeyChar + SConsole.ReadKey(true).KeyChar;
+                        ConsoleKey? newKey = null;
+
+                        if (keySeq == "[A")
+                            newKey = ConsoleKey.UpArrow;
+                        else if (keySeq == "[B")
+                            newKey = ConsoleKey.DownArrow;
+                        else if (keySeq == "[C")
+                            newKey = ConsoleKey.RightArrow;
+                        else if (keySeq == "[D")
+                            newKey = ConsoleKey.LeftArrow;
+                        else if (keySeq == "[3" && SConsole.ReadKey(true).KeyChar == '~')
+                            newKey = ConsoleKey.Delete;
+
+                        if (newKey != null)
+                            key = new ConsoleKeyInfo('\0', newKey.Value, false, false, ctrl);
+                        else
+                            SConsole.Beep();
+                    }
+                    else if (key.KeyChar == 3)
+                    {
+                        key = new ConsoleKeyInfo('c', ConsoleKey.C, false, false, true);
+                    }
+                    else if (key.KeyChar == 127)
+                    {
+                        key = new ConsoleKeyInfo('\0', ConsoleKey.Backspace, false, false, false);
+                    }
+                    else if (key.KeyChar == '\b')
+                    {
+                        key = new ConsoleKeyInfo('\0', ConsoleKey.Backspace, false, false, true);
+                    }
+                }
 
                 if (IsInputPaused)
                     QueuedKeys.Enqueue(key);
@@ -150,8 +199,7 @@ namespace LICC.Console
                     {
                         SConsole.MoveBufferArea(SConsole.CursorLeft, SConsole.CursorTop, SConsole.BufferWidth - 1 - SConsole.CursorLeft, 1, SConsole.CursorLeft + 1, SConsole.CursorTop);
 
-                        using (Buffer.IndexOf(' ', 0, CursorPos) == -1 ? SimpleConsoleColors.Yellow : SimpleConsoleColors.Cyan)
-                            SConsole.Write(key.KeyChar.ToString());
+                        Write(key.KeyChar.ToString(), Buffer.IndexOf(' ', 0, CursorPos) == -1 ? ConsoleColor.Yellow : ConsoleColor.Cyan);
 
                         Buffer = Buffer.Insert(CursorPos, key.KeyChar.ToString());
 
@@ -171,7 +219,7 @@ namespace LICC.Console
             string rest = spaceIndex == -1 ? "" : newStr.Substring(spaceIndex);
 
             SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
-            Write("> ", Color.DarkYellow);
+            Write("> ", ConsoleColor.DarkYellow);
             Write(cmdName, Color.Yellow);
             Write(rest, Color.Cyan);
 
@@ -209,18 +257,42 @@ namespace LICC.Console
 
         public override void Write(string str, Color color)
         {
-            var prev = SConsole.ForegroundColor;
-            SConsole.ForegroundColor = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), color.ToString());
-            SConsole.Write(str);
-            SConsole.ForegroundColor = prev;
+            if (VTConsole.IsEnabled)
+            {
+                VTConsole.Write(str, color);
+                VTConsole.SetColorForeground(Color.White);
+            }
+            else
+            {
+                var prev = SConsole.ForegroundColor;
+                SConsole.ForegroundColor = color.ToConsoleColor();
+                SConsole.Write(str);
+                SConsole.ForegroundColor = prev;
+            }
+        }
+
+        public override void Write(string str, ConsoleColor color)
+        {
+            if (VTConsole.IsEnabled)
+            {
+                VTConsole.Write(str, color.ToRGB());
+                VTConsole.SetColorForeground(Color.White);
+            }
+            else
+            {
+                var prev = SConsole.ForegroundColor;
+                SConsole.ForegroundColor = color;
+                SConsole.Write(str);
+                SConsole.ForegroundColor = prev;
+            }
         }
 
         /// <summary>
         /// Fires up a console with the default settings.
         /// </summary>
-        public static void StartDefault(string fileSystemRoot = null)
+        public static void StartDefault(string fileSystemRoot = null, bool enableVtMode = true)
         {
-            var frontend = new ConsoleFrontend();
+            var frontend = new ConsoleFrontend(enableVtMode);
             var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
             console.Commands.RegisterCommandsInAllAssemblies();
 

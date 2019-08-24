@@ -29,14 +29,14 @@ namespace LICC.Internal
         public static void PrintUsage(this Command cmd)
         {
             if (cmd.Description != null)
-                LConsole.WriteLine(cmd.Description, Color.Cyan);
+                LConsole.WriteLine(cmd.Description, ConsoleColor.Cyan);
 
             using (var writer = LConsole.BeginLine())
             {
-                writer.Write("Usage: ", Color.DarkYellow);
+                writer.Write("Usage: ", ConsoleColor.DarkYellow);
 
                 string usage = cmd.Name + " " + string.Join(" ", cmd.Params.Select(o => (o.Optional ? "[" : "<") + o.Type.Name + " " + o.Name + (o.Optional ? "]" : ">")));
-                writer.Write(usage, Color.Cyan);
+                writer.Write(usage, ConsoleColor.Cyan);
             }
         }
     }
