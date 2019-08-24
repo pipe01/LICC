@@ -1,4 +1,7 @@
-﻿namespace LICC
+﻿using System.Collections.Generic;
+using System.Reflection;
+
+namespace LICC
 {
     public partial struct CColor
     {
