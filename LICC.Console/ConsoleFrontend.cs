@@ -25,6 +25,9 @@ namespace LICC.Console
             RewriteBuffer("");
         }
 
+        /// <summary>
+        /// Blocks the current thread and begins reading input.
+        /// </summary>
         public void BeginRead()
         {
             while (true)
@@ -212,6 +215,9 @@ namespace LICC.Console
             SConsole.ForegroundColor = prev;
         }
 
+        /// <summary>
+        /// Fires up a console with the default settings.
+        /// </summary>
         public static void StartDefault(string fileSystemRoot = null)
         {
             var frontend = new ConsoleFrontend();
