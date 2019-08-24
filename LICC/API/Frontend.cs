@@ -1,4 +1,6 @@
-﻿namespace LICC.API
+﻿using System;
+
+namespace LICC.API
 {
     internal delegate void LineInputDelegate(string line);
 
@@ -50,12 +52,13 @@
         /// Writes a newline-terminated uncolored string to the output.
         /// </summary>
         /// <param name="str">The line to write.</param>
-        public virtual void WriteLine(string str) => Write(str + "\n");
+        public virtual void WriteLine(string str) => Write(str + Environment.NewLine);
+
         /// <summary>
         /// Writes a newline-terminated colored string to the output.
         /// </summary>
         /// <param name="str">The line to write.</param>
         /// <param name="color">The color to give to the line.</param>
-        public virtual void WriteLine(string str, Color color) => Write(str + "\n", color);
+        public virtual void WriteLine(string str, Color color) => Write(str + Environment.NewLine, color);
     }
 }

@@ -8,7 +8,7 @@
         /// <summary>
         /// If true, commands will ignore case, e.g. a command named "test" will be executed when typing "TeSt".
         /// </summary>
-        public bool CaseSensitiveCommandNames { get; set; }
+        public bool CaseSensitiveCommandNames { get; set; } = false;
 
         /// <summary>
         /// If true, the autoexec file will be run after the frontend is initialised.
