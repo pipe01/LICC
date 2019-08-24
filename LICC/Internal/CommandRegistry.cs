@@ -1,13 +1,11 @@
-﻿using LICC.Exceptions;
+﻿using LICC.API;
+using LICC.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LICC
+namespace LICC.Internal
 {
     internal interface ICommandRegistryInternal : ICommandRegistry
     {
@@ -16,18 +14,6 @@ namespace LICC
         bool TryGetCommand(string name, out Command cmd, bool ignoreCase);
 
         void RegisterCommand(MethodInfo method, bool ignoreInvalid);
-    }
-
-    /// <summary>
-    /// Public interface for a command registry.
-    /// </summary>
-    public interface ICommandRegistry
-    {
-        /// <summary>
-        /// Registers all command methods in <paramref name="type"/>.
-        /// </summary>
-        /// <param name="type">The type containin methods marked with the <see cref="CommandAttribute"/> attribute.</param>
-        void RegisterCommandsIn(Type type);
     }
 
     internal sealed class CommandRegistry : ICommandRegistryInternal

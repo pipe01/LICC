@@ -1,5 +1,6 @@
 ﻿using LICC.API;
 using LICC.Exceptions;
+using LICC.Internal;
 using System;
 using System.Linq;
 using System.Reflection;

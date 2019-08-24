@@ -1,4 +1,5 @@
-﻿using LICC.API;
+﻿using LICC.Internal;
+using System.IO;
 using System.Linq;
 
 #pragma warning disable IDE0051
@@ -7,8 +8,8 @@ namespace LICC
 {
     internal static class Commands
     {
-        [Command("help", Description = "Lists all commands or prints help for a command")]
-        private static void HelpCommand(string command = null)
+        [Command(Description = "Lists all commands or prints help for a command")]
+        private static void Help(string command = null)
         {
             if (command == null)
             {
@@ -42,10 +43,17 @@ namespace LICC
             }
         }
 
-        [Command]
+        [Command(Description = "Runs a .lsf file from the file system")]
         private static void Exec(string fileName)
         {
-            CommandConsole.Current.Shell.ExecuteLsf(fileName);
+            try
+            {
+                CommandConsole.Current.Shell.ExecuteLsf(fileName);
+            }
+            catch (FileNotFoundException)
+            {
+                LConsole.WriteLine("File not found", Color.Red);
+            }
         }
     }
 }

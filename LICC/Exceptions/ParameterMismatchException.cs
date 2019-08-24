@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LICC.Internal;
+using System;
 
 namespace LICC.Exceptions
 {
