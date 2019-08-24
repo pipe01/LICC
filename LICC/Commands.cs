@@ -55,5 +55,11 @@ namespace LICC
                 LConsole.WriteLine("File not found", Color.Red);
             }
         }
+
+        [Command(Description = "Print a string to screen")]
+        private static void Echo(string str)
+        {
+            LConsole.WriteLine(str);
+        }
     }
 }
