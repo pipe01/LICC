@@ -216,11 +216,7 @@ namespace LICC.Console
         {
             var frontend = new ConsoleFrontend();
             var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
-
-            foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                console.Commands.RegisterCommandsIn(item);
-            }
+            console.Commands.RegisterCommandsInAllAssemblies();
 
             console.RunAutoexec();
 
