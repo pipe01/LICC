@@ -48,7 +48,11 @@ namespace LICC.API
         /// </summary>
         /// <param name="str">The string to write</param>
         /// <param name="color">The color to give to the string.</param>
-        public abstract void Write(string str, CColor color);
+        public virtual void Write(string str, CColor color)
+        {
+            if (SupportsPartialLines)
+                throw new NotImplementedException("Missing Write method override");
+        }
 
         /// <summary>
         /// Writes a newline-terminated uncolored string to the output.
