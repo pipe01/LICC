@@ -127,7 +127,7 @@ namespace LICC
             }
             else
             {
-                LConsole.Frontend.WriteLineWithRegions(TextRegions.ToArray());
+                LConsole.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? LConsole.Frontend.DefaultForeground)).ToArray());
             }
 
             Disposed = true;

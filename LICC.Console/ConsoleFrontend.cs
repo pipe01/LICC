@@ -1,5 +1,4 @@
 ﻿using LICC.API;
-using SimpleConsoleColor;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -18,6 +17,8 @@ namespace LICC.Console
 
         private bool VTModeEnabled;
         private bool IsInputPaused;
+
+        public override CColor DefaultForeground => SConsole.ForegroundColor;
 
         public ConsoleFrontend(bool enableVTMode)
         {

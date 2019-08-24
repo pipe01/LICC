@@ -13,6 +13,8 @@ namespace LICC.API
 
         public virtual bool SupportsPartialLines { get; } = true;
 
+        public virtual CColor DefaultForeground => CColor.White;
+
         /// <summary>
         /// Command history for the current session.
         /// </summary>
@@ -42,7 +44,7 @@ namespace LICC.API
         /// Writes an uncolored string to the output.
         /// </summary>
         /// <param name="str">The string to write</param>
-        public virtual void Write(string str) => this.Write(str, CColor.White);
+        public virtual void Write(string str) => this.Write(str, DefaultForeground);
         /// <summary>
         /// Writes a colored string to the output.
         /// </summary>
@@ -67,7 +69,7 @@ namespace LICC.API
         /// <param name="color">The color to give to the line.</param>
         public virtual void WriteLine(string str, CColor color) => Write(str + Environment.NewLine, color);
 
-        public virtual void WriteLineWithRegions((string Text, CColor? Color)[] regions)
+        public virtual void WriteLineWithRegions((string Text, CColor Color)[] regions)
             => throw new InvalidOperationException($"This class doesn't support partial lines but doesn't override the {nameof(WriteLineWithRegions)} method");
     }
 }
