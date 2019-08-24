@@ -1,4 +1,4 @@
-﻿namespace LICC.API
+﻿namespace LICC
 {
     public enum Color
     {
