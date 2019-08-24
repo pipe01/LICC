@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 
 namespace LICC.API
 {
@@ -43,7 +42,7 @@ namespace LICC.API
         /// Writes an uncolored string to the output.
         /// </summary>
         /// <param name="str">The string to write</param>
-        public virtual void Write(string str) => this.Write(str, Color.White);
+        public virtual void Write(string str) => this.Write(str, CColor.White);
         /// <summary>
         /// Writes a colored string to the output.
         /// </summary>
