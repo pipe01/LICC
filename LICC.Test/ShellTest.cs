@@ -41,7 +41,7 @@ namespace LICC.Test
             var converterMock = new Mock<IValueConverter>();
             converterMock.Setup(o => o.TryConvertValue(It.IsAny<Type>(), It.IsAny<string>())).Returns((true, null));
 
-            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", Assert.Pass));
+            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", Assert.Pass), null);
 
             shell.ExecuteLine("test");
 
@@ -54,7 +54,7 @@ namespace LICC.Test
             var converterMock = new Mock<IValueConverter>();
             converterMock.Setup(o => o.TryConvertValue(typeof(int), "123")).Returns((true, 123));
 
-            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", nameof(OneIntParameter_Callback)));
+            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", nameof(OneIntParameter_Callback)), null);
 
             shell.ExecuteLine("test 123");
 
@@ -73,7 +73,7 @@ namespace LICC.Test
             var converterMock = new Mock<IValueConverter>();
             converterMock.Setup(o => o.TryConvertValue(typeof(string), It.IsAny<string>())).Returns((Type _, string str) => (true, str));
 
-            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", nameof(OneUnquotedStringParameter_Callback)));
+            var shell = new Shell(converterMock.Object, new History(), null, RegistryWithCommand("test", nameof(OneUnquotedStringParameter_Callback)), null);
 
             shell.ExecuteLine("test testing string");
 
