@@ -220,8 +220,8 @@ namespace LICC.Console
 
             SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
             Write("> ", ConsoleColor.DarkYellow);
-            Write(cmdName, Color.Yellow);
-            Write(rest, Color.Cyan);
+            Write(cmdName, ConsoleColor.Yellow);
+            Write(rest, ConsoleColor.Cyan);
 
             if (newStr.Length < prevBuffer.Length)
                 SConsole.Write(new string(' ', prevBuffer.Length - newStr.Length));
@@ -260,7 +260,7 @@ namespace LICC.Console
             if (VTConsole.IsEnabled)
             {
                 VTConsole.Write(str, color);
-                VTConsole.SetColorForeground(Color.White);
+                VTConsole.SetColorForeground(ConsoleColor.Gray.ToRGB());
             }
             else
             {
@@ -276,7 +276,7 @@ namespace LICC.Console
             if (VTConsole.IsEnabled)
             {
                 VTConsole.Write(str, color.ToRGB());
-                VTConsole.SetColorForeground(Color.White);
+                VTConsole.SetColorForeground(ConsoleColor.Gray.ToRGB());
             }
             else
             {
