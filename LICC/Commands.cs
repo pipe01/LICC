@@ -76,5 +76,24 @@ namespace LICC
                 LConsole.WriteLine(ex.ToString());
             }
         }
+
+        [Command("env", Description = "Prints all current variables and their values")]
+        private static void PrintEnvironment()
+        {
+            if (!CommandConsole.Current.Config.EnableVariables)
+            {
+                LConsole.WriteLine("Variables are disabled", Color.Red);
+                return;
+            }
+
+            foreach (var item in CommandConsole.Current.Shell.Environment.GetAll())
+            {
+                LConsole.BeginLine()
+                    .Write(item.Key, Color.DarkGreen)
+                    .Write(" = ", Color.DarkGray)
+                    .Write(item.Value)
+                    .End();
+            }
+        }
     }
 }

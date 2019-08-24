@@ -14,5 +14,7 @@
         /// If true, the autoexec file will be run after the frontend is initialised.
         /// </summary>
         public bool RunAutoExecAtStartup { get; set; } = true;
+
+        public bool EnableVariables { get; set; } = true;
     }
 }

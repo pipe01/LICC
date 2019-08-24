@@ -4,6 +4,7 @@ using LICC.Internal;
 using System;
 using System.Linq;
 using System.Reflection;
+using Environment = LICC.Internal.Environment;
 
 namespace LICC
 {
@@ -36,7 +37,7 @@ namespace LICC
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
-            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, commandRegistry, config);
+            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, commandRegistry, new Environment(), config);
 
             frontend.LineInput += Frontend_LineInput;
 
