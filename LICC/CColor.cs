@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace LICC.API
+namespace LICC
 {
     public readonly partial struct CColor
     {
