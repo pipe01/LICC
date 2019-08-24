@@ -61,5 +61,20 @@ namespace LICC
         {
             LConsole.WriteLine(str);
         }
+
+        [Command("printex", Description = "Prints detailed info about the last exception")]
+        private static void PrintException()
+        {
+            var ex = CommandConsole.Current.Shell.LastException;
+
+            if (ex == null)
+            {
+                LConsole.WriteLine("No exception has occurred so far!", Color.Green);
+            }
+            else
+            {
+                LConsole.WriteLine(ex.ToString());
+            }
+        }
     }
 }

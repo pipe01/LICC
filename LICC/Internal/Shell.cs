@@ -13,6 +13,7 @@ namespace LICC.Internal
 {
     internal interface IShell
     {
+        Exception LastException { get; }
         void ExecuteLsf(string path);
         void ExecuteLine(string line);
     }
@@ -25,7 +26,8 @@ namespace LICC.Internal
         private readonly ICommandRegistryInternal CommandRegistry;
         private readonly ConsoleConfiguration Config;
 
-        private Exception LastException;
+        private Exception _LastException;
+        Exception IShell.LastException => _LastException;
 
         public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem,
             ICommandRegistryInternal commandRegistry, ConsoleConfiguration config = null)
@@ -152,7 +154,7 @@ namespace LICC.Internal
                 if (ex.InnerException.GetType().Name == "SuccessException")
                     throw ex.InnerException;
 
-                LastException = ex.InnerException;
+                _LastException = ex.InnerException;
 
                 LConsole.BeginLine()
                     .Write("An exception occurred while executing the command: ", Color.Red)
@@ -161,7 +163,7 @@ namespace LICC.Internal
             }
             catch (Exception ex)
             {
-                LastException = ex;
+                _LastException = ex;
 
                 LConsole.BeginLine()
                     .Write("An exception occurred while executing the command: ", Color.Red)
