@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace LICC.API
 {
@@ -63,7 +62,7 @@ namespace LICC.API
         /// Writes a newline-terminated uncolored string to the output.
         /// </summary>
         /// <param name="str">The line to write.</param>
-        public virtual void WriteLine(string str) => Write(str + Environment.NewLine);
+        public virtual void WriteLine(string str) => WriteLine(str, DefaultForeground);
 
         /// <summary>
         /// Writes a newline-terminated colored string to the output.
