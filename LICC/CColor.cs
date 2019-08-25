@@ -78,5 +78,7 @@ namespace LICC
                 return ret;
             }
         }
+
+        public override string ToString() => $"#{R:X2}{G:X2}{B:X2}";
     }
 }
