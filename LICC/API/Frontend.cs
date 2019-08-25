@@ -35,7 +35,7 @@ namespace LICC.API
         protected internal virtual void Init() { }
 
         /// <summary>
-        /// Pause and clear input, only needed for one-screen frontends like <see cref="System.Console"/>.
+        /// Pause and clear input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
         protected internal virtual void PauseInput() { }
         /// <summary>
@@ -75,9 +75,9 @@ namespace LICC.API
         public virtual void PrintException(Exception ex)
         {
             LConsole.BeginLine()
-                        .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
-                        .Write(ex.Message, ConsoleColor.DarkRed)
-                        .End();
+                .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
+                .Write(ex.Message, ConsoleColor.DarkRed)
+                .End();
         }
 
         public virtual void WriteLineWithRegions((string Text, CColor Color)[] regions)
