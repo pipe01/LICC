@@ -20,8 +20,6 @@ namespace LICC.Console
 
         public override CColor DefaultForeground => SConsole.ForegroundColor;
 
-        public override bool PreferOneLine => true;
-
         public ConsoleFrontend(bool enableVTMode)
         {
             this.VTModeEnabled = enableVTMode && VTConsole.IsSupported;
