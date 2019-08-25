@@ -63,7 +63,7 @@ namespace LICC
             LConsole.WriteLine(str);
         }
 
-        [Command("printex", Description = "Prints detailed info about the last exception")]
+        [Command("printex", Description = "Prints detailed info about the last exception encountered by a command")]
         private static void PrintException()
         {
             var ex = CommandConsole.Current.Shell.LastException;
