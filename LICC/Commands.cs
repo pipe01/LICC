@@ -14,23 +14,38 @@ namespace LICC
         {
             if (command == null)
             {
-                var cmds = CommandConsole.Current.CommandRegistry.GetCommands();
+                var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
                 int maxLength = cmds.Max(o => o.Name.Length);
 
                 LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
+
+                LineWriter writer = null;
+
+                if (LConsole.Frontend.PreferOneLine)
+                    writer = LConsole.BeginLine();
+
+                int i = 0;
                 foreach (var cmd in cmds)
                 {
-                    using (var writer = LConsole.BeginLine())
-                    {
-                        writer.Write(cmd.Name.PadLeft(maxLength), ConsoleColor.Blue);
+                    if (!LConsole.Frontend.PreferOneLine)
+                        writer = LConsole.BeginLine();
 
-                        if (cmd.Description != null)
-                        {
-                            writer.Write(": ", ConsoleColor.DarkGray);
-                            writer.Write(cmd.Description, ConsoleColor.DarkYellow);
-                        }
+                    writer.Write(cmd.Name.PadLeft(maxLength), ConsoleColor.Blue);
+
+                    if (cmd.Description != null)
+                    {
+                        writer.Write(": ", ConsoleColor.DarkGray);
+                        writer.Write(cmd.Description, ConsoleColor.DarkYellow);
                     }
+
+                    if (!LConsole.Frontend.PreferOneLine)
+                        writer.End();
+                    else if (i++ != cmds.Length - 1)
+                        writer.Write(System.Environment.NewLine);
                 }
+
+                if (LConsole.Frontend.PreferOneLine)
+                    writer.End();
             }
             else
             {
