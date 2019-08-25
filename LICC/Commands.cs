@@ -16,6 +16,7 @@ namespace LICC
             {
                 var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
                 int maxLength = cmds.Max(o => o.Name.Length);
+                int padding = maxLength + 4;
 
                 LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
 
@@ -30,7 +31,7 @@ namespace LICC
                     if (!LConsole.Frontend.PreferOneLine)
                         writer = LConsole.BeginLine();
 
-                    writer.Write(cmd.Name.PadRight(maxLength), ConsoleColor.Blue);
+                    writer.Write(cmd.Name.PadRight(padding), ConsoleColor.Blue);
 
                     if (cmd.Description != null)
                     {
