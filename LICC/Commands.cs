@@ -30,7 +30,7 @@ namespace LICC
                     if (!LConsole.Frontend.PreferOneLine)
                         writer = LConsole.BeginLine();
 
-                    writer.Write(cmd.Name.PadLeft(maxLength), ConsoleColor.Blue);
+                    writer.Write(cmd.Name.PadRight(maxLength), ConsoleColor.Blue);
 
                     if (cmd.Description != null)
                     {
