@@ -43,6 +43,9 @@ namespace LICC
 
             Commands.RegisterCommandsIn(this.GetType().Assembly);
 
+            if (config.RegisterAllCommandsOnStartup)
+                Commands.RegisterCommandsInAllAssemblies();
+
             frontend.Init();
         }
 

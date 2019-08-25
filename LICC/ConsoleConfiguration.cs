@@ -16,5 +16,7 @@
         public bool RunAutoExecAtStartup { get; set; } = true;
 
         public bool EnableVariables { get; set; } = true;
+
+        public bool RegisterAllCommandsOnStartup { get; set; } = true;
     }
 }
