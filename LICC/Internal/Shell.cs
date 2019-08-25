@@ -179,17 +179,7 @@ namespace LICC.Internal
             {
                 _LastException = ex;
 
-                if (LConsole.Frontend.IsMethodOverridden(nameof(Frontend.PrintException)))
-                {
-                    LConsole.Frontend.PrintException(ex);
-                }
-                else
-                {
-                    LConsole.BeginLine()
-                        .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
-                        .Write(ex.Message, ConsoleColor.DarkRed)
-                        .End();
-                }
+                LConsole.Frontend.PrintException(ex);
             }
         }
 

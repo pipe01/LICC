@@ -70,15 +70,15 @@ namespace LICC.API
         /// <param name="color">The color to give to the line.</param>
         public virtual void WriteLine(string str, CColor color) => Write(str + Environment.NewLine, color);
 
-        public virtual void PrintException(Exception ex) { }
+        public virtual void PrintException(Exception ex)
+        {
+            LConsole.BeginLine()
+                        .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
+                        .Write(ex.Message, ConsoleColor.DarkRed)
+                        .End();
+        }
 
         public virtual void WriteLineWithRegions((string Text, CColor Color)[] regions)
             => throw new InvalidOperationException($"This class doesn't support partial lines but doesn't override the {nameof(WriteLineWithRegions)} method");
-
-
-        internal bool IsMethodOverridden(string methodName)
-        {
-            return this.GetType().GetMethod(methodName)?.DeclaringType == this.GetType();
-        }
     }
 }
