@@ -165,24 +165,31 @@ namespace LICC.Internal
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException.GetType().Name == "SuccessException")
+                if (ex.InnerException.GetType().Name == "SuccessException") //For NUnit
                     throw ex.InnerException;
 
-                _LastException = ex.InnerException;
-
-                LConsole.BeginLine()
-                    .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
-                    .Write(ex.InnerException.Message, ConsoleColor.DarkRed)
-                    .End();
+                HandleException(ex.InnerException);
             }
             catch (Exception ex)
             {
+                HandleException(ex);
+            }
+
+            void HandleException(Exception ex)
+            {
                 _LastException = ex;
 
-                LConsole.BeginLine()
-                    .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
-                    .Write(ex.Message, ConsoleColor.DarkRed)
-                    .End();
+                if (LConsole.Frontend.IsMethodOverridden(nameof(Frontend.PrintException)))
+                {
+                    LConsole.Frontend.PrintException(ex);
+                }
+                else
+                {
+                    LConsole.BeginLine()
+                        .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
+                        .Write(ex.Message, ConsoleColor.DarkRed)
+                        .End();
+                }
             }
         }
 
@@ -238,6 +245,11 @@ namespace LICC.Internal
                     return;
                 }
             }
+            else if (args.StartsWith(":="))
+            {
+                if (!HandleVariableOperation(varName, args.Substring(2).Trim()))
+                    return;
+            }
             else if (args.StartsWith("="))
             {
                 value = args.Substring(1).Trim();
@@ -259,6 +271,20 @@ namespace LICC.Internal
                 .Write(" = ", ConsoleColor.DarkGray)
                 .Write(value)
                 .End();
+        }
+
+        private bool HandleVariableOperation(string assignTo, string argsStr)
+        {
+            return true;
+            //var args = GetArgs(argsStr).ToArray();
+
+            //if (args.Length != 3)
+            //{
+            //    LConsole.WriteLine("Invalid operation arguments", ConsoleColor.Red);
+            //    return false;
+            //}
+
+            //string op = args[1];
         }
 
         private IEnumerable<string> GetArgs(string str)
