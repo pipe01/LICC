@@ -71,7 +71,7 @@ namespace LICC
     }
 
     /// <summary>
-    /// Class used to write a line containing multiple differently-colored segments.
+    /// Class used to write a message containing multiple differently-colored segments.
     /// </summary>
     public class LineWriter : IDisposable
     {
@@ -140,5 +140,23 @@ namespace LICC
 
         public LineWriter Write(string format, CColor color, params object[] args)
             => RunIfNotDisposed(() => LConsole.Write(format, color, args), () => (string.Format(format, args), color));
+
+
+        public LineWriter WriteLine(object obj)
+            => Write(obj).Write(Environment.NewLine);
+        public LineWriter WriteLine(string str)
+            => Write(str).Write(Environment.NewLine);
+
+        public LineWriter WriteLine(object obj, CColor color)
+            => Write(obj, color).Write(Environment.NewLine);
+
+        public LineWriter WriteLine(string str, CColor color)
+            => Write(str, color).Write(Environment.NewLine);
+
+        public LineWriter WriteLine(string format, params object[] args)
+            => Write(format, args).Write(Environment.NewLine);
+
+        public LineWriter WriteLine(string format, CColor color, params object[] args)
+            => Write(format, color, args).Write(Environment.NewLine);
     }
 }
