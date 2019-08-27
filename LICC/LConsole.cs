@@ -141,22 +141,25 @@ namespace LICC
         public LineWriter Write(string format, CColor color, params object[] args)
             => RunIfNotDisposed(() => LConsole.Write(format, color, args), () => (string.Format(format, args), color));
 
+        
+        public LineWriter WriteLine()
+            => Write(Environment.NewLine);
 
         public LineWriter WriteLine(object obj)
-            => Write(obj).Write(Environment.NewLine);
+            => Write(obj).WriteLine();
         public LineWriter WriteLine(string str)
-            => Write(str).Write(Environment.NewLine);
+            => Write(str).WriteLine();
 
         public LineWriter WriteLine(object obj, CColor color)
-            => Write(obj, color).Write(Environment.NewLine);
+            => Write(obj, color).WriteLine();
 
         public LineWriter WriteLine(string str, CColor color)
-            => Write(str, color).Write(Environment.NewLine);
+            => Write(str, color).WriteLine();
 
         public LineWriter WriteLine(string format, params object[] args)
-            => Write(format, args).Write(Environment.NewLine);
+            => Write(format, args).WriteLine();
 
         public LineWriter WriteLine(string format, CColor color, params object[] args)
-            => Write(format, color, args).Write(Environment.NewLine);
+            => Write(format, color, args).WriteLine();
     }
 }
