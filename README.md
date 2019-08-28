@@ -14,7 +14,7 @@ static void SayRepeating(string text, int repetitions = 1)
         throw new ArgumentOutOfRangeException(nameof(repetitions), 1);
     
     for (int i = 0; i < repetitions; i++)
-        Console.WriteLine(text);
+        LConsole.WriteLine(text);
 }
 ```
 
