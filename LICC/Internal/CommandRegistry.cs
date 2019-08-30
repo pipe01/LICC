@@ -50,6 +50,9 @@ namespace LICC.Internal
                     throw new InvalidCommandMethodException("That command name is already in use");
             }
 
+            if (name.StartsWith("$"))
+                throw new InvalidCommandMethodException("Command names cannot start with '$'");
+
             Commands.Add(name, new Command(name, attr.Description, method));
         }
 
