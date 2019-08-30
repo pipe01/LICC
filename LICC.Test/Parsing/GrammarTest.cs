@@ -1,12 +1,9 @@
 ﻿using LICC.Internal.Parsing;
 using NUnit.Framework;
 using Sprache;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LICC.Test.Parsing
 {
@@ -39,8 +36,8 @@ namespace LICC.Test.Parsing
         public static string[][] ValidParameters =
         {
             new[] { "Int32 test", "Int32", "test" },
-            new[] { "String asd", "String", "asd" },
-            new[] { "Int32 _asd", "Int32", "_asd" },
+            new[] { "  String  asd ", "String", "asd" },
+            new[] { "  Int32   _asd    ", "Int32", "_asd" },
             new[] { "Type a32d", "Type", "a32d" }
         };
 
@@ -84,21 +81,39 @@ namespace LICC.Test.Parsing
             CollectionAssert.AreEqual(expected, @params);
         }
 
-        //public static string[] InvalidIdentifiers =
-        //{
-        //    "1test",
-        //    "@asdads",
-        //    "dsad@d",
-        //    "asd\"asd"
-        //};
 
-        //[TestCaseSource(nameof(ValidIdentifiers))]
-        //public void InvalidIdentifier(string str)
-        //{
-        //    Assert.Throws<ParseException>(() =>
-        //    {
-        //        var a = Grammar.Identifier.Parse(str);
-        //    });
-        //}
+        public static object[] ValidFunctions =
+        {
+            new object[] { "function test(Int32 param1)", "test", new[] { new Parameter("Int32", "param1") } },
+            new object[] { "function test123(Int32 param1, String param2)", "test123", new[] { new Parameter("Int32", "param1"), new Parameter("String", "param2") } },
+            new object[] { "   function    test(   Int32    param1   ,    String    param2   )   ", "test", new[] { new Parameter("Int32", "param1"), new Parameter("String", "param2") } },
+        };
+
+        [TestCaseSource(nameof(ValidFunctions))]
+        public void ValidFunction(string str, string expectedName, object[] expectedParameters)
+        {
+            var f = Grammar.Function.Parse(str);
+
+            Assert.AreEqual(expectedName, f.Name);
+            CollectionAssert.AreEqual(expectedParameters, f.Parameters);
+        }
+
+
+        public static object[] ValidCommandCalls =
+        {
+            new object[] { "cmd hello", "cmd", new[] { "hello" } },
+            new object[] { "cmd 'hello'", "cmd", new[] { "hello" } },
+            new object[] { "cmd \"hello\"", "cmd", new[] { "hello" } },
+            new object[] { "123cmd", "123cmd", new string[] { } },
+        };
+
+        [TestCaseSource(nameof(ValidCommandCalls))]
+        public void ValidCommandCall(string str, string expectedCmdName, IEnumerable<string> expectedArgs)
+        {
+            var c = Grammar.CommandCall.Parse(str);
+
+            Assert.AreEqual(expectedCmdName, c.CommandName);
+            CollectionAssert.AreEqual(expectedArgs, c.Arguments);
+        }
     }
 }
