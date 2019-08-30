@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Sprache" Version="2.2.0" />
+    <Folder Include="Internal\Parsing\" />
   </ItemGroup>
 
 </Project>
