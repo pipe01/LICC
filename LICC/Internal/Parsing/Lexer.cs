@@ -110,7 +110,7 @@ namespace LICC.Internal.Parsing
             else if (IsNewLine)
             {
                 var lexeme = Lexeme(LexemeKind.NewLine);
-                Advance();
+                NewLine();
                 return lexeme;
             }
             else
