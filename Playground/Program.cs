@@ -1,6 +1,7 @@
 ﻿using LICC;
 using LICC.API;
 using LICC.Console;
+using LICC.Internal.Parsing;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,13 @@ namespace Playground
     {
         static void Main(string[] args)
         {
+            var l = new Lexer(@"
+function asd () {
+    hello
+}").Lex().ToArray();
+
+            var p = new Parser().ParseFile(l);
+
             ConsoleFrontend.StartDefault("cfg", true);
         }
 
