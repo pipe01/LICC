@@ -22,7 +22,7 @@ namespace LICC.Internal.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()+-;".Contains(Char);
+        private bool IsSymbol => "{}()+-;#".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
 
@@ -145,6 +145,8 @@ namespace LICC.Internal.Parsing
                     return Lexeme(LexemeKind.Minus);
                 case ';':
                     return Lexeme(LexemeKind.Semicolon);
+                case '#':
+                    return Lexeme(LexemeKind.Hashtag);
             }
 
             return null;

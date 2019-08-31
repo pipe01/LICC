@@ -10,6 +10,10 @@ namespace LICC.Internal.Parsing.Data
     {
     }
 
+    internal class CommentStatement : IStatement
+    {
+    }
+
     internal class FunctionDeclarationStatement : IStatement
     {
         public string Name { get; }

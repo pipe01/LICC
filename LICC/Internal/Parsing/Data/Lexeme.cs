@@ -9,6 +9,7 @@ namespace LICC.Internal.Parsing.Data
         Keyword,
         Whitespace,
 
+        Hashtag,
         LeftParenthesis,
         RightParenthesis,
         LeftBrace,

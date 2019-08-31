@@ -24,6 +24,12 @@ namespace LICC.Internal.Parsing
                 Index = Lexemes.Length - 1;
         }
 
+        private void AdvanceUntil(LexemeKind kind)
+        {
+            while (Current.Kind != kind)
+                Advance();
+        }
+
         private void SkipWhitespaces(bool alsoNewlines = true)
         {
             while (Current.Kind == LexemeKind.Whitespace || (Current.Kind == LexemeKind.NewLine && alsoNewlines))
@@ -97,7 +103,10 @@ namespace LICC.Internal.Parsing
             {
                 SkipWhitespaces();
 
-                statements.Add(GetStatement());
+                var st = GetStatement();
+
+                if (!(st is CommentStatement))
+                    statements.Add(st);
             }
 
             return new File(statements);
@@ -111,6 +120,9 @@ namespace LICC.Internal.Parsing
                     return DoFunction();
                 case LexemeKind.String:
                     return DoStatement();
+                case LexemeKind.Hashtag:
+                    AdvanceUntil(LexemeKind.NewLine);
+                    return new CommentStatement();
             }
 
             return null;
@@ -134,7 +146,10 @@ namespace LICC.Internal.Parsing
 
             IStatement statement;
             while ((statement = DoStatement()) != null)
-                statements.Add(statement);
+            {
+                if (!(statement is CommentStatement))
+                    statements.Add(statement);
+            }
 
             Take(LexemeKind.RightBrace, "function body closing");
 
@@ -159,7 +174,7 @@ namespace LICC.Internal.Parsing
             string cmdName = Take(LexemeKind.String).Content;
             var args = new List<string>();
 
-            while (Current.Kind != LexemeKind.NewLine && Current.Kind != LexemeKind.Semicolon)
+            while (Current.Kind != LexemeKind.NewLine && Current.Kind != LexemeKind.Semicolon && Current.Kind != LexemeKind.Hashtag)
             {
                 if (Take(LexemeKind.String, out var l) || Take(LexemeKind.QuotedString, out l))
                     args.Add(l.Content);
@@ -167,6 +182,8 @@ namespace LICC.Internal.Parsing
 
             if (Current.Kind == LexemeKind.Semicolon)
                 Advance();
+            else if (Current.Kind == LexemeKind.Hashtag)
+                AdvanceUntil(LexemeKind.NewLine);
 
             return new CommandStatement(cmdName, args.ToArray());
         }

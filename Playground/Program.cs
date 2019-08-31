@@ -13,9 +13,9 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            var l = new Lexer(@"
+            var l = new Lexer(@"#hello
 function asd () {
-    hello
+    hello #nice
 }").Lex().ToArray();
 
             var p = new Parser().ParseFile(l);
