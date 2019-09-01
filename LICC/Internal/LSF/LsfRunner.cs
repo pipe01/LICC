@@ -25,7 +25,18 @@ namespace LICC.Internal.LSF
 
         public void Run(string fileContents)
         {
-            var processed = Preprocessor.Process(fileContents);
+            string processed;
+
+            try
+            {
+                processed = Preprocessor.Process(fileContents);
+            }
+            catch (PreprocessorException ex)
+            {
+                LConsole.WriteLine("Error while preprocessing the file: " + ex.Message, ConsoleColor.Red);
+                return;
+            }
+
             var lexemes = Lexer.Lex(processed).ToArray();
             File ast;
 
