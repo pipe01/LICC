@@ -239,8 +239,11 @@ namespace LICC.Internal.LSF.Runtime
             if (!ContextStack.TryGetFunction(funcCall.FunctionName, out var func))
                 throw new RuntimeException($"function with name '{funcCall.FunctionName}' not found");
 
-            if (funcCall.Arguments.Length != func.Parameters.Length)
-                throw new RuntimeException($"function '{funcCall.FunctionName}' expects {func.Parameters.Length} parameters but {funcCall.Arguments.Length} were found");
+            int requiredParamCount = func.Parameters.Count(o => !o.IsOptional);
+            int totalParamCount = func.Parameters.Length;
+
+            if (funcCall.Arguments.Length < requiredParamCount)
+                throw new RuntimeException($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
 
             ContextStack.Push();
 
@@ -248,7 +251,13 @@ namespace LICC.Internal.LSF.Runtime
             {
                 for (int i = 0; i < func.Parameters.Length; i++)
                 {
-                    object value = Visit(funcCall.Arguments[i]);
+                    object value;
+
+                    if (i < funcCall.Arguments.Length)
+                        value = Visit(funcCall.Arguments[i]);
+                    else
+                        value = Visit(func.Parameters[i].DefaultValue);
+
                     Context.SetVariable(func.Parameters[i].Name, value);
                 }
 

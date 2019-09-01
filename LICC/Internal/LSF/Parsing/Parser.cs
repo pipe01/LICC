@@ -243,13 +243,22 @@ namespace LICC.Internal.LSF.Parsing
 
             Take(LexemeKind.LeftParenthesis, "parameter list opening '('");
 
+            bool anyOptionalParam = false;
             while (true)
             {
                 SkipWhitespaces();
                 if (Current.Kind != LexemeKind.String)
                     break;
 
-                parameters.Add(DoParameter());
+                var param = DoParameter();
+
+                if (!param.IsOptional && anyOptionalParam)
+                    Error("required parameters must appear before optional parameters");
+
+                if (param.IsOptional)
+                    anyOptionalParam = true;
+
+                parameters.Add(param);
 
                 SkipWhitespaces();
                 if (Current.Kind != LexemeKind.Comma)
@@ -356,8 +365,14 @@ namespace LICC.Internal.LSF.Parsing
         private Parameter DoParameter()
         {
             string name = Take(LexemeKind.String, "parameter name").Content;
+            Expression defaultValue = null;
 
-            return new Parameter(name);
+            if (Take(LexemeKind.EqualsAssign, out _))
+            {
+                defaultValue = DoExpression();
+            }
+
+            return new Parameter(name, defaultValue);
         }
 
         private CommandStatement DoCommand()
