@@ -13,10 +13,14 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            var l = new Lexer(@"#hello
-function asd () {
-    hello #nice
-}").Lex().ToArray();
+            var l = new Lexer(@"! hello 'first' 2 ""third""
+
+function asd (Type name, Type2 name2) {
+    hello 123 ('nice')
+}
+
+
+this 123 'is' (""gret"")").Lex().ToArray();
 
             var p = new Parser().ParseFile(l);
 

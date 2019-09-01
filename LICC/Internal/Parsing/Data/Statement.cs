@@ -18,35 +18,35 @@ namespace LICC.Internal.Parsing.Data
     {
         public string Name { get; }
         public IEnumerable<IStatement> Statements { get; }
+        public IEnumerable<Parameter> Parameters { get; }
 
-        public FunctionDeclarationStatement(string name, IEnumerable<IStatement> statements)
+        public FunctionDeclarationStatement(string name, IEnumerable<IStatement> statements, IEnumerable<Parameter> parameters)
         {
             this.Name = name;
             this.Statements = statements;
-        }
-    }
-    
-    internal class FunctionCallStatement : IStatement
-    {
-        public string Name { get; }
-        public IEnumerable<string> Arguments { get; }
-
-        public FunctionCallStatement(string name, IEnumerable<string> arguments)
-        {
-            this.Name = name;
-            this.Arguments = arguments;
+            this.Parameters = parameters;
         }
     }
 
     internal class CommandStatement : IStatement
     {
         public string CommandName { get; }
-        public string[] Arguments { get; }
+        public Expression[] Arguments { get; }
 
-        public CommandStatement(string commandName, string[] arguments)
+        public CommandStatement(string commandName, Expression[] arguments)
         {
             this.CommandName = commandName;
             this.Arguments = arguments;
+        }
+    }
+
+    internal class ExpressionStatement : IStatement
+    {
+        public Expression Expression { get; }
+
+        public ExpressionStatement(Expression expression)
+        {
+            this.Expression = expression;
         }
     }
 }

@@ -8,8 +8,10 @@ namespace LICC.Internal.Parsing.Data
         QuotedString,
         Keyword,
         Whitespace,
+        Comma,
 
         Hashtag,
+        Exclamation,
         LeftParenthesis,
         RightParenthesis,
         LeftBrace,

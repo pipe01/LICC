@@ -11,6 +11,7 @@ namespace LICC.Internal.Parsing
     internal class Lexer
     {
         private static readonly string[] Keywords = { "function" };
+        private static readonly string InvalidFreeStringChars = ",;#()";
 
         private int Column;
         private int Index;
@@ -22,9 +23,10 @@ namespace LICC.Internal.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()+-;#".Contains(Char);
+        private bool IsSymbol => "{}()+-;#,!".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
+        private bool IsFreeStringChar => !InvalidFreeStringChars.Contains(Char);
 
         public ErrorSink Errors { get; } = new ErrorSink();
 
@@ -49,6 +51,11 @@ namespace LICC.Internal.Parsing
             }
 
             yield return Lexeme(LexemeKind.EndOfFile);
+        }
+
+        public static IEnumerable<Lexeme> Lex(string source)
+        {
+            return new Lexer(source).Lex();
         }
 
         private void Advance()
@@ -147,6 +154,10 @@ namespace LICC.Internal.Parsing
                     return Lexeme(LexemeKind.Semicolon);
                 case '#':
                     return Lexeme(LexemeKind.Hashtag);
+                case ',':
+                    return Lexeme(LexemeKind.Comma);
+                case '!':
+                    return Lexeme(LexemeKind.Exclamation);
             }
 
             return null;
@@ -164,7 +175,7 @@ namespace LICC.Internal.Parsing
                 Advance();
             }
 
-            while (!IsEOF && !IsNewLine && (isQuoted ? Char != quote : !IsWhitespace))
+            while (!IsEOF && !IsNewLine && (isQuoted ? Char != quote : (!IsWhitespace && IsFreeStringChar)))
             {
                 if (Consume() == '\\' && !IsEOF)
                     Consume();
@@ -183,11 +194,6 @@ namespace LICC.Internal.Parsing
                 : (IsKeyword
                     ? LexemeKind.Keyword
                     : LexemeKind.String));
-        }
-
-        private Lexeme DoKeyword()
-        {
-            throw new NotImplementedException();
         }
     }
 }

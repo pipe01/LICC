@@ -1,6 +1,7 @@
 ﻿using LICC.Internal.Parsing.Data;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,11 @@ namespace LICC.Internal.Parsing
         {
             while (Current.Kind != kind)
                 Advance();
+        }
+
+        private void Back()
+        {
+            Index--;
         }
 
         private void SkipWhitespaces(bool alsoNewlines = true)
@@ -119,10 +125,18 @@ namespace LICC.Internal.Parsing
                 case LexemeKind.Keyword:
                     return DoFunction();
                 case LexemeKind.String:
-                    return DoStatement();
+                    SkipWhitespaces();
+
+                    if (Current.Kind != LexemeKind.String && Current.Kind != LexemeKind.QuotedString)
+                        return null;
+
+                    return DoCommand();
                 case LexemeKind.Hashtag:
                     AdvanceUntil(LexemeKind.NewLine);
                     return new CommentStatement();
+                case LexemeKind.Exclamation:
+                    Advance();
+                    return new ExpressionStatement(DoFunctionCall());
             }
 
             return null;
@@ -136,16 +150,33 @@ namespace LICC.Internal.Parsing
             Take(LexemeKind.Whitespace, "whitespace after function name", false);
 
             var statements = new List<IStatement>();
+            var parameters = new List<Parameter>();
 
-            Take(LexemeKind.LeftParenthesis, "parameters list opening");
+            Take(LexemeKind.LeftParenthesis, "parameter list opening");
 
-            Take(LexemeKind.RightParenthesis, "parameters list closing");
+            while (true)
+            {
+                SkipWhitespaces();
+                if (Current.Kind != LexemeKind.String)
+                    break;
+
+                parameters.Add(DoParameter());
+
+                SkipWhitespaces();
+                if (Current.Kind != LexemeKind.Comma)
+                    break;
+                else
+                    Advance();
+            }
+
+            Take(LexemeKind.RightParenthesis, "parameter list closing");
             SkipWhitespaces();
+
             Take(LexemeKind.LeftBrace, "function body opening");
             SkipWhitespaces();
 
             IStatement statement;
-            while ((statement = DoStatement()) != null)
+            while ((statement = GetStatement()) != null)
             {
                 if (!(statement is CommentStatement))
                     statements.Add(statement);
@@ -153,32 +184,21 @@ namespace LICC.Internal.Parsing
 
             Take(LexemeKind.RightBrace, "function body closing");
 
-            return new FunctionDeclarationStatement(name, statements);
+            return new FunctionDeclarationStatement(name, statements, parameters);
         }
 
-        private IStatement DoStatement()
+        private Parameter DoParameter()
         {
-            SkipWhitespaces();
+            string type = Take(LexemeKind.String, "parameter type").Content;
+            string name = Take(LexemeKind.String, "parameter name").Content;
 
-            if (Current.Kind != LexemeKind.String && Current.Kind != LexemeKind.QuotedString)
-                return null;
-
-            if (Current.Content.Length > 0 && Current.Content[0] == '$')
-                return DoVariable();
-            else
-                return DoCommand();
+            return new Parameter(type, name);
         }
 
         private CommandStatement DoCommand()
         {
             string cmdName = Take(LexemeKind.String).Content;
-            var args = new List<string>();
-
-            while (Current.Kind != LexemeKind.NewLine && Current.Kind != LexemeKind.Semicolon && Current.Kind != LexemeKind.Hashtag)
-            {
-                if (Take(LexemeKind.String, out var l) || Take(LexemeKind.QuotedString, out l))
-                    args.Add(l.Content);
-            }
+            var args = DoArguments();
 
             if (Current.Kind == LexemeKind.Semicolon)
                 Advance();
@@ -186,6 +206,54 @@ namespace LICC.Internal.Parsing
                 AdvanceUntil(LexemeKind.NewLine);
 
             return new CommandStatement(cmdName, args.ToArray());
+        }
+
+        private IEnumerable<Expression> DoArguments()
+        {
+            var args = new List<Expression>();
+
+            Expression expr;
+            while ((expr = DoExpression()) != null)
+                args.Add(expr);
+
+            return args;
+        }
+
+        private Expression DoExpression()
+        {
+            if (Take(LexemeKind.LeftParenthesis, out _))
+            {
+                var expr = DoExpression();
+
+                Take(LexemeKind.RightParenthesis, "closing parentheses");
+
+                return expr;
+            }
+
+
+            if (Take(LexemeKind.String, out var str))
+            {
+                if (float.TryParse(str.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
+                    return new NumberLiteralExpression(f);
+            }
+            else if (Take(LexemeKind.QuotedString, out var quotedStr))
+            {
+                return new StringLiteralExpression(quotedStr.Content);
+            }
+            else if (Take(LexemeKind.Exclamation, out _))
+            {
+                DoFunctionCall();
+            }
+
+            return null;
+        }
+
+        private FunctionCallExpression DoFunctionCall()
+        {
+            string funcName = Take(LexemeKind.String, "function name", false).Content;
+            var args = DoArguments();
+
+            return new FunctionCallExpression(funcName, args.ToArray());
         }
 
         private IStatement DoVariable()

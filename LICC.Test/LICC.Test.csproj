@@ -17,8 +17,4 @@
     <ProjectReference Include="..\LICC\LICC.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Parsing\" />
-  </ItemGroup>
-
 </Project>
