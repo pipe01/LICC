@@ -10,7 +10,7 @@ namespace LICC.Internal.Parsing
 {
     internal class Lexer
     {
-        private static readonly string[] Keywords = { "function" };
+        private static readonly string[] Keywords = { "function", "true", "false" };
         private static readonly string InvalidFreeStringChars = ",;#()";
 
         private int Column;

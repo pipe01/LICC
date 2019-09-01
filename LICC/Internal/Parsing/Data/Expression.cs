@@ -31,6 +31,18 @@ namespace LICC.Internal.Parsing.Data
         public override string ToString() => Value;
     }
 
+    internal class BooleanLiteralExpression : Expression
+    {
+        public bool Value { get; }
+
+        public BooleanLiteralExpression(bool value)
+        {
+            this.Value = value;
+        }
+
+        public override string ToString() => Value ? "true" : "false";
+    }
+
     internal class FunctionCallExpression : Expression
     {
         public override bool CanStandAlone => true;

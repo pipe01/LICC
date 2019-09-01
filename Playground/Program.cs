@@ -13,9 +13,9 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            var l = new Lexer(@"! hello 'first' 2 ""third""
+            var l = new Lexer(@"!hello true 2 (!func 123)
 
-function asd (Type name, Type2 name2) {
+function asd(name, name2) {
     hello 123 ('nice')
 }
 

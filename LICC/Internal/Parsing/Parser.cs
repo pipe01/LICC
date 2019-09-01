@@ -147,7 +147,7 @@ namespace LICC.Internal.Parsing
             TakeKeyword("function");
 
             string name = Take(LexemeKind.String, "function name").Content;
-            Take(LexemeKind.Whitespace, "whitespace after function name", false);
+            //Take(LexemeKind.Whitespace, "whitespace after function name", false);
 
             var statements = new List<IStatement>();
             var parameters = new List<Parameter>();
@@ -178,6 +178,9 @@ namespace LICC.Internal.Parsing
             IStatement statement;
             while ((statement = GetStatement()) != null)
             {
+                if (statement is FunctionDeclarationStatement)
+                    Error("cannot declare function inside function");
+
                 if (!(statement is CommentStatement))
                     statements.Add(statement);
             }
@@ -242,7 +245,14 @@ namespace LICC.Internal.Parsing
             }
             else if (Take(LexemeKind.Exclamation, out _))
             {
-                DoFunctionCall();
+                return DoFunctionCall();
+            }
+            else if (Take(LexemeKind.Keyword, out var keyword))
+            {
+                if (keyword.Content != "true" && keyword.Content != "false")
+                    Error($"unexpected keyword: '{keyword.Content}'");
+
+                return new BooleanLiteralExpression(keyword.Content == "true");
             }
 
             return null;
@@ -254,11 +264,6 @@ namespace LICC.Internal.Parsing
             var args = DoArguments();
 
             return new FunctionCallExpression(funcName, args.ToArray());
-        }
-
-        private IStatement DoVariable()
-        {
-            throw new NotImplementedException();
         }
     }
 }
