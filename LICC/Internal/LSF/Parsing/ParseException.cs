@@ -1,7 +1,7 @@
-﻿using LICC.Internal.LSF.Data;
+﻿using LICC.Internal.LSF.Parsing.Data;
 using System;
 
-namespace LICC.Internal.LSF
+namespace LICC.Internal.LSF.Parsing
 {
     public class ParseException : Exception
     {

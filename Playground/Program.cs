@@ -1,7 +1,7 @@
 ﻿using LICC;
 using LICC.API;
 using LICC.Console;
-using LICC.Internal.LSF;
+using LICC.Internal.LSF.Parsing;
 using System;
 using System.Linq;
 using System.Reflection;

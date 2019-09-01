@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace LICC.Internal.LSF.Data
+namespace LICC.Internal.LSF.Parsing.Data
 {
     internal abstract class Expression
     {

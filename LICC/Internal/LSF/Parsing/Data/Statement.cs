@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LICC.Internal.LSF.Data
+namespace LICC.Internal.LSF.Parsing.Data
 {
     internal interface IStatement
     {

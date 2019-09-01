@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace LICC.Internal.LSF.Data
+namespace LICC.Internal.LSF.Parsing.Data
 {
     public class Error
     {

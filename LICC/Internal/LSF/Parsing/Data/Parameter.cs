@@ -1,4 +1,4 @@
-﻿namespace LICC.Internal.LSF.Data
+﻿namespace LICC.Internal.LSF.Parsing.Data
 {
     internal class Parameter
     {
