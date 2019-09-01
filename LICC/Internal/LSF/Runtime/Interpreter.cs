@@ -320,7 +320,7 @@ namespace LICC.Internal.LSF.Runtime
                 }
             }
 
-            throw new RuntimeException("invalid operator");
+            throw new RuntimeException("invalid operator or operand types");
         }
 
         private object VisitUnaryOperator(UnaryOperatorExpression unary)

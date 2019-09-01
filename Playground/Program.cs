@@ -16,6 +16,8 @@ namespace Playground
         {
             var l = new Lexer(@"test (200 * 5 / ($asd = 123)) (2 + 'asd')
 
+$i = 0
+
 if ($i > 0 == true)
 {
 }
