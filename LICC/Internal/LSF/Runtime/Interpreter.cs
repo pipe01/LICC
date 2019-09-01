@@ -50,11 +50,6 @@ namespace LICC.Internal.LSF.Runtime
                 {
                     loc = item.Location;
 
-                    if (item is ReturnStatement ret)
-                    {
-                        throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
-                    }
-
                     RunStatement(item);
                 }
             }
@@ -83,19 +78,7 @@ namespace LICC.Internal.LSF.Runtime
             }
             else if (statement is IfStatement ifStatement)
             {
-                ContextStack.Push();
-
-                try
-                {
-                    object condition = Visit(ifStatement.Condition);
-
-                    if (condition is bool b ? b : (condition != null))
-                        Run(ifStatement.Body);
-                }
-                finally
-                {
-                    ContextStack.Pop();
-                }
+                DoIfStatement(ifStatement);
             }
             else if (statement is WhileStatement whileStatement)
             {
@@ -121,6 +104,41 @@ namespace LICC.Internal.LSF.Runtime
             {
                 Context.SetFunction(funcDeclare.Name, new Function(funcDeclare.Body.ToArray(), funcDeclare.Parameters.ToArray()));
             }
+            else if (statement is ReturnStatement ret)
+            {
+                throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
+            }
+        }
+
+        private void DoIfStatement(IfStatement ifStatement)
+        {
+            ContextStack.Push();
+
+            try
+            {
+                object condition = Visit(ifStatement.Condition);
+                bool isTrue = condition is bool b ? b : (condition != null);
+
+                if (isTrue)
+                {
+                    Run(ifStatement.Body);
+                }
+                else
+                {
+                    if (ifStatement.Else is ElseIfStatement elseIf)
+                    {
+                        DoIfStatement(new IfStatement(elseIf.Condition, elseIf.Body, elseIf.Else));
+                    }
+                    else if (ifStatement.Else is ElseStatement @else)
+                    {
+                        Run(@else.Body);
+                    }
+                }
+            }
+            finally
+            {
+                ContextStack.Pop();
+            }
         }
 
         private void DoForStatement(ForStatement forStatement)
@@ -134,7 +152,7 @@ namespace LICC.Internal.LSF.Runtime
 
                 for (int i = to > from ? from : from - 1; to > from ? i < to : i >= to; i += to > from ? 1 : -1)
                 {
-                    ContextStack.SetVariable(forStatement.VariableName, i);
+                    ContextStack.SetVariable(forStatement.VariableName, (float)i);
 
                     Run(forStatement.Body, false);
                 }
