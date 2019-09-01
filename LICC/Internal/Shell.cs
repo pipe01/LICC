@@ -1,5 +1,6 @@
 ﻿using LICC.API;
 using LICC.Exceptions;
+using LICC.Internal.LSF;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,19 +30,22 @@ namespace LICC.Internal
         private readonly IFileSystem FileSystem;
         private readonly ICommandRegistryInternal CommandRegistry;
         private readonly IEnvironment _Environment;
+        private readonly ILsfRunner LsfRunner;
         private readonly ConsoleConfiguration Config;
 
         private Exception _LastException;
         Exception IShell.LastException => _LastException;
 
         public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem,
-            ICommandRegistryInternal commandRegistry, IEnvironment environment, ConsoleConfiguration config = null)
+            ICommandRegistryInternal commandRegistry, IEnvironment environment, ILsfRunner lsfRunner = null,
+            ConsoleConfiguration config = null)
         {
             this.ValueConverter = valueConverter;
             this.History = history;
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
             this._Environment = environment;
+            this.LsfRunner = lsfRunner ?? new LsfRunner(environment, commandRegistry);
             this.Config = config ?? new ConsoleConfiguration();
         }
 
@@ -58,41 +62,20 @@ namespace LICC.Internal
 
             using (var file = FileSystem.OpenRead(path))
             {
-                int lineNumber = 1;
+                LsfRunner.Run(file.ReadToEnd());
 
-                while (!file.EndOfStream)
-                {
-                    string line = file.ReadLine().Trim();
-
-                    if (line.StartsWith("#"))
-                        continue;
-
-                    try
-                    {
-                        ExecuteLine(line, false);
-                    }
-                    catch (Exception ex) when (ex is CommandNotFoundException || ex is ParameterMismatchException
-                                            || ex is ParameterConversionException || ex is ParserException)
-                    {
-                        PrintError(ex.Message);
-                        return;
-                    }
-
-                    lineNumber++;
-                }
-
-                void PrintError(string msg)
-                {
-                    using (var writer = LConsole.BeginLine())
-                    {
-                        writer.Write("Error executing file ", ConsoleColor.Red);
-                        writer.Write($"'{path}'", ConsoleColor.DarkRed);
-                        writer.Write(" near line ", ConsoleColor.Red);
-                        writer.Write(lineNumber, ConsoleColor.DarkYellow);
-                        writer.Write(": ", ConsoleColor.Red);
-                        writer.Write(msg[0].ToString().ToLower() + msg.Substring(1), ConsoleColor.DarkCyan);
-                    }
-                }
+                //void PrintError(string msg)
+                //{
+                //    using (var writer = LConsole.BeginLine())
+                //    {
+                //        writer.Write("Error executing file ", ConsoleColor.Red);
+                //        writer.Write($"'{path}'", ConsoleColor.DarkRed);
+                //        writer.Write(" near line ", ConsoleColor.Red);
+                //        writer.Write(lineNumber, ConsoleColor.DarkYellow);
+                //        writer.Write(": ", ConsoleColor.Red);
+                //        writer.Write(msg[0].ToString().ToLower() + msg.Substring(1), ConsoleColor.DarkCyan);
+                //    }
+                //}
             }
         }
 

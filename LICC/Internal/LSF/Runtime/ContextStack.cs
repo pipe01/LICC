@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace LICC.Internal.LSF.Runtime
 {
-    internal class ContextStack : Stack<RunContext>
+    internal class ContextStack : Stack<IRunContext>
     {
         public void Push() => Push(new RunContext());
 
@@ -12,7 +12,7 @@ namespace LICC.Internal.LSF.Runtime
         {
             foreach (var item in this.Reverse())
             {
-                if (item.Variables.TryGetValue(name, out value))
+                if (item.TryGetVariable(name, out value))
                     return true;
             }
 
@@ -22,23 +22,25 @@ namespace LICC.Internal.LSF.Runtime
 
         public void SetVariable(string name, object value)
         {
+            IRunContext contextWithVariable = null;
+
             foreach (var item in this.Reverse())
             {
-                if (item.Variables.ContainsKey(name))
+                if (item.HasVariable(name))
                 {
-                    item.Variables[name] = value;
-                    return;
+                    contextWithVariable = item;
+                    break;
                 }
             }
 
-            this.Last().Variables[name] = value;
+            (contextWithVariable ?? this.Last()).SetVariable(name, value);
         }
 
         public bool TryGetFunction(string name, out Function func)
         {
             foreach (var item in this.Reverse())
             {
-                if (item.Functions.TryGetValue(name, out func))
+                if (item.TryGetFunction(name, out func))
                     return true;
             }
 

@@ -10,14 +10,16 @@ namespace LICC.Internal.LSF.Runtime
     {
         private readonly ContextStack ContextStack = new ContextStack();
 
-        private RunContext Context => ContextStack.Peek();
+        private IRunContext Context => ContextStack.Peek();
 
 
         private readonly ICommandRegistryInternal CommandRegistry;
 
-        public Interpreter(ICommandRegistryInternal commandRegistry)
+        public Interpreter(ICommandRegistryInternal commandRegistry, IEnvironment environment)
         {
             this.CommandRegistry = commandRegistry;
+
+            ContextStack.Push(environment);
         }
 
         public void Run(File file)
@@ -107,7 +109,7 @@ namespace LICC.Internal.LSF.Runtime
             }
             else if (statement is FunctionDeclarationStatement funcDeclare)
             {
-                Context.Functions[funcDeclare.Name] = new Function(funcDeclare.Body.ToArray(), funcDeclare.Parameters.ToArray());
+                Context.SetFunction(funcDeclare.Name, new Function(funcDeclare.Body.ToArray(), funcDeclare.Parameters.ToArray()));
             }
         }
 
@@ -219,7 +221,7 @@ namespace LICC.Internal.LSF.Runtime
                 for (int i = 0; i < func.Parameters.Length; i++)
                 {
                     object value = Visit(funcCall.Arguments[i]);
-                    Context.Variables[func.Parameters[i].Name] = value;
+                    Context.SetVariable(func.Parameters[i].Name, value);
                 }
 
                 return Run(func.Statements, false);
