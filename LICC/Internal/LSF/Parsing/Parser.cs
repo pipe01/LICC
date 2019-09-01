@@ -277,9 +277,22 @@ namespace LICC.Internal.LSF.Parsing
             {
                 ret = new StringLiteralExpression(quotedStr.Content);
             }
-            else if (Take(LexemeKind.Exclamation, out _))
+            else if (Take(LexemeKind.Exclamation, out var excl))
             {
-                ret = DoFunctionCall();
+                Push();
+
+                if (Take(LexemeKind.Dollar, out _) || TakeKeyword("false", true, false) != null || TakeKeyword("true", true, false) != null)
+                {
+                    Pop();
+
+                    ret = DoUnaryOperator(excl);
+                }
+                else
+                {
+                    Pop();
+
+                    ret = DoFunctionCall();
+                }
             }
             else if (Take(LexemeKind.Keyword, out var keyword))
             {
@@ -314,6 +327,17 @@ namespace LICC.Internal.LSF.Parsing
             }
 
             return ret;
+        }
+
+        private UnaryOperatorExpression DoUnaryOperator(Lexeme op)
+        {
+            var operand = DoExpression();
+
+            if (op.Kind == LexemeKind.Exclamation)
+                return new UnaryOperatorExpression(Operator.Negate, operand);
+
+            Error("invalid unary operator");
+            return null;
         }
 
         private Expression DoOperatorChain(Expression first)

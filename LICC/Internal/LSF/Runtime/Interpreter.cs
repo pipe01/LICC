@@ -108,6 +108,8 @@ namespace LICC.Internal.LSF.Runtime
                 return boo.Value;
             else if (expr is BinaryOperatorExpression bin)
                 return VisitBinaryOperator(bin);
+            else if (expr is UnaryOperatorExpression unary)
+                return VisitUnaryOperator(unary);
             else if (expr is VariableAccessExpression varAcc)
                 return VisitVariableAccess(varAcc);
             else if (expr is VariableAssignmentExpression varAss)
@@ -194,7 +196,23 @@ namespace LICC.Internal.LSF.Runtime
                 }
             }
 
-            throw null;
+            throw new RuntimeException("invalid operator");
+        }
+
+        private object VisitUnaryOperator(UnaryOperatorExpression unary)
+        {
+            object operand = Visit(unary.Operand);
+
+            switch (unary.Operator)
+            {
+                case Operator.Negate:
+                    if (operand is bool b)
+                        return !b;
+                    else
+                        throw new RuntimeException($"cannot negate '{operand}'");
+            }
+
+            throw new RuntimeException("invalid operator");
         }
 
         private object VisitVariableAccess(VariableAccessExpression expr)

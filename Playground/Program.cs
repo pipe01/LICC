@@ -16,10 +16,15 @@ namespace Playground
         {
             var l = new Lexer(@"test (200 * 5 / ($asd = 123)) (2 + 'asd')
 
-$hello = 123
+$hello = true
+$hello = !$hello
+
+echo $hello
+echo !true
 
 function myFunc(param) {
     echo ('inside function! ' + $param)
+    echo 'this is great' #comment
 }
 
 !myFunc 'a parameter'

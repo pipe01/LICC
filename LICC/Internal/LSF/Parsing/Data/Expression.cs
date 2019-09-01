@@ -87,6 +87,20 @@ namespace LICC.Internal.LSF.Parsing.Data
         public override string ToString() => $"({Left} {Operator} {Right})";
     }
 
+    internal class UnaryOperatorExpression : Expression
+    {
+        public Operator Operator { get; }
+        public Expression Operand { get; }
+
+        public UnaryOperatorExpression(Operator @operator, Expression operand)
+        {
+            this.Operator = @operator;
+            this.Operand = operand;
+        }
+
+        public override string ToString() => $"({Operator} {Operand})";
+    }
+
     internal class VariableAssignmentExpression : Expression
     {
         public override bool CanStandAlone => true;
