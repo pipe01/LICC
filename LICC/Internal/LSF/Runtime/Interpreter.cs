@@ -71,7 +71,7 @@ namespace LICC.Internal.LSF.Runtime
             {
                 object condition = Visit(ifStatement.Condition);
 
-                if ((condition is bool b && b) || (condition != null))
+                if (condition is bool b ? b : (condition != null))
                     Run(ifStatement.Body);
             }
             else if (statement is FunctionDeclarationStatement funcDeclare)
@@ -193,6 +193,11 @@ namespace LICC.Internal.LSF.Runtime
 
             object left = Visit(expr.Left);
             object right = Visit(expr.Right);
+
+            if (expr.Operator == Operator.Equals)
+            {
+                return (left == null ? right == null : left.Equals(right));
+            }
 
             if (left is string leftStr)
             {

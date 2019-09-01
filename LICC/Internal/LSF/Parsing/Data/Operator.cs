@@ -9,5 +9,6 @@
         And,
         Or,
         Negate,
+        Equals,
     }
 }

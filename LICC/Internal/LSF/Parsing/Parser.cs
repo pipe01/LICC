@@ -18,6 +18,7 @@ namespace LICC.Internal.LSF.Parsing
             [LexemeKind.Divide] = Operator.Divide,
             [LexemeKind.AndAlso] = Operator.And,
             [LexemeKind.OrElse] = Operator.Or,
+            [LexemeKind.Equals] = Operator.Equals,
         };
         private static readonly int MaxOperatorValue = ((Operator[])Enum.GetValues(typeof(Operator))).Max(o => (int)o);
 
@@ -323,7 +324,7 @@ namespace LICC.Internal.LSF.Parsing
             {
                 Push();
 
-                if (Take(LexemeKind.Dollar, out _) || TakeKeyword("false", true, false) != null || TakeKeyword("true", true, false) != null)
+                if (!Take(LexemeKind.String, out _))
                 {
                     Pop();
 

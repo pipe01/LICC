@@ -62,6 +62,18 @@ namespace LICC.Internal.LSF.Parsing
             Column++;
         }
 
+        private void Back()
+        {
+            Index--;
+            Column--;
+
+            if (Column < 0)
+            {
+                Column = 0;
+                Line--;
+            }
+        }
+
         private void NewLine()
         {
             Line++;
@@ -162,20 +174,27 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.Exclamation);
                 case '$':
                     return Lexeme(LexemeKind.Dollar);
-                case '=':
-                    return Lexeme(LexemeKind.EqualsAssign);
                 case '&':
                     if (Consume() == '&')
                     {
                         return Lexeme(LexemeKind.AndAlso);
                     }
+                    Back();
                     return Lexeme(LexemeKind.And);
                 case '|':
                     if (Consume() == '|')
                     {
                         return Lexeme(LexemeKind.OrElse);
                     }
+                    Back();
                     return Lexeme(LexemeKind.Or);
+                case '=':
+                    if (Consume() == '=')
+                    {
+                        return Lexeme(LexemeKind.Equals);
+                    }
+                    Back();
+                    return Lexeme(LexemeKind.EqualsAssign);
             }
 
             return null;

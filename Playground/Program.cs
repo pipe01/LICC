@@ -16,14 +16,13 @@ namespace Playground
         {
             var l = new Lexer(@"test (200 * 5 / ($asd = 123)) (2 + 'asd')
 
-if (true)
+$hello = true
+$hello = !$hello
+
+if ($iuh)
 {
     echo 'yes'
 }
-
-$hello = true
-$hello = !$hello
-$bin = true && false
 
 echo $hello
 echo !true
