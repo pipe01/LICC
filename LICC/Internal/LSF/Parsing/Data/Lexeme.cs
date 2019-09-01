@@ -11,6 +11,7 @@ namespace LICC.Internal.LSF.Parsing.Data
         Comma,
 
         Dollar,
+        EqualsAssign,
         Equals,
         Hashtag,
         Exclamation,

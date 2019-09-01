@@ -10,7 +10,7 @@ namespace LICC.Internal.LSF.Parsing
 {
     internal class Lexer
     {
-        private static readonly string[] Keywords = { "function", "true", "false", "return" };
+        private static readonly string[] Keywords = { "function", "true", "false", "return", "if" };
 
         private int Column;
         private int Index;
@@ -163,7 +163,7 @@ namespace LICC.Internal.LSF.Parsing
                 case '$':
                     return Lexeme(LexemeKind.Dollar);
                 case '=':
-                    return Lexeme(LexemeKind.Equals);
+                    return Lexeme(LexemeKind.EqualsAssign);
                 case '&':
                     if (Consume() == '&')
                     {

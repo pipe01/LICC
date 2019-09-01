@@ -14,13 +14,13 @@ namespace LICC.Internal.LSF.Parsing.Data
     internal class FunctionDeclarationStatement : Statement
     {
         public string Name { get; }
-        public IEnumerable<Statement> Statements { get; }
+        public IEnumerable<Statement> Body { get; }
         public IEnumerable<Parameter> Parameters { get; }
 
-        public FunctionDeclarationStatement(string name, IEnumerable<Statement> statements, IEnumerable<Parameter> parameters)
+        public FunctionDeclarationStatement(string name, IEnumerable<Statement> body, IEnumerable<Parameter> parameters)
         {
             this.Name = name;
-            this.Statements = statements;
+            this.Body = body;
             this.Parameters = parameters;
         }
     }
@@ -54,6 +54,18 @@ namespace LICC.Internal.LSF.Parsing.Data
         public ReturnStatement(Expression value)
         {
             this.Value = value;
+        }
+    }
+
+    internal class IfStatement : Statement
+    {
+        public Expression Condition { get; }
+        public IEnumerable<Statement> Body { get; }
+
+        public IfStatement(Expression condition, IEnumerable<Statement> body)
+        {
+            this.Condition = condition;
+            this.Body = body;
         }
     }
 }

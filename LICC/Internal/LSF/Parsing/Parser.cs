@@ -157,16 +157,17 @@ namespace LICC.Internal.LSF.Parsing
                     ret = new CommentStatement();
                     break;
 
-                case LexemeKind.Keyword:
-                    if (Current.Content == "return")
-                    {
-                        Advance();
-                        ret = new ReturnStatement(DoExpression());
-                    }
-                    else
-                    {
-                        ret = DoFunction();
-                    }
+                case LexemeKind.Keyword when Current.Content == "return":
+                    Advance();
+                    ret = new ReturnStatement(DoExpression());
+                    break;
+
+                case LexemeKind.Keyword when Current.Content == "function":
+                    ret = DoFunction();
+                    break;
+                    
+                case LexemeKind.Keyword when Current.Content == "if":
+                    ret = DoIfStatement();
                     break;
 
                 case LexemeKind.String:
@@ -202,7 +203,6 @@ namespace LICC.Internal.LSF.Parsing
             string name = Take(LexemeKind.String, "function name").Content;
             //Take(LexemeKind.Whitespace, "whitespace after function name", false);
 
-            var statements = new List<Statement>();
             var parameters = new List<Parameter>();
 
             Take(LexemeKind.LeftParenthesis, "parameter list opening");
@@ -225,7 +225,30 @@ namespace LICC.Internal.LSF.Parsing
             Take(LexemeKind.RightParenthesis, "parameter list closing");
             SkipWhitespaces();
 
-            Take(LexemeKind.LeftBrace, "function body opening");
+            var statements = DoStatementBlock();
+
+            return new FunctionDeclarationStatement(name, statements, parameters);
+        }
+
+        private IfStatement DoIfStatement()
+        {
+            TakeKeyword("if");
+            Take(LexemeKind.LeftParenthesis, "condition opening");
+
+            var condition = DoExpression();
+
+            Take(LexemeKind.RightParenthesis, "condition opening");
+
+            var body = DoStatementBlock();
+
+            return new IfStatement(condition, body);
+        }
+
+        private IEnumerable<Statement> DoStatementBlock()
+        {
+            var statements = new List<Statement>();
+
+            Take(LexemeKind.LeftBrace, "block body opening");
             SkipWhitespaces();
 
             Statement statement;
@@ -238,9 +261,9 @@ namespace LICC.Internal.LSF.Parsing
                     statements.Add(statement);
             }
 
-            Take(LexemeKind.RightBrace, "function body closing");
+            Take(LexemeKind.RightBrace, "block body closing");
 
-            return new FunctionDeclarationStatement(name, statements, parameters);
+            return statements;
         }
 
         private Parameter DoParameter()
@@ -324,7 +347,7 @@ namespace LICC.Internal.LSF.Parsing
             {
                 Push();
 
-                if (Take(LexemeKind.String, out _) && Take(LexemeKind.Equals, out _))
+                if (Take(LexemeKind.String, out _) && Take(LexemeKind.EqualsAssign, out _))
                 {
                     Pop();
 
@@ -423,7 +446,7 @@ namespace LICC.Internal.LSF.Parsing
         private VariableAssignmentExpression DoVariableAssign()
         {
             string name = Take(LexemeKind.String, "variable name").Content;
-            Take(LexemeKind.Equals);
+            Take(LexemeKind.EqualsAssign);
             var value = DoExpression();
 
             return new VariableAssignmentExpression(name, value);

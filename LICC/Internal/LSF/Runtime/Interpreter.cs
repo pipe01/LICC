@@ -67,9 +67,16 @@ namespace LICC.Internal.LSF.Runtime
             {
                 Visit(exprStatement.Expression);
             }
+            else if (statement is IfStatement ifStatement)
+            {
+                object condition = Visit(ifStatement.Condition);
+
+                if ((condition is bool b && b) || (condition != null))
+                    Run(ifStatement.Body);
+            }
             else if (statement is FunctionDeclarationStatement funcDeclare)
             {
-                Context.Functions[funcDeclare.Name] = new Function(funcDeclare.Statements.ToArray(), funcDeclare.Parameters.ToArray());
+                Context.Functions[funcDeclare.Name] = new Function(funcDeclare.Body.ToArray(), funcDeclare.Parameters.ToArray());
             }
         }
 
