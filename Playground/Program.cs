@@ -16,6 +16,10 @@ namespace Playground
         {
             var l = new Lexer(@"test (200 * 5 / ($asd = 123)) (2 + 'asd')
 
+if ($i > 0 == true)
+{
+}
+
 for ($n from 1 to 5)
 {
     echo $n
@@ -32,7 +36,7 @@ echo '---'
 
 $i = 5
 
-while ($i > 0))
+while ($i > 0 == 0)
 {
     $i = $i - 1
     echo $i

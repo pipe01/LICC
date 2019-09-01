@@ -2,19 +2,19 @@
 {
     internal enum Operator
     {
-        Subtract,
-        Add,
-        Divide,
-        Multiply,
-        And,
+        NotEqual,
+        Equal,
         Or,
-        Negate,
-
+        And,
         More,
         MoreOrEqual,
         Less,
         LessOrEqual,
-        NotEqual,
-        Equal,
+
+        Subtract,
+        Add,
+        Divide,
+        Multiply,
+        Negate,
     }
 }
