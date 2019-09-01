@@ -58,5 +58,7 @@ namespace LICC.Internal.LSF.Parsing.Data
             this.Begin = begin;
             this.Content = content;
         }
+
+        public override string ToString() => $"'{Content}' ({Kind})";
     }
 }

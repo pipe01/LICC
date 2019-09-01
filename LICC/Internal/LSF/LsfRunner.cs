@@ -17,27 +17,18 @@ namespace LICC.Internal.LSF
         private readonly Parser Parser = new Parser();
         private readonly Interpreter Interpreter;
         private readonly IPreprocessor Preprocessor;
+        private readonly IFileSystem FileSystem;
+
         public LsfRunner(IEnvironment environment, ICommandRegistryInternal commandRegistry, IFileSystem fileSystem)
         {
             this.Interpreter = new Interpreter(commandRegistry, environment);
             this.Preprocessor = new Preprocessor(fileSystem);
+            this.FileSystem = fileSystem;
         }
 
-        public void Run(string fileContents)
+        public void Run(string fileName)
         {
-            string processed;
-
-            try
-            {
-                processed = Preprocessor.Process(fileContents);
-            }
-            catch (PreprocessorException ex)
-            {
-                LConsole.WriteLine("Error while preprocessing the file: " + ex.Message, ConsoleColor.Red);
-                return;
-            }
-
-            var lexemes = Lexer.Lex(processed).ToArray();
+            var lexemes = Lexer.Lex(fileName, FileSystem).ToArray();
             File ast;
 
             try

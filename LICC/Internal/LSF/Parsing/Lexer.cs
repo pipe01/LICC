@@ -1,4 +1,7 @@
-﻿using LICC.Internal.LSF.Parsing.Data;
+﻿using LICC.API;
+using LICC.Internal.LSF.Parsing.Data;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,27 +14,12 @@ namespace LICC.Internal.LSF.Parsing
 
         private int Column;
         private int Index;
+        private int Line;
         private char Char => Source[Index];
 
-        private int Line
-        {
-            get
-            {
-                int i;
-
-                for (i = 0; i < NewlineIndices.Count; i++)
-                {
-                    if (Index < NewlineIndices[i])
-                        break;
-                }
-
-                return i - 1;
-            }
-        }
-        private SourceLocation Location => new SourceLocation(Line, Column);
+        private SourceLocation Location => new SourceLocation(Line, Column, FileName);
 
         private readonly StringBuilder Buffer = new StringBuilder();
-        private readonly List<int> NewlineIndices = new List<int>();
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
@@ -42,16 +30,14 @@ namespace LICC.Internal.LSF.Parsing
         public ErrorSink Errors { get; } = new ErrorSink();
 
         private readonly string Source;
+        private readonly string FileName;
+        private readonly IFileSystem FileSystem;
 
-        public Lexer(string source)
+        public Lexer(string source, string fileName, IFileSystem fileSystem)
         {
             this.Source = source.Replace("\r\n", "\n");
-
-            for (int i = 0; i < Source.Length; i++)
-            {
-                if (Source[i] == '\n')
-                    NewlineIndices.Add(i);
-            }
+            this.FileName = fileName;
+            this.FileSystem = fileSystem;
 
             if (this.Source[this.Source.Length - 1] != '\0')
                 this.Source += "\0";
@@ -59,20 +45,70 @@ namespace LICC.Internal.LSF.Parsing
 
         public IEnumerable<Lexeme> Lex()
         {
+            Lexeme prev = null;
+
             while (!IsEOF)
             {
+                int beginIndex = Index;
                 var lexeme = GetLexeme();
 
                 if (lexeme != null)
-                    yield return lexeme;
+                {
+                    if (FileSystem != null && (prev == null || prev.Kind == LexemeKind.NewLine) && lexeme.Kind == LexemeKind.AtSign)
+                    {
+                        foreach (var item in TryIncludeFile())
+                        {
+                            yield return item;
+                        }
+                    }
+                    else
+                    {
+                        yield return lexeme;
+                        prev = lexeme;
+                    }
+                }
             }
 
             yield return Lexeme(LexemeKind.EndOfFile);
+
+            IEnumerable<Lexeme> TryIncludeFile()
+            {
+                var directiveLexeme = GetLexeme();
+
+                if (directiveLexeme.Kind == LexemeKind.String && directiveLexeme.Content == "include")
+                {
+                    GetLexeme(); //Skip whitespace
+
+                    var fileNameLexeme = GetLexeme();
+
+                    if (fileNameLexeme.Kind == LexemeKind.QuotedString)
+                    {
+                        if (!FileSystem.FileExists(fileNameLexeme.Content))
+                            Error($"cannot find file on '{fileNameLexeme.Content}'");
+
+                        foreach (var item in Lex(fileNameLexeme.Content, FileSystem))
+                        {
+                            if (item.Kind == LexemeKind.EndOfFile)
+                                break;
+
+                            yield return item;
+                        }
+                    }
+                    else
+                    {
+                        Error($"expected quoted file path, found {fileNameLexeme}");
+                    }
+                }
+                else
+                {
+                    Error($"invalid preprocessor directive '{directiveLexeme.Content}'");
+                }
+            }
         }
 
-        public static IEnumerable<Lexeme> Lex(string source)
+        public static IEnumerable<Lexeme> Lex(string fileName, IFileSystem fileSystem)
         {
-            return new Lexer(source).Lex();
+            return new Lexer(fileSystem.ReadAllText(fileName), fileName, fileSystem).Lex();
         }
 
         private void Advance()
@@ -89,6 +125,7 @@ namespace LICC.Internal.LSF.Parsing
             if (Column < 0)
             {
                 Column = 0;
+                Line--;
             }
         }
 
@@ -105,7 +142,7 @@ namespace LICC.Internal.LSF.Parsing
             return c;
         }
 
-        private void Error(string msg, Severity severity)
+        private void Error(string msg, Severity severity = Severity.Error)
         {
             var error = new Error(Location, msg, severity);
             Errors.Add(error);
@@ -116,17 +153,24 @@ namespace LICC.Internal.LSF.Parsing
 
         private Lexeme Lexeme(LexemeKind kind, string content = null)
         {
+            if (kind == LexemeKind.NewLine)
+            {
+                Column = 0;
+                Line++;
+            }
+
             content = content ?? Buffer.ToString();
             Buffer.Clear();
 
-            var begin = Location;
-            var end = new SourceLocation(Line, Column + content.Length);
-
-            return new Lexeme(kind, begin, content);
+            return new Lexeme(kind, Location, content);
         }
 
         private Lexeme GetLexeme()
         {
+            if (IsEOF)
+            {
+                return Lexeme(LexemeKind.EndOfFile);
+            }
             if (IsWhitespace)
             {
                 return DoWhitespace();

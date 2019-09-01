@@ -7,7 +7,7 @@ namespace LICC.Internal.LSF.Parsing
     {
         public Error Error { get; }
 
-        public override string Message => $"An error occurred while parsing on line {Error.Location.Line + 1}: {Error.Message}";
+        public override string Message => $"An error occurred on line {Error.Location.Line + 1} while parsing file '{Error.Location.FileName}': {Error.Message}";
 
         public ParseException(Error error)
         {

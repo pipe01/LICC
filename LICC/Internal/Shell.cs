@@ -60,23 +60,7 @@ namespace LICC.Internal
             if (!FileSystem.FileExists(path))
                 throw new FileNotFoundException(path);
 
-            using (var file = FileSystem.OpenRead(path))
-            {
-                LsfRunner.Run(file.ReadToEnd());
-
-                //void PrintError(string msg)
-                //{
-                //    using (var writer = LConsole.BeginLine())
-                //    {
-                //        writer.Write("Error executing file ", ConsoleColor.Red);
-                //        writer.Write($"'{path}'", ConsoleColor.DarkRed);
-                //        writer.Write(" near line ", ConsoleColor.Red);
-                //        writer.Write(lineNumber, ConsoleColor.DarkYellow);
-                //        writer.Write(": ", ConsoleColor.Red);
-                //        writer.Write(msg[0].ToString().ToLower() + msg.Substring(1), ConsoleColor.DarkCyan);
-                //    }
-                //}
-            }
+            LsfRunner.Run(path);
         }
 
         ///<summary>Executes a single line</summary>
