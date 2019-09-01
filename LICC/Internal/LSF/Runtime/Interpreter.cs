@@ -150,6 +150,34 @@ namespace LICC.Internal.LSF.Runtime
 
         private object VisitBinaryOperator(BinaryOperatorExpression expr)
         {
+            if (expr.Operator == Operator.And)
+            {
+                if (!(Visit(expr.Left) is bool leftB))
+                    throw new RuntimeException("invalid left operand type, expected boolean");
+
+                if (!leftB)
+                    return false;
+
+                if (!(Visit(expr.Right) is bool rightB))
+                    throw new RuntimeException("invalid right operand type, expected boolean");
+
+                return rightB;
+            }
+            
+            if (expr.Operator == Operator.Or)
+            {
+                if (!(Visit(expr.Left) is bool leftB))
+                    throw new RuntimeException("invalid left operand type, expected boolean");
+
+                if (leftB)
+                    return true;
+
+                if (!(Visit(expr.Right) is bool rightB))
+                    throw new RuntimeException("invalid right operand type, expected boolean");
+
+                return rightB;
+            }
+
             object left = Visit(expr.Left);
             object right = Visit(expr.Right);
 

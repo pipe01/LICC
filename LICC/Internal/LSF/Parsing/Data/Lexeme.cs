@@ -22,6 +22,10 @@ namespace LICC.Internal.LSF.Parsing.Data
         Minus,
         Multiply,
         Divide,
+        And,
+        AndAlso,
+        Or,
+        OrElse,
 
         NewLine,
         Semicolon,

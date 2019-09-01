@@ -18,6 +18,7 @@ namespace Playground
 
 $hello = true
 $hello = !$hello
+$bin = true && false
 
 echo $hello
 echo !true
@@ -25,6 +26,13 @@ echo !true
 function myFunc(param) {
     echo ('inside function! ' + $param)
     echo 'this is great' #comment
+
+    function innerFunc(asd) {
+        echo 'first: ' + $param
+        echo 'second: ' + $asd
+    }
+
+    !innerFunc 123
 }
 
 !myFunc 'a parameter'

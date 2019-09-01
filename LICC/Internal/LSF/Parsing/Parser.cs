@@ -10,6 +10,17 @@ namespace LICC.Internal.LSF.Parsing
 {
     internal class Parser
     {
+        private static readonly IDictionary<LexemeKind, Operator> LexemeOperatorMap = new Dictionary<LexemeKind, Operator>
+        {
+            [LexemeKind.Plus] = Operator.Add,
+            [LexemeKind.Minus] = Operator.Subtract,
+            [LexemeKind.Multiply] = Operator.Multiply,
+            [LexemeKind.Divide] = Operator.Divide,
+            [LexemeKind.AndAlso] = Operator.And,
+            [LexemeKind.OrElse] = Operator.Or,
+        };
+        private static readonly int MaxOperatorValue = ((Operator[])Enum.GetValues(typeof(Operator))).Max(o => (int)o);
+
         private int Index;
         private Lexeme Current => Lexemes[Index];
         private SourceLocation Location => Current.Begin;
@@ -349,14 +360,11 @@ namespace LICC.Internal.LSF.Parsing
             {
                 op = null;
 
-                if (Take(LexemeKind.Plus, out _))
-                    op = Operator.Add;
-                else if (Take(LexemeKind.Minus, out _))
-                    op = Operator.Subtract;
-                else if (Take(LexemeKind.Multiply, out _))
-                    op = Operator.Multiply;
-                else if (Take(LexemeKind.Divide, out _))
-                    op = Operator.Divide;
+                foreach (var item in LexemeOperatorMap)
+                {
+                    if (Take(item.Key, out _))
+                        op = item.Value;
+                }
 
                 if (op != null)
                 {
@@ -370,7 +378,7 @@ namespace LICC.Internal.LSF.Parsing
             {
                 items.Insert(0, first);
 
-                for (int i = (int)Operator.Multiply; i >= 0; i--)
+                for (int i = MaxOperatorValue; i >= 0; i--)
                 {
                     for (int j = 0; j < items.Count; j++)
                     {

@@ -6,6 +6,8 @@
         Add,
         Divide,
         Multiply,
+        And,
+        Or,
         Negate,
     }
 }
