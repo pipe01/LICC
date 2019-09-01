@@ -10,6 +10,8 @@ namespace LICC.Internal.LSF.Parsing.Data
         Whitespace,
         Comma,
 
+        Dollar,
+        Equals,
         Hashtag,
         Exclamation,
         LeftParenthesis,

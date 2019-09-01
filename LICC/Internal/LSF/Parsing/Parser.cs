@@ -139,9 +139,15 @@ namespace LICC.Internal.LSF.Parsing
 
             switch (Current.Kind)
             {
+                case LexemeKind.Hashtag:
+                    AdvanceUntil(LexemeKind.NewLine);
+                    ret = new CommentStatement();
+                    break;
+
                 case LexemeKind.Keyword:
                     ret = DoFunction();
                     break;
+
                 case LexemeKind.String:
                     SkipWhitespaces();
 
@@ -150,13 +156,15 @@ namespace LICC.Internal.LSF.Parsing
 
                     ret = DoCommand();
                     break;
-                case LexemeKind.Hashtag:
-                    AdvanceUntil(LexemeKind.NewLine);
-                    ret = new CommentStatement();
-                    break;
+
                 case LexemeKind.Exclamation:
                     Advance();
                     ret = new ExpressionStatement(DoFunctionCall());
+                    break;
+
+                case LexemeKind.Dollar:
+                    Advance();
+                    ret = new ExpressionStatement(DoVariableAssign());
                     break;
             }
 
@@ -260,8 +268,6 @@ namespace LICC.Internal.LSF.Parsing
             {
                 if (float.TryParse(str.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
                     ret = new NumberLiteralExpression(f);
-                else if (str.Content.Length > 1 && str.Content[0] == '$')
-                    ret = new VariableAccessExpression(str.Content.Substring(1));
                 else
                     Error($"invalid string '{str.Content}'");
             }
@@ -279,6 +285,12 @@ namespace LICC.Internal.LSF.Parsing
                     Error($"unexpected keyword: '{keyword.Content}'");
 
                 ret = new BooleanLiteralExpression(keyword.Content == "true");
+            }
+            else if (Take(LexemeKind.Dollar, out _))
+            {
+                string name = Take(LexemeKind.String, "variable name").Content;
+
+                ret = new VariableAccessExpression(name);
             }
 
             if (ret != null && doOperator)
@@ -351,6 +363,15 @@ namespace LICC.Internal.LSF.Parsing
             var args = DoArguments();
 
             return new FunctionCallExpression(funcName, args.ToArray());
+        }
+
+        private VariableAssignExpression DoVariableAssign()
+        {
+            string name = Take(LexemeKind.String, "variable name").Content;
+            Take(LexemeKind.Equals);
+            var value = DoExpression();
+
+            return new VariableAssignExpression(name, value);
         }
     }
 }

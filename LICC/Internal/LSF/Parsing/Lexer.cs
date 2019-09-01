@@ -11,7 +11,6 @@ namespace LICC.Internal.LSF.Parsing
     internal class Lexer
     {
         private static readonly string[] Keywords = { "function", "true", "false" };
-        private static readonly string InvalidFreeStringChars = ",;#()";
 
         private int Column;
         private int Index;
@@ -23,10 +22,9 @@ namespace LICC.Internal.LSF.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()+-*/;#,!".Contains(Char);
+        private bool IsSymbol => "{}()+-*/;#,!$=".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
-        private bool IsFreeStringChar => !InvalidFreeStringChars.Contains(Char);
 
         public ErrorSink Errors { get; } = new ErrorSink();
 
@@ -162,6 +160,10 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.Comma);
                 case '!':
                     return Lexeme(LexemeKind.Exclamation);
+                case '$':
+                    return Lexeme(LexemeKind.Dollar);
+                case '=':
+                    return Lexeme(LexemeKind.Equals);
             }
 
             return null;
@@ -179,7 +181,7 @@ namespace LICC.Internal.LSF.Parsing
                 Advance();
             }
 
-            while (!IsEOF && !IsNewLine && (isQuoted ? Char != quote : (!IsWhitespace && IsFreeStringChar)))
+            while (!IsEOF && !IsNewLine && (isQuoted ? Char != quote : (!IsWhitespace && !IsSymbol)))
             {
                 if (Consume() == '\\' && !IsEOF)
                     Consume();

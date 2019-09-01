@@ -14,7 +14,9 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            var l = new Lexer(@"test (2 * 5 / 3) (2 + 'asd')").Lex().ToArray();
+            var l = new Lexer(@"test (2 * 5 / $asd) (2 + 'asd')
+
+$hello = !asd 2 3").Lex().ToArray();
 
             var p = new Parser().ParseFile(l);
 
