@@ -61,10 +61,34 @@ namespace LICC.Internal.LSF.Parsing.Data
     {
         public Expression Condition { get; }
         public IEnumerable<Statement> Body { get; }
+        public ElseStatement Else { get; }
 
-        public IfStatement(Expression condition, IEnumerable<Statement> body)
+        public IfStatement(Expression condition, IEnumerable<Statement> body, ElseStatement @else)
         {
             this.Condition = condition;
+            this.Body = body;
+            this.Else = @else;
+        }
+    }
+
+    internal class ElseIfStatement : ElseStatement
+    {
+        public Expression Condition { get; }
+        public ElseStatement Else { get; }
+
+        public ElseIfStatement(Expression condition, IEnumerable<Statement> body, ElseStatement @else) : base(body)
+        {
+            this.Condition = condition;
+            this.Else = @else;
+        }
+    }
+
+    internal class ElseStatement : Statement
+    {
+        public IEnumerable<Statement> Body { get; }
+
+        public ElseStatement(IEnumerable<Statement> body)
+        {
             this.Body = body;
         }
     }

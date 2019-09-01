@@ -7,7 +7,7 @@ namespace LICC.Internal.LSF.Parsing
 {
     internal class Lexer
     {
-        private static readonly string[] Keywords = { "function", "true", "false", "null", "return", "if", "for", "from", "to", "while" };
+        private static readonly string[] Keywords = { "function", "true", "false", "null", "return", "if", "else", "for", "from", "to", "while" };
 
         private int Column;
         private int Index;
@@ -21,11 +21,11 @@ namespace LICC.Internal.LSF.Parsing
 
                 for (i = 0; i < NewlineIndices.Count; i++)
                 {
-                    if (Index > NewlineIndices[i])
+                    if (Index < NewlineIndices[i])
                         break;
                 }
 
-                return i;
+                return i - 1;
             }
         }
         private SourceLocation Location => new SourceLocation(Line, Column);

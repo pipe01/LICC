@@ -82,7 +82,7 @@ namespace LICC.Internal.LSF.Parsing
                 SkipWhitespaces();
 
             if (Current.Kind != lexemeKind)
-                Error($"Unexpected lexeme: expected {expected ?? lexemeKind.ToString()}, found {Current.Kind}");
+                Error($"expected {expected ?? lexemeKind.ToString()}, found '{Current.Content}' ({Current.Kind})");
 
             return TakeAny();
         }
@@ -114,7 +114,7 @@ namespace LICC.Internal.LSF.Parsing
             if (Current.Kind != LexemeKind.Keyword || Current.Content != keyword)
             {
                 if (@throw)
-                    Error(msg ?? $"Unexpected lexeme: expected '{keyword}' keyword, found {Current}");
+                    Error(msg ?? $"expected '{keyword}' keyword, found {Current}");
                 else
                     return null;
             }
@@ -189,11 +189,11 @@ namespace LICC.Internal.LSF.Parsing
                     break;
                     
                 case LexemeKind.Keyword when Current.Content == "if":
-                    ret = DoIfOrWhileStatement(true);
+                    ret = DoIfStatement();
                     break;
                     
                 case LexemeKind.Keyword when Current.Content == "while":
-                    ret = DoIfOrWhileStatement(false);
+                    ret = DoWhileStatement();
                     break;
                     
                 case LexemeKind.Keyword when Current.Content == "for":
@@ -241,7 +241,7 @@ namespace LICC.Internal.LSF.Parsing
 
             var parameters = new List<Parameter>();
 
-            Take(LexemeKind.LeftParenthesis, "parameter list opening");
+            Take(LexemeKind.LeftParenthesis, "parameter list opening '('");
 
             while (true)
             {
@@ -258,7 +258,7 @@ namespace LICC.Internal.LSF.Parsing
                     Advance();
             }
 
-            Take(LexemeKind.RightParenthesis, "parameter list closing");
+            Take(LexemeKind.RightParenthesis, "parameter list closing ')'");
             SkipWhitespaces();
 
             var statements = DoStatementBlock();
@@ -266,25 +266,54 @@ namespace LICC.Internal.LSF.Parsing
             return new FunctionDeclarationStatement(name, statements, parameters);
         }
 
-        private Statement DoIfOrWhileStatement(bool @if)
+        private IfStatement DoIfStatement()
         {
-            TakeKeyword(@if ? "if" : "while");
-            Take(LexemeKind.LeftParenthesis, "condition opening");
+            TakeKeyword("if");
+            Take(LexemeKind.LeftParenthesis, "condition opening '('");
 
             var condition = DoExpression();
 
-            Take(LexemeKind.RightParenthesis, "condition opening");
+            Take(LexemeKind.RightParenthesis, "condition closing ')'");
+
+            var body = DoStatementBlock();
+            ElseStatement @else = null;
+
+            if (TakeKeyword("else", out _))
+            {
+                if (TakeKeyword("if", out _))
+                {
+                    Back();
+                    var @if = DoIfStatement();
+                    @else = new ElseIfStatement(@if.Condition, @if.Body, @if.Else);
+                }
+                else
+                {
+                    @else = new ElseStatement(DoStatementBlock());
+                }
+            }
+
+            return new IfStatement(condition, body, @else);
+        }
+        
+        private WhileStatement DoWhileStatement()
+        {
+            TakeKeyword("while");
+            Take(LexemeKind.LeftParenthesis, "condition opening '('");
+
+            var condition = DoExpression();
+
+            Take(LexemeKind.RightParenthesis, "condition opening ')'");
 
             var body = DoStatementBlock();
 
-            return @if ? new IfStatement(condition, body) : (Statement)new WhileStatement(condition, body);
+            return new WhileStatement(condition, body);
         }
 
         private ForStatement DoForStatement()
         {
             TakeKeyword("for");
             Take(LexemeKind.LeftParenthesis);
-            Take(LexemeKind.Dollar, "variable indicator");
+            Take(LexemeKind.Dollar, "variable indicator '$'");
 
             string varName = Take(LexemeKind.String, "variable name", false).Content;
 
@@ -309,27 +338,23 @@ namespace LICC.Internal.LSF.Parsing
         {
             var statements = new List<Statement>();
 
-            Take(LexemeKind.LeftBrace, "block body opening");
+            Take(LexemeKind.LeftBrace, "block body opening '{'");
             SkipWhitespaces();
 
             Statement statement;
             while ((statement = GetStatement()) != null)
             {
-                //if (statement is FunctionDeclarationStatement)
-                //    Error("cannot declare function inside function");
-
                 if (!(statement is CommentStatement))
                     statements.Add(statement);
             }
 
-            Take(LexemeKind.RightBrace, "block body closing");
+            Take(LexemeKind.RightBrace, "block body closing '}'");
 
             return statements;
         }
 
         private Parameter DoParameter()
         {
-            //string type = Take(LexemeKind.String, "parameter type").Content;
             string name = Take(LexemeKind.String, "parameter name").Content;
 
             return new Parameter(name);
@@ -369,7 +394,7 @@ namespace LICC.Internal.LSF.Parsing
             {
                 ret = DoExpression();
 
-                Take(LexemeKind.RightParenthesis, "closing parentheses");
+                Take(LexemeKind.RightParenthesis, "closing parentheses ')'");
             }
             else if (Take(LexemeKind.String, out var str))
             {

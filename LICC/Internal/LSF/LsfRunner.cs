@@ -1,5 +1,7 @@
 ﻿using LICC.Internal.LSF.Parsing;
+using LICC.Internal.LSF.Parsing.Data;
 using LICC.Internal.LSF.Runtime;
+using System;
 using System.Linq;
 
 namespace LICC.Internal.LSF
@@ -22,7 +24,18 @@ namespace LICC.Internal.LSF
         public void Run(string fileContents)
         {
             var lexemes = Lexer.Lex(fileContents).ToArray();
-            var ast = Parser.ParseFile(lexemes);
+            File ast;
+
+            try
+            {
+                ast = Parser.ParseFile(lexemes);
+            }
+            catch (ParseException ex)
+            {
+                LConsole.WriteLine(ex.Message, ConsoleColor.Red);
+                return;
+            }
+
             Interpreter.Run(ast);
         }
     }
