@@ -15,6 +15,8 @@ namespace LICC.Internal.LSF.Parsing.Data
         Hashtag,
         AtSign,
         Exclamation,
+        QuestionMark,
+        Colon,
 
         Equals,
         LessOrEqual,

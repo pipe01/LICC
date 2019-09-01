@@ -105,6 +105,20 @@ namespace LICC.Internal.LSF.Parsing.Data
         public override string ToString() => $"({Operator} {Operand})";
     }
 
+    internal class TernaryOperatorExpression : Expression
+    {
+        public Expression Condition { get; }
+        public Expression IfTrue { get; }
+        public Expression IfFalse { get; }
+
+        public TernaryOperatorExpression(Expression condition, Expression ifTrue, Expression ifFalse)
+        {
+            this.Condition = condition;
+            this.IfTrue = ifTrue;
+            this.IfFalse = ifFalse;
+        }
+    }
+
     internal class VariableAssignmentExpression : Expression
     {
         public override bool CanStandAlone => true;

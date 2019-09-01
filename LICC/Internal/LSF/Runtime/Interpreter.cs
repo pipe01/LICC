@@ -82,19 +82,7 @@ namespace LICC.Internal.LSF.Runtime
             }
             else if (statement is WhileStatement whileStatement)
             {
-                ContextStack.Push();
-
-                try
-                {
-                    while (Visit<bool>(whileStatement.Condition))
-                    {
-                        Run(whileStatement.Body);
-                    }
-                }
-                finally
-                {
-                    ContextStack.Pop();
-                }
+                DoWhileStatement(whileStatement);
             }
             else if (statement is ForStatement forStatement)
             {
@@ -110,6 +98,23 @@ namespace LICC.Internal.LSF.Runtime
             }
         }
 
+        private void DoWhileStatement(WhileStatement whileStatement)
+        {
+            ContextStack.Push();
+
+            try
+            {
+                while (IsTruthy(Visit(whileStatement.Condition)))
+                {
+                    Run(whileStatement.Body);
+                }
+            }
+            finally
+            {
+                ContextStack.Pop();
+            }
+        }
+
         private void DoIfStatement(IfStatement ifStatement)
         {
             ContextStack.Push();
@@ -117,9 +122,8 @@ namespace LICC.Internal.LSF.Runtime
             try
             {
                 object condition = Visit(ifStatement.Condition);
-                bool isTrue = condition is bool b ? b : (condition != null);
 
-                if (isTrue)
+                if (IsTruthy(condition))
                 {
                     Run(ifStatement.Body);
                 }
@@ -224,6 +228,8 @@ namespace LICC.Internal.LSF.Runtime
                 return VisitBinaryOperator(bin);
             else if (expr is UnaryOperatorExpression unary)
                 return VisitUnaryOperator(unary);
+            else if (expr is TernaryOperatorExpression ternary)
+                return VisitTernaryOperator(ternary);
             else if (expr is VariableAccessExpression varAcc)
                 return VisitVariableAccess(varAcc);
             else if (expr is VariableAssignmentExpression varAss)
@@ -375,11 +381,11 @@ namespace LICC.Internal.LSF.Runtime
             throw new RuntimeException("invalid operator or operand types");
         }
 
-        private object VisitUnaryOperator(UnaryOperatorExpression unary)
+        private object VisitUnaryOperator(UnaryOperatorExpression expr)
         {
-            object operand = Visit(unary.Operand);
+            object operand = Visit(expr.Operand);
 
-            switch (unary.Operator)
+            switch (expr.Operator)
             {
                 case Operator.Negate:
                     if (operand is bool b)
@@ -389,6 +395,13 @@ namespace LICC.Internal.LSF.Runtime
             }
 
             throw new RuntimeException("invalid operator");
+        }
+
+        private object VisitTernaryOperator(TernaryOperatorExpression expr)
+        {
+            object condValue = Visit(expr.Condition);
+
+            return IsTruthy(condValue) ? Visit(expr.IfTrue) : Visit(expr.IfFalse);
         }
 
         private object VisitVariableAccess(VariableAccessExpression expr)
@@ -406,5 +419,7 @@ namespace LICC.Internal.LSF.Runtime
             ContextStack.SetVariable(expr.VariableName, value);
             return value;
         }
+
+        private static bool IsTruthy(object obj) => (obj is bool b && b) && obj != null;
     }
 }

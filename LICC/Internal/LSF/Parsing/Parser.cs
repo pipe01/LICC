@@ -472,6 +472,11 @@ namespace LICC.Internal.LSF.Parsing
 
             if (ret != null && doOperator)
             {
+                if (Take(LexemeKind.QuestionMark, out _))
+                {
+                    return DoTernaryOperator(ret);
+                }
+
                 return DoOperatorChain(ret) ?? ret;
             }
 
@@ -540,6 +545,15 @@ namespace LICC.Internal.LSF.Parsing
             {
                 return null;
             }
+        }
+
+        private TernaryOperatorExpression DoTernaryOperator(Expression condition)
+        {
+            var ifTrue = DoExpression();
+            Take(LexemeKind.Colon, "ternary operator separator ':'");
+            var ifFalse = DoExpression();
+
+            return new TernaryOperatorExpression(condition, ifTrue, ifFalse);
         }
 
         private FunctionCallExpression DoFunctionCall()
