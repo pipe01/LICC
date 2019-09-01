@@ -122,7 +122,7 @@ namespace LICC.Internal.LSF.Parsing
             var begin = Location;
             var end = new SourceLocation(Line, Column + content.Length);
 
-            return new Lexeme(kind, begin, end, content);
+            return new Lexeme(kind, begin, content);
         }
 
         private Lexeme GetLexeme()
@@ -159,58 +159,58 @@ namespace LICC.Internal.LSF.Parsing
             switch (Take())
             {
                 case '(':
-                    return Lexeme(LexemeKind.LeftParenthesis);
+                    return Lexeme(LexemeKind.LeftParenthesis, "(");
                 case ')':
-                    return Lexeme(LexemeKind.RightParenthesis);
+                    return Lexeme(LexemeKind.RightParenthesis, ")");
                 case '{':
-                    return Lexeme(LexemeKind.LeftBrace);
+                    return Lexeme(LexemeKind.LeftBrace, "{");
                 case '}':
-                    return Lexeme(LexemeKind.RightBrace);
+                    return Lexeme(LexemeKind.RightBrace, "}");
                 case '+':
-                    return Lexeme(LexemeKind.Plus);
+                    return Lexeme(LexemeKind.Plus, "+");
                 case '-':
-                    return Lexeme(LexemeKind.Minus);
+                    return Lexeme(LexemeKind.Minus, "-");
                 case '*':
-                    return Lexeme(LexemeKind.Multiply);
+                    return Lexeme(LexemeKind.Multiply, "*");
                 case '/':
-                    return Lexeme(LexemeKind.Divide);
+                    return Lexeme(LexemeKind.Divide, "/");
                 case ';':
-                    return Lexeme(LexemeKind.Semicolon);
+                    return Lexeme(LexemeKind.Semicolon, ";");
                 case '#':
-                    return Lexeme(LexemeKind.Hashtag);
+                    return Lexeme(LexemeKind.Hashtag, "#");
                 case ',':
-                    return Lexeme(LexemeKind.Comma);
+                    return Lexeme(LexemeKind.Comma, ",");
                 case '$':
-                    return Lexeme(LexemeKind.Dollar);
+                    return Lexeme(LexemeKind.Dollar, "$");
                 case '@':
-                    return Lexeme(LexemeKind.AtSign);
+                    return Lexeme(LexemeKind.AtSign, "@");
                 case '?':
-                    return Lexeme(LexemeKind.QuestionMark);
+                    return Lexeme(LexemeKind.QuestionMark, "?");
                 case ':':
-                    return Lexeme(LexemeKind.Colon);
+                    return Lexeme(LexemeKind.Colon, ":");
                 case '&':
-                    return TwoCharOperator('&', LexemeKind.And, LexemeKind.AndAlso);
+                    return TwoCharOperator("&&", LexemeKind.And, LexemeKind.AndAlso);
                 case '|':
-                    return TwoCharOperator('|', LexemeKind.Or, LexemeKind.OrElse);
+                    return TwoCharOperator("||", LexemeKind.Or, LexemeKind.OrElse);
                 case '!':
-                    return TwoCharOperator('=', LexemeKind.Exclamation, LexemeKind.NotEqual);
+                    return TwoCharOperator("!=", LexemeKind.Exclamation, LexemeKind.NotEqual);
                 case '=':
-                    return TwoCharOperator('=', LexemeKind.EqualsAssign, LexemeKind.Equals);
+                    return TwoCharOperator("==", LexemeKind.EqualsAssign, LexemeKind.Equals);
                 case '<':
-                    return TwoCharOperator('=', LexemeKind.Less, LexemeKind.LessOrEqual);
+                    return TwoCharOperator("<=", LexemeKind.Less, LexemeKind.LessOrEqual);
                 case '>':
-                    return TwoCharOperator('=', LexemeKind.More, LexemeKind.MoreOrEqual);
+                    return TwoCharOperator(">=", LexemeKind.More, LexemeKind.MoreOrEqual);
             }
 
             return null;
 
-            Lexeme TwoCharOperator(char second, LexemeKind firstKind, LexemeKind secondKind)
+            Lexeme TwoCharOperator(string full, LexemeKind firstKind, LexemeKind secondKind)
             {
-                if (Consume() == second)
-                    return Lexeme(secondKind);
+                if (Consume() == full[1])
+                    return Lexeme(secondKind, full);
 
                 Back();
-                return Lexeme(firstKind);
+                return Lexeme(firstKind, full[0].ToString());
             }
         }
 

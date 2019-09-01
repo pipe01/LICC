@@ -50,14 +50,12 @@ namespace LICC.Internal.LSF.Parsing.Data
     {
         public LexemeKind Kind { get; }
         public SourceLocation Begin { get; }
-        public SourceLocation End { get; }
         public string Content { get; }
 
-        public Lexeme(LexemeKind kind, SourceLocation begin, SourceLocation end, string content)
+        public Lexeme(LexemeKind kind, SourceLocation begin, string content)
         {
             this.Kind = kind;
             this.Begin = begin;
-            this.End = end;
             this.Content = content;
         }
     }
