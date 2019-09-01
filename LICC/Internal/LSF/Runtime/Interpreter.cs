@@ -25,7 +25,7 @@ namespace LICC.Internal.LSF.Runtime
             Run(file.Statements);
         }
 
-        private void Run(IEnumerable<Statement> statements)
+        private object Run(IEnumerable<Statement> statements)
         {
             SourceLocation loc = default;
 
@@ -36,6 +36,12 @@ namespace LICC.Internal.LSF.Runtime
                 foreach (var item in statements)
                 {
                     loc = item.Location;
+
+                    if (item is ReturnStatement ret)
+                    {
+                        return ret.Value == null ? null : Visit(ret.Value);
+                    }
+
                     RunStatement(item);
                 }
             }
@@ -47,6 +53,8 @@ namespace LICC.Internal.LSF.Runtime
             {
                 ContextStack.Pop();
             }
+
+            return null;
         }
 
         private void RunStatement(Statement statement)
@@ -138,14 +146,12 @@ namespace LICC.Internal.LSF.Runtime
                     Context.Variables[func.Parameters[i].Name] = value;
                 }
 
-                Run(func.Statements);
+                return Run(func.Statements);
             }
             finally
             {
                 ContextStack.Pop();
             }
-
-            return null;
         }
 
         private object VisitBinaryOperator(BinaryOperatorExpression expr)

@@ -23,6 +23,12 @@ $bin = true && false
 echo $hello
 echo !true
 
+function repeat(str, count) {
+    return $str * $count
+}
+
+echo (!repeat 'hello ' 3)
+
 function myFunc(param) {
     echo ('inside function! ' + $param)
     echo 'this is great' #comment

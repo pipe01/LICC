@@ -158,7 +158,15 @@ namespace LICC.Internal.LSF.Parsing
                     break;
 
                 case LexemeKind.Keyword:
-                    ret = DoFunction();
+                    if (Current.Content == "return")
+                    {
+                        Advance();
+                        ret = new ReturnStatement(DoExpression());
+                    }
+                    else
+                    {
+                        ret = DoFunction();
+                    }
                     break;
 
                 case LexemeKind.String:

@@ -46,4 +46,14 @@ namespace LICC.Internal.LSF.Parsing.Data
             this.Expression = expression;
         }
     }
+
+    internal class ReturnStatement : Statement
+    {
+        public Expression Value { get; }
+
+        public ReturnStatement(Expression value)
+        {
+            this.Value = value;
+        }
+    }
 }
