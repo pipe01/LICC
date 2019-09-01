@@ -1,8 +1,10 @@
-﻿using LICC.Internal.LSF.Parsing;
+﻿using LICC.API;
+using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Parsing.Data;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,9 +13,30 @@ namespace LICC.Test.Parsing
 {
     public class LexerTest
     {
+        private class SingleFileSystem : IFileSystem
+        {
+            private readonly string Contents;
+
+            public SingleFileSystem(string contents)
+            {
+                this.Contents = contents;
+            }
+
+            public bool FileExists(string path) => true;
+
+            public StreamReader OpenRead(string path)
+            {
+                var mem = new MemoryStream();
+                mem.Write(Encoding.UTF8.GetBytes(Contents));
+                mem.Position = 0;
+
+                return new StreamReader(mem, Encoding.UTF8, true, 4096, false);
+            }
+        }
+
         private void Check(string source, (LexemeKind Kind, string Content)[] expected, bool appendEof = true)
         {
-            var lexemes = Lexer.Lex(source, null).ToArray();
+            var lexemes = Lexer.Lex("idk", new SingleFileSystem(source)).ToArray();
 
             if (appendEof && expected[expected.Length - 1].Kind != LexemeKind.EndOfFile)
                 expected = expected.Append((LexemeKind.EndOfFile, null)).ToArray();
