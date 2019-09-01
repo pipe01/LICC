@@ -8,6 +8,16 @@ namespace LICC.Internal.LSF.Runtime
 {
     internal class Interpreter
     {
+        private class ReturnException : Exception
+        {
+            public readonly object Value;
+
+            public ReturnException(object value)
+            {
+                this.Value = value;
+            }
+        }
+
         private readonly ContextStack ContextStack = new ContextStack();
 
         private IRunContext Context => ContextStack.Peek();
@@ -42,13 +52,13 @@ namespace LICC.Internal.LSF.Runtime
 
                     if (item is ReturnStatement ret)
                     {
-                        return ret.Value == null ? null : Visit(ret.Value);
+                        throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
                     }
 
                     RunStatement(item);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is ReturnException))
             {
                 throw new AggregateException($"At line {loc.Line + 1}", ex);
             }
@@ -221,10 +231,21 @@ namespace LICC.Internal.LSF.Runtime
                 for (int i = 0; i < func.Parameters.Length; i++)
                 {
                     object value = Visit(funcCall.Arguments[i]);
-                    Context.SetVariable(func.Parameters[i].Name, (float)i);
+                    Context.SetVariable(func.Parameters[i].Name, value);
                 }
 
-                return Run(func.Statements, false);
+                object retValue;
+
+                try
+                {
+                    retValue = Run(func.Statements, false);
+                }
+                catch (ReturnException ex)
+                {
+                    retValue = ex.Value;
+                }
+
+                return retValue;
             }
             finally
             {
