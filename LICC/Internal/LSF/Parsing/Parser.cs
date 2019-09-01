@@ -156,16 +156,16 @@ namespace LICC.Internal.LSF.Parsing
             {
                 SkipWhitespaces();
 
-                var st = GetStatement();
+                var st = GetStatement(false);
 
-                if (!(st is CommentStatement))
+                if (st != null && !(st is CommentStatement))
                     statements.Add(st);
             }
 
             return new File(statements);
         }
 
-        private Statement GetStatement()
+        private Statement GetStatement(bool pardonInvalid = true)
         {
             Statement ret = null;
             var loc = Current.Begin;
@@ -226,6 +226,8 @@ namespace LICC.Internal.LSF.Parsing
 
             if (ret != null)
                 ret.Location = loc;
+            else if (!pardonInvalid)
+                Error($"unexpected {Current.Kind} found");
 
             return ret;
         }

@@ -11,11 +11,13 @@ namespace LICC.Internal.LSF.Parsing
 
         private int Column;
         private int Index;
-        private int Line;
         private char Char => Source[Index];
 
+        private int Line => NewlineIndices.Count(o => Index > o);
         private SourceLocation Location => new SourceLocation(Line, Column);
+
         private readonly StringBuilder Buffer = new StringBuilder();
+        private readonly List<int> NewlineIndices = new List<int>();
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
@@ -30,6 +32,12 @@ namespace LICC.Internal.LSF.Parsing
         public Lexer(string source)
         {
             this.Source = source.Replace("\r\n", "\n");
+
+            for (int i = 0; i < Source.Length; i++)
+            {
+                if (Source[i] == '\n')
+                    NewlineIndices.Add(i);
+            }
 
             if (this.Source[this.Source.Length - 1] != '\0')
                 this.Source += "\0";
@@ -67,15 +75,7 @@ namespace LICC.Internal.LSF.Parsing
             if (Column < 0)
             {
                 Column = 0;
-                Line--;
             }
-        }
-
-        private void NewLine()
-        {
-            Line++;
-            Column = 0;
-            Index++;
         }
 
         private char Consume()
@@ -123,9 +123,8 @@ namespace LICC.Internal.LSF.Parsing
             }
             else if (IsNewLine)
             {
-                var lexeme = Lexeme(LexemeKind.NewLine);
-                NewLine();
-                return lexeme;
+                Advance();
+                return Lexeme(LexemeKind.NewLine);
             }
             else
             {
