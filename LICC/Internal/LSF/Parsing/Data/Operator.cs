@@ -9,6 +9,12 @@
         And,
         Or,
         Negate,
-        Equals,
+
+        More,
+        MoreOrEqual,
+        Less,
+        LessOrEqual,
+        NotEqual,
+        Equal,
     }
 }

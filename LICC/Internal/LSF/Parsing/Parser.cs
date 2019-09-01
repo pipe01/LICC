@@ -18,7 +18,12 @@ namespace LICC.Internal.LSF.Parsing
             [LexemeKind.Divide] = Operator.Divide,
             [LexemeKind.AndAlso] = Operator.And,
             [LexemeKind.OrElse] = Operator.Or,
-            [LexemeKind.Equals] = Operator.Equals,
+            [LexemeKind.Equals] = Operator.Equal,
+            [LexemeKind.NotEqual] = Operator.NotEqual,
+            [LexemeKind.Less] = Operator.Less,
+            [LexemeKind.LessOrEqual] = Operator.LessOrEqual,
+            [LexemeKind.More] = Operator.More,
+            [LexemeKind.MoreOrEqual] = Operator.MoreOrEqual,
         };
         private static readonly int MaxOperatorValue = ((Operator[])Enum.GetValues(typeof(Operator))).Max(o => (int)o);
 

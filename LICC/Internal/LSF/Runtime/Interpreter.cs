@@ -261,10 +261,15 @@ namespace LICC.Internal.LSF.Runtime
             object left = Visit(expr.Left);
             object right = Visit(expr.Right);
 
-            if (expr.Operator == Operator.Equals)
+            if (expr.Operator == Operator.Equal)
             {
                 return left == null ? right == null : left.Equals(right);
             }
+
+            if (expr.Operator == Operator.Equal)
+                return left == null ? right == null : left.Equals(right);
+            else if (expr.Operator == Operator.NotEqual)
+                return left == null ? right != null : !left.Equals(right);
 
             if (left is string leftStr)
             {
@@ -291,21 +296,27 @@ namespace LICC.Internal.LSF.Runtime
                         return left + rightStr;
                 }
             }
-            else if (left is float leftNum)
+            else if (left is float leftNum && right is float rightNum)
             {
-                if (right is float rightNum)
+                switch (expr.Operator)
                 {
-                    switch (expr.Operator)
-                    {
-                        case Operator.Subtract:
-                            return leftNum - rightNum;
-                        case Operator.Add:
-                            return leftNum + rightNum;
-                        case Operator.Divide:
-                            return leftNum / rightNum;
-                        case Operator.Multiply:
-                            return leftNum * rightNum;
-                    }
+                    case Operator.Subtract:
+                        return leftNum - rightNum;
+                    case Operator.Add:
+                        return leftNum + rightNum;
+                    case Operator.Divide:
+                        return leftNum / rightNum;
+                    case Operator.Multiply:
+                        return leftNum * rightNum;
+
+                    case Operator.Less:
+                        return leftNum < rightNum;
+                    case Operator.LessOrEqual:
+                        return leftNum <= rightNum;
+                    case Operator.More:
+                        return leftNum > rightNum;
+                    case Operator.MoreOrEqual:
+                        return leftNum >= rightNum;
                 }
             }
 

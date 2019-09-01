@@ -12,18 +12,27 @@ namespace LICC.Internal.LSF.Parsing.Data
 
         Dollar,
         EqualsAssign,
-        Equals,
         Hashtag,
         AtSign,
         Exclamation,
+
+        Equals,
+        LessOrEqual,
+        Less,
+        MoreOrEqual,
+        More,
+        NotEqual,
+
         LeftParenthesis,
         RightParenthesis,
         LeftBrace,
         RightBrace,
+
         Plus,
         Minus,
         Multiply,
         Divide,
+
         And,
         AndAlso,
         Or,

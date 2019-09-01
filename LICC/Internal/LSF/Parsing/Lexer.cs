@@ -19,7 +19,7 @@ namespace LICC.Internal.LSF.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()+-*/;#,!$=&|@".Contains(Char);
+        private bool IsSymbol => "{}()<>+-*/;#,!$=&|@".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
 
@@ -167,36 +167,34 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.Hashtag);
                 case ',':
                     return Lexeme(LexemeKind.Comma);
-                case '!':
-                    return Lexeme(LexemeKind.Exclamation);
                 case '$':
                     return Lexeme(LexemeKind.Dollar);
                 case '@':
                     return Lexeme(LexemeKind.AtSign);
                 case '&':
-                    if (Consume() == '&')
-                    {
-                        return Lexeme(LexemeKind.AndAlso);
-                    }
-                    Back();
-                    return Lexeme(LexemeKind.And);
+                    return TwoCharOperator('&', LexemeKind.And, LexemeKind.AndAlso);
                 case '|':
-                    if (Consume() == '|')
-                    {
-                        return Lexeme(LexemeKind.OrElse);
-                    }
-                    Back();
-                    return Lexeme(LexemeKind.Or);
+                    return TwoCharOperator('|', LexemeKind.Or, LexemeKind.OrElse);
+                case '!':
+                    return TwoCharOperator('=', LexemeKind.Exclamation, LexemeKind.NotEqual);
                 case '=':
-                    if (Consume() == '=')
-                    {
-                        return Lexeme(LexemeKind.Equals);
-                    }
-                    Back();
-                    return Lexeme(LexemeKind.EqualsAssign);
+                    return TwoCharOperator('=', LexemeKind.EqualsAssign, LexemeKind.Equals);
+                case '<':
+                    return TwoCharOperator('=', LexemeKind.Less, LexemeKind.LessOrEqual);
+                case '>':
+                    return TwoCharOperator('=', LexemeKind.More, LexemeKind.MoreOrEqual);
             }
 
             return null;
+
+            Lexeme TwoCharOperator(char second, LexemeKind firstKind, LexemeKind secondKind)
+            {
+                if (Consume() == second)
+                    return Lexeme(secondKind);
+
+                Back();
+                return Lexeme(firstKind);
+            }
         }
 
         private Lexeme DoString()
