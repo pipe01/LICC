@@ -250,6 +250,8 @@ namespace LICC.Internal.Parsing
             {
                 if (float.TryParse(str.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
                     ret = new NumberLiteralExpression(f);
+                else
+                    Error($"invalid string '{str.Content}'");
             }
             else if (Take(LexemeKind.QuotedString, out var quotedStr))
             {

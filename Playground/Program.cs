@@ -13,7 +13,7 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            var l = new Lexer(@"!hello true (2 + 4 * 3 / (5 - 1)) (!func 123)
+            var l = new Lexer(@"!hello true (2 + (!inner asd) * 3 / (5 - 1)) (!func 123)
 
 function asd(ad name, asd name2) {
     hello 123 ('nice')
