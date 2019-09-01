@@ -2,13 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LICC.Internal.LSF.Runtime
 {
     internal class Interpreter
     {
+        private readonly ContextStack ContextStack = new ContextStack();
+
+        private RunContext Context => ContextStack.Peek();
+
+
         private readonly ICommandRegistryInternal CommandRegistry;
 
         public Interpreter(ICommandRegistryInternal commandRegistry)
@@ -19,6 +22,8 @@ namespace LICC.Internal.LSF.Runtime
         public void Run(IEnumerable<Statement> statements)
         {
             SourceLocation loc = default;
+
+            ContextStack.Push();
 
             try
             {
@@ -32,6 +37,10 @@ namespace LICC.Internal.LSF.Runtime
             {
                 throw new AggregateException($"At line {loc.Line + 1}", ex);
             }
+            finally
+            {
+                ContextStack.Pop();
+            }
         }
 
         private void RunStatement(Statement statement)
@@ -39,6 +48,10 @@ namespace LICC.Internal.LSF.Runtime
             if (statement is CommandStatement cmd)
             {
                 RunCommand(cmd);
+            }
+            else if (statement is ExpressionStatement exprStatement)
+            {
+                Visit(exprStatement.Expression);
             }
         }
 
@@ -85,6 +98,10 @@ namespace LICC.Internal.LSF.Runtime
                 return boo.Value;
             else if (expr is BinaryOperatorExpression bin)
                 return VisitBinaryOperator(bin);
+            else if (expr is VariableAccessExpression varAcc)
+                return VisitVariableAccess(varAcc);
+            else if (expr is VariableAssignmentExpression varAss)
+                return VisitVariableAssignment(varAss);
 
             throw null;
         }
@@ -137,6 +154,21 @@ namespace LICC.Internal.LSF.Runtime
             }
 
             throw null;
+        }
+
+        private object VisitVariableAccess(VariableAccessExpression expr)
+        {
+            if (ContextStack.TryGetValue(expr.VariableName, out var val))
+                return val;
+            else
+                return null; //Maybe throw instead?
+        }
+
+        private object VisitVariableAssignment(VariableAssignmentExpression expr)
+        {
+            var value = Visit(expr.Value);
+
+            return Context.Variables[expr.VariableName] = value;
         }
     }
 }

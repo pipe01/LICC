@@ -288,9 +288,22 @@ namespace LICC.Internal.LSF.Parsing
             }
             else if (Take(LexemeKind.Dollar, out _))
             {
-                string name = Take(LexemeKind.String, "variable name").Content;
+                Push();
 
-                ret = new VariableAccessExpression(name);
+                if (Take(LexemeKind.String, out _) && Take(LexemeKind.Equals, out _))
+                {
+                    Pop();
+
+                    ret = DoVariableAssign();
+                }
+                else
+                {
+                    Pop();
+
+                    string name = Take(LexemeKind.String, "variable name").Content;
+
+                    ret = new VariableAccessExpression(name);
+                }
             }
 
             if (ret != null && doOperator)
@@ -365,13 +378,13 @@ namespace LICC.Internal.LSF.Parsing
             return new FunctionCallExpression(funcName, args.ToArray());
         }
 
-        private VariableAssignExpression DoVariableAssign()
+        private VariableAssignmentExpression DoVariableAssign()
         {
             string name = Take(LexemeKind.String, "variable name").Content;
             Take(LexemeKind.Equals);
             var value = DoExpression();
 
-            return new VariableAssignExpression(name, value);
+            return new VariableAssignmentExpression(name, value);
         }
     }
 }

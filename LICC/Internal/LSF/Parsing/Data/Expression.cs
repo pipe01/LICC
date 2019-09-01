@@ -87,17 +87,19 @@ namespace LICC.Internal.LSF.Parsing.Data
         public override string ToString() => $"({Left} {Operator} {Right})";
     }
 
-    internal class VariableAssignExpression : Expression
+    internal class VariableAssignmentExpression : Expression
     {
         public override bool CanStandAlone => true;
 
         public string VariableName { get; }
         public Expression Value { get; }
 
-        public VariableAssignExpression(string variableName, Expression value)
+        public VariableAssignmentExpression(string variableName, Expression value)
         {
             this.VariableName = variableName;
             this.Value = value;
         }
+
+        public override string ToString() => $"(${VariableName} = {Value})";
     }
 }
