@@ -273,7 +273,7 @@ namespace LICC.Internal.LSF.Parsing
 
             if (ret != null && doOperator)
             {
-                return DoOperatorChain(ret);
+                return DoOperatorChain(ret) ?? ret;
             }
 
             return ret;
@@ -305,8 +305,6 @@ namespace LICC.Internal.LSF.Parsing
 
             } while (op != null);
 
-            //2 + 4 * 3 - 1
-
             if (items.Count > 0)
             {
                 items.Insert(0, first);
@@ -333,7 +331,7 @@ namespace LICC.Internal.LSF.Parsing
             }
             else
             {
-                return first;
+                return null;
             }
         }
 

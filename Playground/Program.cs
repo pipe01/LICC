@@ -2,6 +2,7 @@
 using LICC.API;
 using LICC.Console;
 using LICC.Internal.LSF.Parsing;
+using LICC.Internal.LSF.Runtime;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -13,18 +14,17 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            var l = new Lexer(@"!hello $var (2 + (!inner 3) * 3 / (5 - 1)) (!func 123)
-
-function asd(name, name2) {
-    hello 123 ('nice')
-}
-
-
-this 123 'is' (""gret"")").Lex().ToArray();
+            var l = new Lexer(@"test (2 * 5 / 3) (2 + 'hello')").Lex().ToArray();
 
             var p = new Parser().ParseFile(l);
 
-            ConsoleFrontend.StartDefault("cfg", true);
+            var console = new CommandConsole(new ConsoleFrontend(true));
+            console.Commands.RegisterCommandsInAllAssemblies();
+
+            new Interpreter(console.CommandRegistry).Run(p.Statements);
+
+            //ConsoleFrontend.StartDefault("cfg", true);
+            Console.ReadKey(true);
         }
 
         [Command]
