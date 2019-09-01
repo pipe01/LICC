@@ -1,5 +1,5 @@
-﻿using LICC.Internal.Parsing;
-using LICC.Internal.Parsing.Data;
+﻿using LICC.Internal.LSF;
+using LICC.Internal.LSF.Data;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

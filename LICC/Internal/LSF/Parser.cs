@@ -1,4 +1,4 @@
-﻿using LICC.Internal.Parsing.Data;
+﻿using LICC.Internal.LSF.Data;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LICC.Internal.Parsing
+namespace LICC.Internal.LSF
 {
     internal class Parser
     {
@@ -206,10 +206,10 @@ namespace LICC.Internal.Parsing
 
         private Parameter DoParameter()
         {
-            string type = Take(LexemeKind.String, "parameter type").Content;
+            //string type = Take(LexemeKind.String, "parameter type").Content;
             string name = Take(LexemeKind.String, "parameter name").Content;
 
-            return new Parameter(type, name);
+            return new Parameter(name);
         }
 
         private CommandStatement DoCommand()

@@ -1,7 +1,7 @@
 ﻿using LICC;
 using LICC.API;
 using LICC.Console;
-using LICC.Internal.Parsing;
+using LICC.Internal.LSF;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +15,7 @@ namespace Playground
         {
             var l = new Lexer(@"!hello $var (2 + (!inner 3) * 3 / (5 - 1)) (!func 123)
 
-function asd(ad name, asd name2) {
+function asd(name, name2) {
     hello 123 ('nice')
 }
 

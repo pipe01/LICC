@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace LICC.Internal.Parsing.Data
+namespace LICC.Internal.LSF.Data
 {
     internal enum LexemeKind
     {

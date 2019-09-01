@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace LICC.Internal.Parsing.Data
+namespace LICC.Internal.LSF.Data
 {
     internal class File
     {

@@ -1,4 +1,4 @@
-﻿using LICC.Internal.Parsing.Data;
+﻿using LICC.Internal.LSF.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LICC.Internal.Parsing
+namespace LICC.Internal.LSF
 {
     internal class Lexer
     {

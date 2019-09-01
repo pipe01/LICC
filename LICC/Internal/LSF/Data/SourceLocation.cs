@@ -1,4 +1,4 @@
-﻿namespace LICC.Internal.Parsing.Data
+﻿namespace LICC.Internal.LSF.Data
 {
     public readonly struct SourceLocation
     {
