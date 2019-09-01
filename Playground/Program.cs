@@ -16,6 +16,18 @@ namespace Playground
         {
             var l = new Lexer(@"test (200 * 5 / ($asd = 123)) (2 + 'asd')
 
+for ($n from 1 to 5)
+{
+    echo $n
+}
+
+echo '---'
+
+for ($n from 5 to 1)
+{
+    echo $n
+}
+
 $hello = true
 $hello = !$hello
 

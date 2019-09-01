@@ -68,4 +68,20 @@ namespace LICC.Internal.LSF.Parsing.Data
             this.Body = body;
         }
     }
+
+    internal class ForStatement : Statement
+    {
+        public string VariableName { get; }
+        public Expression From { get; }
+        public Expression To { get; }
+        public IEnumerable<Statement> Body { get; }
+
+        public ForStatement(string variableName, Expression from, Expression to, IEnumerable<Statement> body)
+        {
+            this.VariableName = variableName;
+            this.From = from;
+            this.To = to;
+            this.Body = body;
+        }
+    }
 }

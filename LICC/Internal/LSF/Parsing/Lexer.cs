@@ -1,16 +1,13 @@
 ﻿using LICC.Internal.LSF.Parsing.Data;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace LICC.Internal.LSF.Parsing
 {
     internal class Lexer
     {
-        private static readonly string[] Keywords = { "function", "true", "false", "return", "if" };
+        private static readonly string[] Keywords = { "function", "true", "false", "return", "if", "for", "from", "to" };
 
         private int Column;
         private int Index;
@@ -22,7 +19,7 @@ namespace LICC.Internal.LSF.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()+-*/;#,!$=&|".Contains(Char);
+        private bool IsSymbol => "{}()+-*/;#,!$=&|@".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
 
@@ -174,6 +171,8 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.Exclamation);
                 case '$':
                     return Lexeme(LexemeKind.Dollar);
+                case '@':
+                    return Lexeme(LexemeKind.AtSign);
                 case '&':
                     if (Consume() == '&')
                     {
@@ -226,7 +225,7 @@ namespace LICC.Internal.LSF.Parsing
                 Advance();
             }
 
-            return Lexeme(isQuoted 
+            return Lexeme(isQuoted
                 ? LexemeKind.QuotedString
                 : (IsKeyword
                     ? LexemeKind.Keyword

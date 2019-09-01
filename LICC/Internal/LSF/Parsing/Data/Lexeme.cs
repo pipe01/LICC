@@ -14,6 +14,7 @@ namespace LICC.Internal.LSF.Parsing.Data
         EqualsAssign,
         Equals,
         Hashtag,
+        AtSign,
         Exclamation,
         LeftParenthesis,
         RightParenthesis,

@@ -117,6 +117,22 @@ namespace LICC.Internal.LSF.Parsing
             return TakeAny();
         }
 
+        private bool TakeKeyword(string keyword, out Lexeme lexeme, bool ignoreWhitespace = true)
+        {
+            if (ignoreWhitespace)
+                SkipWhitespaces();
+
+            if (Current.Kind == LexemeKind.Keyword && Current.Content == keyword)
+            {
+                lexeme = Current;
+                TakeAny();
+                return true;
+            }
+
+            lexeme = null;
+            return false;
+        }
+
         private void Error(string msg) => Error(msg, Location);
         private void Error(string msg, SourceLocation location)
         {
@@ -169,6 +185,14 @@ namespace LICC.Internal.LSF.Parsing
                     
                 case LexemeKind.Keyword when Current.Content == "if":
                     ret = DoIfStatement();
+                    break;
+                    
+                case LexemeKind.Keyword when Current.Content == "for":
+                    ret = DoForStatement();
+                    break;
+
+                case LexemeKind.Keyword:
+                    Error("unexpected keyword: " + Current.Content);
                     break;
 
                 case LexemeKind.String:
@@ -245,6 +269,31 @@ namespace LICC.Internal.LSF.Parsing
             return new IfStatement(condition, body);
         }
 
+        private ForStatement DoForStatement()
+        {
+            TakeKeyword("for");
+            Take(LexemeKind.LeftParenthesis);
+            Take(LexemeKind.Dollar, "variable indicator");
+
+            string varName = Take(LexemeKind.String, "variable name", false).Content;
+
+            Expression from = null;
+
+            if (TakeKeyword("from", out _))
+            {
+                from = DoExpression();
+            }
+
+            TakeKeyword("to");
+            var to = DoExpression();
+
+            Take(LexemeKind.RightParenthesis);
+
+            var body = DoStatementBlock();
+
+            return new ForStatement(varName, from, to, body);
+        }
+
         private IEnumerable<Statement> DoStatementBlock()
         {
             var statements = new List<Statement>();
@@ -287,6 +336,8 @@ namespace LICC.Internal.LSF.Parsing
 
             return new CommandStatement(cmdName, args.ToArray());
         }
+
+
 
         private IEnumerable<Expression> DoArguments()
         {

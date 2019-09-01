@@ -25,11 +25,12 @@ namespace LICC.Internal.LSF.Runtime
             Run(file.Statements);
         }
 
-        private object Run(IEnumerable<Statement> statements)
+        private object Run(IEnumerable<Statement> statements, bool pushStack = true)
         {
             SourceLocation loc = default;
 
-            ContextStack.Push();
+            if (pushStack)
+                ContextStack.Push();
 
             try
             {
@@ -51,7 +52,8 @@ namespace LICC.Internal.LSF.Runtime
             }
             finally
             {
-                ContextStack.Pop();
+                if (pushStack)
+                    ContextStack.Pop();
             }
 
             return null;
@@ -74,9 +76,35 @@ namespace LICC.Internal.LSF.Runtime
                 if (condition is bool b ? b : (condition != null))
                     Run(ifStatement.Body);
             }
+            else if (statement is ForStatement forStatement)
+            {
+                DoForStatement(forStatement);
+            }
             else if (statement is FunctionDeclarationStatement funcDeclare)
             {
                 Context.Functions[funcDeclare.Name] = new Function(funcDeclare.Body.ToArray(), funcDeclare.Parameters.ToArray());
+            }
+        }
+
+        private void DoForStatement(ForStatement forStatement)
+        {
+            ContextStack.Push();
+
+            try
+            {
+                int from = forStatement.From == null ? 0 : Visit<int>(forStatement.From);
+                int to = Visit<int>(forStatement.To);
+
+                for (int i = to > from ? from : from - 1; to > from ? i < to : i >= to; i += to > from ? 1 : -1)
+                {
+                    Context.Variables[forStatement.VariableName] = i;
+
+                    Run(forStatement.Body, false);
+                }
+            }
+            finally
+            {
+                ContextStack.Pop();
             }
         }
 
@@ -111,6 +139,20 @@ namespace LICC.Internal.LSF.Runtime
             }
 
             cmd.Method.Invoke(null, args);
+        }
+
+        private T Visit<T>(Expression expr)
+        {
+            object val = Visit(expr);
+
+            try
+            {
+                return (T)Convert.ChangeType(val, typeof(T));
+            }
+            catch (Exception ex)
+            {
+                throw new RuntimeException($"failed to convert '{val}' to a {typeof(T).Name}", ex);
+            }
         }
 
         private object Visit(Expression expr)
@@ -153,7 +195,7 @@ namespace LICC.Internal.LSF.Runtime
                     Context.Variables[func.Parameters[i].Name] = value;
                 }
 
-                return Run(func.Statements);
+                return Run(func.Statements, false);
             }
             finally
             {
@@ -196,7 +238,7 @@ namespace LICC.Internal.LSF.Runtime
 
             if (expr.Operator == Operator.Equals)
             {
-                return (left == null ? right == null : left.Equals(right));
+                return left == null ? right == null : left.Equals(right);
             }
 
             if (left is string leftStr)
