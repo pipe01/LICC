@@ -221,7 +221,7 @@ namespace LICC.Internal.LSF.Runtime
                 for (int i = 0; i < func.Parameters.Length; i++)
                 {
                     object value = Visit(funcCall.Arguments[i]);
-                    Context.SetVariable(func.Parameters[i].Name, value);
+                    Context.SetVariable(func.Parameters[i].Name, (float)i);
                 }
 
                 return Run(func.Statements, false);

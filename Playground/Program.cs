@@ -4,6 +4,7 @@ using LICC.Console;
 using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Runtime;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;

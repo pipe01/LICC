@@ -10,7 +10,7 @@ namespace LICC.Internal.LSF.Runtime
 
         public bool TryGetVariable(string name, out object value)
         {
-            foreach (var item in this.Reverse())
+            foreach (var item in this)
             {
                 if (item.TryGetVariable(name, out value))
                     return true;
@@ -24,7 +24,7 @@ namespace LICC.Internal.LSF.Runtime
         {
             IRunContext contextWithVariable = null;
 
-            foreach (var item in this.Reverse())
+            foreach (var item in this)
             {
                 if (item.HasVariable(name))
                 {
@@ -33,12 +33,12 @@ namespace LICC.Internal.LSF.Runtime
                 }
             }
 
-            (contextWithVariable ?? this.Last()).SetVariable(name, value);
+            (contextWithVariable ?? this.First()).SetVariable(name, value);
         }
 
         public bool TryGetFunction(string name, out Function func)
         {
-            foreach (var item in this.Reverse())
+            foreach (var item in this)
             {
                 if (item.TryGetFunction(name, out func))
                     return true;
