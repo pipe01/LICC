@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace LICC.Internal.LSF.Parsing.Data
 {
-    internal interface IStatement
+    internal abstract class Statement
+    {
+        public SourceLocation Location { get; set; }
+    }
+
+    internal class CommentStatement : Statement
     {
     }
 
-    internal class CommentStatement : IStatement
-    {
-    }
-
-    internal class FunctionDeclarationStatement : IStatement
+    internal class FunctionDeclarationStatement : Statement
     {
         public string Name { get; }
-        public IEnumerable<IStatement> Statements { get; }
+        public IEnumerable<Statement> Statements { get; }
         public IEnumerable<Parameter> Parameters { get; }
 
-        public FunctionDeclarationStatement(string name, IEnumerable<IStatement> statements, IEnumerable<Parameter> parameters)
+        public FunctionDeclarationStatement(string name, IEnumerable<Statement> statements, IEnumerable<Parameter> parameters)
         {
             this.Name = name;
             this.Statements = statements;
@@ -28,7 +25,7 @@ namespace LICC.Internal.LSF.Parsing.Data
         }
     }
 
-    internal class CommandStatement : IStatement
+    internal class CommandStatement : Statement
     {
         public string CommandName { get; }
         public Expression[] Arguments { get; }
@@ -40,7 +37,7 @@ namespace LICC.Internal.LSF.Parsing.Data
         }
     }
 
-    internal class ExpressionStatement : IStatement
+    internal class ExpressionStatement : Statement
     {
         public Expression Expression { get; }
 

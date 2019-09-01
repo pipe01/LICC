@@ -5,14 +5,14 @@ namespace LICC.Internal.LSF.Parsing.Data
 {
     internal class File
     {
-        public IStatement[] Statements { get; }
+        public Statement[] Statements { get; }
 
-        public File(IEnumerable<IStatement> statements)
+        public File(IEnumerable<Statement> statements)
         {
             this.Statements = statements.ToArray();
         }
 
-        public File(IStatement[] statements)
+        public File(Statement[] statements)
         {
             this.Statements = statements;
         }

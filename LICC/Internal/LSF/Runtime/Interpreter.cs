@@ -16,15 +16,25 @@ namespace LICC.Internal.LSF.Runtime
             this.CommandRegistry = commandRegistry;
         }
 
-        public void Run(IEnumerable<IStatement> statements)
+        public void Run(IEnumerable<Statement> statements)
         {
-            foreach (var item in statements)
+            SourceLocation loc = default;
+
+            try
             {
-                RunStatement(item);
+                foreach (var item in statements)
+                {
+                    loc = item.Location;
+                    RunStatement(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new AggregateException($"At line {loc.Line + 1}", ex);
             }
         }
 
-        private void RunStatement(IStatement statement)
+        private void RunStatement(Statement statement)
         {
             if (statement is CommandStatement cmd)
             {
@@ -35,10 +45,10 @@ namespace LICC.Internal.LSF.Runtime
         private void RunCommand(CommandStatement statement)
         {
             if (!CommandRegistry.TryGetCommand(statement.CommandName, out var cmd))
-                throw null;
+                throw new RuntimeException($"command with name '{statement.CommandName}' not found");
 
             if (statement.Arguments.Length < cmd.Params.Count(o => !o.Optional))
-                throw null;
+                throw new RuntimeException("argument count mismatch");
 
             object[] args = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
 
@@ -46,13 +56,19 @@ namespace LICC.Internal.LSF.Runtime
             {
                 object argValue = Visit(statement.Arguments[i]);
 
+                if (argValue is float && cmd.Params[i].Type == typeof(string))
+                {
+                    args[i] = argValue.ToString();
+                    continue;
+                }
+
                 try
                 {
                     args[i] = Convert.ChangeType(argValue, cmd.Params[i].Type);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw null;
+                    throw new RuntimeException($"failed to convert parameter {cmd.Params[i].Name}'s value", ex);
                 }
             }
 

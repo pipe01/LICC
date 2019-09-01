@@ -117,7 +117,7 @@ namespace LICC.Internal.LSF.Parsing
             Index = 0;
             Lexemes = lexemes;
 
-            var statements = new List<IStatement>();
+            var statements = new List<Statement>();
 
             while (Current.Kind != LexemeKind.EndOfFile)
             {
@@ -132,28 +132,38 @@ namespace LICC.Internal.LSF.Parsing
             return new File(statements);
         }
 
-        private IStatement GetStatement()
+        private Statement GetStatement()
         {
+            Statement ret = null;
+            var loc = Current.Begin;
+
             switch (Current.Kind)
             {
                 case LexemeKind.Keyword:
-                    return DoFunction();
+                    ret = DoFunction();
+                    break;
                 case LexemeKind.String:
                     SkipWhitespaces();
 
                     if (Current.Kind != LexemeKind.String && Current.Kind != LexemeKind.QuotedString)
                         return null;
 
-                    return DoCommand();
+                    ret = DoCommand();
+                    break;
                 case LexemeKind.Hashtag:
                     AdvanceUntil(LexemeKind.NewLine);
-                    return new CommentStatement();
+                    ret = new CommentStatement();
+                    break;
                 case LexemeKind.Exclamation:
                     Advance();
-                    return new ExpressionStatement(DoFunctionCall());
+                    ret = new ExpressionStatement(DoFunctionCall());
+                    break;
             }
 
-            return null;
+            if (ret != null)
+                ret.Location = loc;
+
+            return ret;
         }
 
         private FunctionDeclarationStatement DoFunction()
@@ -163,7 +173,7 @@ namespace LICC.Internal.LSF.Parsing
             string name = Take(LexemeKind.String, "function name").Content;
             //Take(LexemeKind.Whitespace, "whitespace after function name", false);
 
-            var statements = new List<IStatement>();
+            var statements = new List<Statement>();
             var parameters = new List<Parameter>();
 
             Take(LexemeKind.LeftParenthesis, "parameter list opening");
@@ -189,7 +199,7 @@ namespace LICC.Internal.LSF.Parsing
             Take(LexemeKind.LeftBrace, "function body opening");
             SkipWhitespaces();
 
-            IStatement statement;
+            Statement statement;
             while ((statement = GetStatement()) != null)
             {
                 if (statement is FunctionDeclarationStatement)
