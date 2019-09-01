@@ -45,7 +45,7 @@ namespace LICC.Internal.LSF
                 }
             }
 
-            lines.RemoveAll(o => o.Length > 0 && o[0] == '#');
+            lines.RemoveAll(o => o.FirstOrDefault(i => i != ' ') == '#');
 
             return string.Join("\n", lines);
         }
