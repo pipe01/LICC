@@ -2,7 +2,9 @@
 {
     internal enum Operator
     {
+        Subtract,
         Add,
-        Subtract
+        Divide,
+        Multiply,
     }
 }

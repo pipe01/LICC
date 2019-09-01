@@ -18,6 +18,8 @@ namespace LICC.Internal.Parsing.Data
         RightBrace,
         Plus,
         Minus,
+        Multiply,
+        Divide,
 
         NewLine,
         Semicolon,

@@ -15,6 +15,7 @@ namespace LICC.Internal.Parsing
         private SourceLocation Location => Current.Begin;
 
         private Lexeme[] Lexemes;
+        private Stack<int> IndexStack = new Stack<int>();
 
         #region Utils
         private void Advance()
@@ -34,6 +35,15 @@ namespace LICC.Internal.Parsing
         private void Back()
         {
             Index--;
+        }
+
+        private void Push() => IndexStack.Push(Index);
+
+        private void Pop(bool set = true)
+        {
+            int i = IndexStack.Pop();
+            if (set)
+                Index = i;
         }
 
         private void SkipWhitespaces(bool alsoNewlines = true)
@@ -62,16 +72,20 @@ namespace LICC.Internal.Parsing
 
         private bool Take(LexemeKind lexemeKind, out Lexeme lexeme, bool ignoreWhitespace = true)
         {
+            Push();
+
             if (ignoreWhitespace)
                 SkipWhitespaces();
 
             if (Current.Kind == lexemeKind)
             {
                 lexeme = TakeAny();
+                Pop(false);
                 return true;
             }
 
             lexeme = null;
+            Pop();
             return false;
         }
 
@@ -216,46 +230,107 @@ namespace LICC.Internal.Parsing
             var args = new List<Expression>();
 
             Expression expr;
-            while ((expr = DoExpression()) != null)
+            while (Current.Kind != LexemeKind.NewLine && (expr = DoExpression()) != null)
                 args.Add(expr);
 
             return args;
         }
 
-        private Expression DoExpression()
+        private Expression DoExpression(bool doOperator = true)
         {
+            Expression ret = null;
+
             if (Take(LexemeKind.LeftParenthesis, out _))
             {
-                var expr = DoExpression();
+                ret = DoExpression();
 
                 Take(LexemeKind.RightParenthesis, "closing parentheses");
-
-                return expr;
             }
-
-
-            if (Take(LexemeKind.String, out var str))
+            else if (Take(LexemeKind.String, out var str))
             {
                 if (float.TryParse(str.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
-                    return new NumberLiteralExpression(f);
+                    ret = new NumberLiteralExpression(f);
             }
             else if (Take(LexemeKind.QuotedString, out var quotedStr))
             {
-                return new StringLiteralExpression(quotedStr.Content);
+                ret = new StringLiteralExpression(quotedStr.Content);
             }
             else if (Take(LexemeKind.Exclamation, out _))
             {
-                return DoFunctionCall();
+                ret = DoFunctionCall();
             }
             else if (Take(LexemeKind.Keyword, out var keyword))
             {
                 if (keyword.Content != "true" && keyword.Content != "false")
                     Error($"unexpected keyword: '{keyword.Content}'");
 
-                return new BooleanLiteralExpression(keyword.Content == "true");
+                ret = new BooleanLiteralExpression(keyword.Content == "true");
             }
 
-            return null;
+            if (ret != null && doOperator)
+            {
+                return DoOperatorChain(ret);
+            }
+
+            return ret;
+        }
+
+        private Expression DoOperatorChain(Expression first)
+        {
+            var items = new List<object>();
+            Operator? op;
+
+            do
+            {
+                op = null;
+
+                if (Take(LexemeKind.Plus, out _))
+                    op = Operator.Add;
+                else if (Take(LexemeKind.Minus, out _))
+                    op = Operator.Subtract;
+                else if (Take(LexemeKind.Multiply, out _))
+                    op = Operator.Multiply;
+                else if (Take(LexemeKind.Divide, out _))
+                    op = Operator.Divide;
+
+                if (op != null)
+                {
+                    items.Add(op.Value);
+                    items.Add(DoExpression(false));
+                }
+
+            } while (op != null);
+
+            //2 + 4 * 3 - 1
+
+            if (items.Count > 0)
+            {
+                items.Insert(0, first);
+
+                for (int i = (int)Operator.Multiply; i >= 0; i--)
+                {
+                    for (int j = 0; j < items.Count; j++)
+                    {
+                        var item = items[j];
+
+                        if (item is Operator o && o == (Operator)i)
+                        {
+                            items[j - 1] = new BinaryOperatorExpression(items[j - 1] as Expression, items[j + 1] as Expression, o);
+                            items.RemoveAt(j);
+                            items.RemoveAt(j);
+                        }
+                    }
+                }
+
+                if (items.Count > 1)
+                    Error("invalid operator chain");
+
+                return items[0] as Expression;
+            }
+            else
+            {
+                return first;
+            }
         }
 
         private FunctionCallExpression DoFunctionCall()

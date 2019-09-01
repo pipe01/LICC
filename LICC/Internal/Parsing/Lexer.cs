@@ -23,7 +23,7 @@ namespace LICC.Internal.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()+-;#,!".Contains(Char);
+        private bool IsSymbol => "{}()+-*/;#,!".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
         private bool IsFreeStringChar => !InvalidFreeStringChars.Contains(Char);
@@ -150,6 +150,10 @@ namespace LICC.Internal.Parsing
                     return Lexeme(LexemeKind.Plus);
                 case '-':
                     return Lexeme(LexemeKind.Minus);
+                case '*':
+                    return Lexeme(LexemeKind.Multiply);
+                case '/':
+                    return Lexeme(LexemeKind.Divide);
                 case ';':
                     return Lexeme(LexemeKind.Semicolon);
                 case '#':
