@@ -43,6 +43,18 @@ namespace LICC.Internal.Parsing.Data
         public override string ToString() => Value ? "true" : "false";
     }
 
+    internal class VariableAccessExpression : Expression
+    {
+        public string VariableName { get; }
+
+        public VariableAccessExpression(string variableName)
+        {
+            this.VariableName = variableName;
+        }
+
+        public override string ToString() => "$" + VariableName;
+    }
+
     internal class FunctionCallExpression : Expression
     {
         public override bool CanStandAlone => true;

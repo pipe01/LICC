@@ -250,6 +250,8 @@ namespace LICC.Internal.Parsing
             {
                 if (float.TryParse(str.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
                     ret = new NumberLiteralExpression(f);
+                else if (str.Content.Length > 1 && str.Content[0] == '$')
+                    ret = new VariableAccessExpression(str.Content.Substring(1));
                 else
                     Error($"invalid string '{str.Content}'");
             }
