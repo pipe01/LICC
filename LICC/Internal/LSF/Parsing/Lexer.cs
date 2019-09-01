@@ -7,7 +7,7 @@ namespace LICC.Internal.LSF.Parsing
 {
     internal class Lexer
     {
-        private static readonly string[] Keywords = { "function", "true", "false", "return", "if", "for", "from", "to", "while" };
+        private static readonly string[] Keywords = { "function", "true", "false", "null", "return", "if", "for", "from", "to", "while" };
 
         private int Column;
         private int Index;

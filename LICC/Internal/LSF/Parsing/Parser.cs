@@ -399,10 +399,14 @@ namespace LICC.Internal.LSF.Parsing
             }
             else if (Take(LexemeKind.Keyword, out var keyword))
             {
-                if (keyword.Content != "true" && keyword.Content != "false")
+                if (keyword.Content == "null")
+                    ret = new NullExpression();
+                else if (keyword.Content == "true")
+                    ret = new BooleanLiteralExpression(true);
+                else if (keyword.Content == "false")
+                    ret = new BooleanLiteralExpression(false);
+                else
                     Error($"unexpected keyword: '{keyword.Content}'");
-
-                ret = new BooleanLiteralExpression(keyword.Content == "true");
             }
             else if (Take(LexemeKind.Dollar, out _))
             {

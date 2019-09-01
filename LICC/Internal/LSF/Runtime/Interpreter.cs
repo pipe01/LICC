@@ -188,6 +188,8 @@ namespace LICC.Internal.LSF.Runtime
                 return num.Value;
             else if (expr is BooleanLiteralExpression boo)
                 return boo.Value;
+            else if (expr is NullExpression)
+                return null;
             else if (expr is BinaryOperatorExpression bin)
                 return VisitBinaryOperator(bin);
             else if (expr is UnaryOperatorExpression unary)
@@ -199,7 +201,7 @@ namespace LICC.Internal.LSF.Runtime
             else if (expr is FunctionCallExpression funcCall)
                 return VisitFunctionCall(funcCall);
 
-            throw null;
+            throw new RuntimeException("invalid expression?");
         }
 
         private object VisitFunctionCall(FunctionCallExpression funcCall)

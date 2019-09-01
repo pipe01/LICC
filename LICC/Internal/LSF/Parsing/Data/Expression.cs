@@ -43,6 +43,10 @@ namespace LICC.Internal.LSF.Parsing.Data
         public override string ToString() => Value ? "true" : "false";
     }
 
+    internal class NullExpression : Expression
+    {
+    }
+
     internal class VariableAccessExpression : Expression
     {
         public string VariableName { get; }

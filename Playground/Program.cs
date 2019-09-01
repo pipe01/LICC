@@ -44,6 +44,9 @@ while ($i > 0 == 0)
     echo $i
 }
 
+$i = null
+echo $i
+
 $hello = true
 $hello = !$hello
 
