@@ -13,7 +13,21 @@ namespace LICC.Internal.LSF.Parsing
         private int Index;
         private char Char => Source[Index];
 
-        private int Line => NewlineIndices.Count(o => Index > o);
+        private int Line
+        {
+            get
+            {
+                int i;
+
+                for (i = 0; i < NewlineIndices.Count; i++)
+                {
+                    if (Index > NewlineIndices[i])
+                        break;
+                }
+
+                return i;
+            }
+        }
         private SourceLocation Location => new SourceLocation(Line, Column);
 
         private readonly StringBuilder Buffer = new StringBuilder();
