@@ -13,7 +13,7 @@ namespace LICC.Test.Parsing
     {
         private void Check(string source, (LexemeKind Kind, string Content)[] expected, bool appendEof = true)
         {
-            var lexemes = Lexer.Lex(source).ToArray();
+            var lexemes = Lexer.Lex(source, null).ToArray();
 
             if (appendEof && expected[expected.Length - 1].Kind != LexemeKind.EndOfFile)
                 expected = expected.Append((LexemeKind.EndOfFile, null)).ToArray();
