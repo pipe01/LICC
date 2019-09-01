@@ -1,4 +1,5 @@
-﻿using LICC.Internal.LSF.Parsing;
+﻿using LICC.API;
+using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Parsing.Data;
 using LICC.Internal.LSF.Runtime;
 using System;
@@ -15,15 +16,17 @@ namespace LICC.Internal.LSF
     {
         private readonly Parser Parser = new Parser();
         private readonly Interpreter Interpreter;
-
-        public LsfRunner(IEnvironment environment, ICommandRegistryInternal commandRegistry)
+        private readonly IPreprocessor Preprocessor;
+        public LsfRunner(IEnvironment environment, ICommandRegistryInternal commandRegistry, IFileSystem fileSystem)
         {
             this.Interpreter = new Interpreter(commandRegistry, environment);
+            this.Preprocessor = new Preprocessor(fileSystem);
         }
 
         public void Run(string fileContents)
         {
-            var lexemes = Lexer.Lex(fileContents).ToArray();
+            var processed = Preprocessor.Process(fileContents);
+            var lexemes = Lexer.Lex(processed).ToArray();
             File ast;
 
             try
