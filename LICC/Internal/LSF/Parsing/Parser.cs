@@ -184,7 +184,11 @@ namespace LICC.Internal.LSF.Parsing
                     break;
                     
                 case LexemeKind.Keyword when Current.Content == "if":
-                    ret = DoIfStatement();
+                    ret = DoIfOrWhileStatement(true);
+                    break;
+                    
+                case LexemeKind.Keyword when Current.Content == "while":
+                    ret = DoIfOrWhileStatement(false);
                     break;
                     
                 case LexemeKind.Keyword when Current.Content == "for":
@@ -255,9 +259,9 @@ namespace LICC.Internal.LSF.Parsing
             return new FunctionDeclarationStatement(name, statements, parameters);
         }
 
-        private IfStatement DoIfStatement()
+        private Statement DoIfOrWhileStatement(bool @if)
         {
-            TakeKeyword("if");
+            TakeKeyword(@if ? "if" : "while");
             Take(LexemeKind.LeftParenthesis, "condition opening");
 
             var condition = DoExpression();
@@ -266,7 +270,7 @@ namespace LICC.Internal.LSF.Parsing
 
             var body = DoStatementBlock();
 
-            return new IfStatement(condition, body);
+            return @if ? new IfStatement(condition, body) : (Statement)new WhileStatement(condition, body);
         }
 
         private ForStatement DoForStatement()

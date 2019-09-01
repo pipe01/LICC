@@ -84,4 +84,16 @@ namespace LICC.Internal.LSF.Parsing.Data
             this.Body = body;
         }
     }
+
+    internal class WhileStatement : Statement
+    {
+        public Expression Condition { get; }
+        public IEnumerable<Statement> Body { get; }
+
+        public WhileStatement(Expression condition, IEnumerable<Statement> body)
+        {
+            this.Condition = condition;
+            this.Body = body;
+        }
+    }
 }

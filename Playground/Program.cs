@@ -28,6 +28,16 @@ for ($n from 5 to 1)
     echo $n
 }
 
+echo '---'
+
+$i = 5
+
+while (!($i == 0))
+{
+    $i = $i - 1
+    echo $i
+}
+
 $hello = true
 $hello = !$hello
 

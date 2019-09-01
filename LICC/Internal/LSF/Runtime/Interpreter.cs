@@ -71,10 +71,35 @@ namespace LICC.Internal.LSF.Runtime
             }
             else if (statement is IfStatement ifStatement)
             {
-                object condition = Visit(ifStatement.Condition);
+                ContextStack.Push();
 
-                if (condition is bool b ? b : (condition != null))
-                    Run(ifStatement.Body);
+                try
+                {
+                    object condition = Visit(ifStatement.Condition);
+
+                    if (condition is bool b ? b : (condition != null))
+                        Run(ifStatement.Body);
+                }
+                finally
+                {
+                    ContextStack.Pop();
+                }
+            }
+            else if (statement is WhileStatement whileStatement)
+            {
+                ContextStack.Push();
+
+                try
+                {
+                    while (Visit<bool>(whileStatement.Condition))
+                    {
+                        Run(whileStatement.Body);
+                    }
+                }
+                finally
+                {
+                    ContextStack.Pop();
+                }
             }
             else if (statement is ForStatement forStatement)
             {
@@ -97,7 +122,7 @@ namespace LICC.Internal.LSF.Runtime
 
                 for (int i = to > from ? from : from - 1; to > from ? i < to : i >= to; i += to > from ? 1 : -1)
                 {
-                    Context.Variables[forStatement.VariableName] = i;
+                    ContextStack.SetVariable(forStatement.VariableName, i);
 
                     Run(forStatement.Body, false);
                 }
@@ -315,7 +340,8 @@ namespace LICC.Internal.LSF.Runtime
         {
             var value = Visit(expr.Value);
 
-            return Context.Variables[expr.VariableName] = value;
+            ContextStack.SetVariable(expr.VariableName, value);
+            return value;
         }
     }
 }
