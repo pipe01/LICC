@@ -18,14 +18,20 @@ namespace Playground
 
 $hello = 123
 
-test $hello 'asd'").Lex().ToArray();
+function myFunc(param) {
+    echo ('inside function! ' + $param)
+}
+
+!myFunc 'a parameter'
+
+test $hello 'asd' * 2").Lex().ToArray();
 
             var p = new Parser().ParseFile(l);
 
             var console = new CommandConsole(new ConsoleFrontend(true));
             console.Commands.RegisterCommandsInAllAssemblies();
 
-            new Interpreter(console.CommandRegistry).Run(p.Statements);
+            new Interpreter(console.CommandRegistry).Run(p);
 
             //ConsoleFrontend.StartDefault("cfg", true);
             Console.ReadKey(true);

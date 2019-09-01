@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using LICC.Internal.LSF.Runtime.Data;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LICC.Internal.LSF.Runtime
@@ -7,7 +8,7 @@ namespace LICC.Internal.LSF.Runtime
     {
         public void Push() => Push(new RunContext());
 
-        public bool TryGetValue(string name, out object value)
+        public bool TryGetVariable(string name, out object value)
         {
             foreach (var item in this.Reverse())
             {
@@ -16,6 +17,18 @@ namespace LICC.Internal.LSF.Runtime
             }
 
             value = null;
+            return false;
+        }
+
+        public bool TryGetFunction(string name, out Function func)
+        {
+            foreach (var item in this.Reverse())
+            {
+                if (item.Functions.TryGetValue(name, out func))
+                    return true;
+            }
+
+            func = null;
             return false;
         }
     }

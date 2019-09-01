@@ -1,4 +1,5 @@
 ﻿using LICC.Internal.LSF.Parsing.Data;
+using LICC.Internal.LSF.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,12 @@ namespace LICC.Internal.LSF.Runtime
             this.CommandRegistry = commandRegistry;
         }
 
-        public void Run(IEnumerable<Statement> statements)
+        public void Run(File file)
+        {
+            Run(file.Statements);
+        }
+
+        private void Run(IEnumerable<Statement> statements)
         {
             SourceLocation loc = default;
 
@@ -52,6 +58,10 @@ namespace LICC.Internal.LSF.Runtime
             else if (statement is ExpressionStatement exprStatement)
             {
                 Visit(exprStatement.Expression);
+            }
+            else if (statement is FunctionDeclarationStatement funcDeclare)
+            {
+                Context.Functions[funcDeclare.Name] = new Function(funcDeclare.Statements.ToArray(), funcDeclare.Parameters.ToArray());
             }
         }
 
@@ -102,8 +112,38 @@ namespace LICC.Internal.LSF.Runtime
                 return VisitVariableAccess(varAcc);
             else if (expr is VariableAssignmentExpression varAss)
                 return VisitVariableAssignment(varAss);
+            else if (expr is FunctionCallExpression funcCall)
+                return VisitFunctionCall(funcCall);
 
             throw null;
+        }
+
+        private object VisitFunctionCall(FunctionCallExpression funcCall)
+        {
+            if (!ContextStack.TryGetFunction(funcCall.FunctionName, out var func))
+                throw new RuntimeException($"function with name '{funcCall.FunctionName}' not found");
+
+            if (funcCall.Arguments.Length != func.Parameters.Length)
+                throw new RuntimeException($"function '{funcCall.FunctionName}' expects {func.Parameters.Length} parameters but {funcCall.Arguments.Length} were found");
+
+            ContextStack.Push();
+
+            try
+            {
+                for (int i = 0; i < func.Parameters.Length; i++)
+                {
+                    object value = Visit(funcCall.Arguments[i]);
+                    Context.Variables[func.Parameters[i].Name] = value;
+                }
+
+                Run(func.Statements);
+            }
+            finally
+            {
+                ContextStack.Pop();
+            }
+
+            return null;
         }
 
         private object VisitBinaryOperator(BinaryOperatorExpression expr)
@@ -115,10 +155,11 @@ namespace LICC.Internal.LSF.Runtime
             {
                 switch (expr.Operator)
                 {
-                    case Operator.Multiply:
                     case Operator.Divide:
                     case Operator.Subtract:
-                        throw null;
+                        throw new RuntimeException("invalid operation");
+                    case Operator.Multiply when (right is float f):
+                        return string.Join("", Enumerable.Repeat(leftStr, (int)f));
                     case Operator.Add:
                         return leftStr + right;
                 }
@@ -130,7 +171,7 @@ namespace LICC.Internal.LSF.Runtime
                     case Operator.Multiply:
                     case Operator.Divide:
                     case Operator.Subtract:
-                        throw null;
+                        throw new RuntimeException("invalid operation");
                     case Operator.Add:
                         return left + rightStr;
                 }
@@ -158,7 +199,7 @@ namespace LICC.Internal.LSF.Runtime
 
         private object VisitVariableAccess(VariableAccessExpression expr)
         {
-            if (ContextStack.TryGetValue(expr.VariableName, out var val))
+            if (ContextStack.TryGetVariable(expr.VariableName, out var val))
                 return val;
             else
                 return null; //Maybe throw instead?

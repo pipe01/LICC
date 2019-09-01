@@ -137,6 +137,8 @@ namespace LICC.Internal.LSF.Parsing
             Statement ret = null;
             var loc = Current.Begin;
 
+            SkipWhitespaces();
+
             switch (Current.Kind)
             {
                 case LexemeKind.Hashtag:
@@ -210,8 +212,8 @@ namespace LICC.Internal.LSF.Parsing
             Statement statement;
             while ((statement = GetStatement()) != null)
             {
-                if (statement is FunctionDeclarationStatement)
-                    Error("cannot declare function inside function");
+                //if (statement is FunctionDeclarationStatement)
+                //    Error("cannot declare function inside function");
 
                 if (!(statement is CommentStatement))
                     statements.Add(statement);
