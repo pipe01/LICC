@@ -15,6 +15,7 @@
         Add,
         Divide,
         Multiply,
+        Modulo,
         Negate,
     }
 }

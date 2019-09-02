@@ -366,6 +366,8 @@ namespace LICC.Internal.LSF.Runtime
                         return leftNum / rightNum;
                     case Operator.Multiply:
                         return leftNum * rightNum;
+                    case Operator.Modulo:
+                        return leftNum % rightNum;
 
                     case Operator.Less:
                         return leftNum < rightNum;

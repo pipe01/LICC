@@ -1,6 +1,7 @@
 ﻿using LICC.Internal.LSF.Parsing.Data;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,7 @@ namespace LICC.Internal.LSF.Parsing
             [LexemeKind.LessOrEqual] = Operator.LessOrEqual,
             [LexemeKind.More] = Operator.More,
             [LexemeKind.MoreOrEqual] = Operator.MoreOrEqual,
+            [LexemeKind.Percentage] = Operator.Modulo,
         };
         private static readonly int MaxOperatorValue = ((Operator[])Enum.GetValues(typeof(Operator))).Max(o => (int)o);
 
@@ -35,6 +37,7 @@ namespace LICC.Internal.LSF.Parsing
         private Stack<int> IndexStack = new Stack<int>();
 
         #region Utils
+        [DebuggerStepThrough]
         private void Advance()
         {
             Index++;
@@ -43,19 +46,23 @@ namespace LICC.Internal.LSF.Parsing
                 Index = Lexemes.Length - 1;
         }
 
+        [DebuggerStepThrough]
         private void AdvanceUntil(LexemeKind kind)
         {
             while (Current.Kind != kind)
                 Advance();
         }
 
+        [DebuggerStepThrough]
         private void Back()
         {
             Index--;
         }
 
+        [DebuggerStepThrough]
         private void Push() => IndexStack.Push(Index);
 
+        [DebuggerStepThrough]
         private void Pop(bool set = true)
         {
             int i = IndexStack.Pop();
@@ -63,12 +70,14 @@ namespace LICC.Internal.LSF.Parsing
                 Index = i;
         }
 
+        [DebuggerStepThrough]
         private void SkipWhitespaces(bool alsoNewlines = true)
         {
             while (Current.Kind == LexemeKind.Whitespace || (Current.Kind == LexemeKind.NewLine && alsoNewlines))
                 Advance();
         }
 
+        [DebuggerStepThrough]
         private Lexeme TakeAny()
         {
             var token = Current;
@@ -76,6 +85,7 @@ namespace LICC.Internal.LSF.Parsing
             return token;
         }
 
+        [DebuggerStepThrough]
         private Lexeme Take(LexemeKind lexemeKind, string expected = null, bool ignoreWhitespace = true)
         {
             if (ignoreWhitespace)
@@ -87,6 +97,7 @@ namespace LICC.Internal.LSF.Parsing
             return TakeAny();
         }
 
+        [DebuggerStepThrough]
         private bool Take(LexemeKind lexemeKind, out Lexeme lexeme, bool ignoreWhitespace = true)
         {
             Push();
@@ -106,6 +117,7 @@ namespace LICC.Internal.LSF.Parsing
             return false;
         }
 
+        [DebuggerStepThrough]
         private Lexeme TakeKeyword(string keyword, bool ignoreWhitespace = true, bool @throw = true, string msg = null)
         {
             if (ignoreWhitespace)
@@ -122,6 +134,7 @@ namespace LICC.Internal.LSF.Parsing
             return TakeAny();
         }
 
+        [DebuggerStepThrough]
         private bool TakeKeyword(string keyword, out Lexeme lexeme, bool ignoreWhitespace = true)
         {
             if (ignoreWhitespace)
@@ -409,6 +422,9 @@ namespace LICC.Internal.LSF.Parsing
             {
                 ret = DoExpression();
 
+                if (Take(LexemeKind.QuestionMark, out _))
+                    ret = DoTernaryOperator(ret);
+
                 Take(LexemeKind.RightParenthesis, "closing parentheses ')'");
             }
             else if (Take(LexemeKind.String, out var str))
@@ -506,7 +522,10 @@ namespace LICC.Internal.LSF.Parsing
                 foreach (var item in LexemeOperatorMap)
                 {
                     if (Take(item.Key, out _))
+                    {
                         op = item.Value;
+                        break;
+                    }
                 }
 
                 if (op != null)
