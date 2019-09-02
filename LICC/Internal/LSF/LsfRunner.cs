@@ -3,6 +3,7 @@ using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Parsing.Data;
 using LICC.Internal.LSF.Runtime;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LICC.Internal.LSF
@@ -35,7 +36,7 @@ namespace LICC.Internal.LSF
             {
                 ast = Parser.ParseFile(lexemes);
             }
-            catch (ParseException ex)
+            catch (ParseException ex) when (!Debugger.IsAttached)
             {
                 LConsole.WriteLine(ex.Message, ConsoleColor.Red);
                 return;

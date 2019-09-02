@@ -187,6 +187,9 @@ namespace LICC.Internal.LSF.Parsing
 
             switch (Current.Kind)
             {
+                case LexemeKind.EndOfFile:
+                    return null;
+
                 case LexemeKind.Hashtag:
                     AdvanceUntil(LexemeKind.NewLine);
                     ret = new CommentStatement();
