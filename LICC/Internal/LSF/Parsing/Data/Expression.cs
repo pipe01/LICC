@@ -125,13 +125,15 @@ namespace LICC.Internal.LSF.Parsing.Data
 
         public string VariableName { get; }
         public Expression Value { get; }
+        public Operator? Operator { get; }
 
-        public VariableAssignmentExpression(string variableName, Expression value)
+        public VariableAssignmentExpression(string variableName, Expression value, Operator? @operator)
         {
             this.VariableName = variableName;
             this.Value = value;
+            this.Operator = @operator;
         }
 
-        public override string ToString() => $"(${VariableName} = {Value})";
+        public override string ToString() => $"(${VariableName} {Operator}= {Value})";
     }
 }

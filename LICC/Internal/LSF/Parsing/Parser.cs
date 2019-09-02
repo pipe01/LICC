@@ -588,10 +588,22 @@ namespace LICC.Internal.LSF.Parsing
         private VariableAssignmentExpression DoVariableAssign()
         {
             string name = Take(LexemeKind.String, "variable name").Content;
+            Operator? op = null;
+
+            if (Take(LexemeKind.Plus, out _))
+                op = Operator.Add;
+            else if (Take(LexemeKind.Minus, out _))
+                op = Operator.Subtract;
+            else if (Take(LexemeKind.Multiply, out _))
+                op = Operator.Multiply;
+            else if (Take(LexemeKind.Divide, out _))
+                op = Operator.Divide;
+
             Take(LexemeKind.EqualsAssign);
+
             var value = DoExpression();
 
-            return new VariableAssignmentExpression(name, value);
+            return new VariableAssignmentExpression(name, value, op);
         }
     }
 }

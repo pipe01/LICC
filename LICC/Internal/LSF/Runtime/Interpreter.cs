@@ -418,6 +418,11 @@ namespace LICC.Internal.LSF.Runtime
         {
             var value = Visit(expr.Value);
 
+            if (expr.Operator != null)
+            {
+                value = VisitBinaryOperator(new BinaryOperatorExpression(new VariableAccessExpression(expr.VariableName), expr.Value, expr.Operator.Value));
+            }
+
             ContextStack.SetVariable(expr.VariableName, value);
             return value;
         }
