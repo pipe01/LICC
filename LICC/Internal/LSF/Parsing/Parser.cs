@@ -532,6 +532,8 @@ namespace LICC.Internal.LSF.Parsing
                             items[j - 1] = new BinaryOperatorExpression(items[j - 1] as Expression, items[j + 1] as Expression, o);
                             items.RemoveAt(j);
                             items.RemoveAt(j);
+
+                            j--;
                         }
                     }
                 }
