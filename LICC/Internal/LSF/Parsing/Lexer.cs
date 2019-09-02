@@ -210,10 +210,6 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.LeftBrace, "{");
                 case '}':
                     return Lexeme(LexemeKind.RightBrace, "}");
-                case '+':
-                    return Lexeme(LexemeKind.Plus, "+");
-                case '-':
-                    return Lexeme(LexemeKind.Minus, "-");
                 case '*':
                     return Lexeme(LexemeKind.Multiply, "*");
                 case '/':
@@ -234,6 +230,10 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.Colon, ":");
                 case '%':
                     return Lexeme(LexemeKind.Percentage, "%");
+                case '+':
+                    return TwoCharOperator("++", LexemeKind.Plus, LexemeKind.Increment);
+                case '-':
+                    return TwoCharOperator("--", LexemeKind.Minus, LexemeKind.Decrement);
                 case '&':
                     return TwoCharOperator("&&", LexemeKind.And, LexemeKind.AndAlso);
                 case '|':

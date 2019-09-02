@@ -16,6 +16,8 @@
         Divide,
         Multiply,
         Modulo,
+        IncrementByOne,
+        DecrementByOne,
         Negate,
     }
 }

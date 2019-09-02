@@ -35,6 +35,8 @@ namespace LICC.Internal.LSF.Parsing.Data
         Multiply,
         Divide,
         Percentage,
+        Increment,
+        Decrement,
 
         And,
         AndAlso,

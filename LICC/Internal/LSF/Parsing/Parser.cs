@@ -197,7 +197,9 @@ namespace LICC.Internal.LSF.Parsing
 
                 case LexemeKind.Keyword when Current.Content == "return":
                     Advance();
-                    ret = new ReturnStatement(DoExpression());
+                    SkipWhitespaces(false);
+
+                    ret = new ReturnStatement(Current.Kind == LexemeKind.NewLine ? null : DoExpression());
                     break;
 
                 case LexemeKind.Keyword when Current.Content == "function":
@@ -449,7 +451,7 @@ namespace LICC.Internal.LSF.Parsing
                 {
                     Pop();
 
-                    ret = DoUnaryOperator(excl);
+                    ret = DoNegateOperator();
                 }
                 else
                 {
@@ -486,6 +488,11 @@ namespace LICC.Internal.LSF.Parsing
                     string name = Take(LexemeKind.String, "variable name").Content;
 
                     ret = new VariableAccessExpression(name);
+
+                    if (Take(LexemeKind.Increment, out _))
+                        ret = new UnaryOperatorExpression(Operator.IncrementByOne, ret);
+                    else if (Take(LexemeKind.Decrement, out _))
+                        ret = new UnaryOperatorExpression(Operator.DecrementByOne, ret);
                 }
             }
 
@@ -502,15 +509,11 @@ namespace LICC.Internal.LSF.Parsing
             return ret;
         }
 
-        private UnaryOperatorExpression DoUnaryOperator(Lexeme op)
+        private UnaryOperatorExpression DoNegateOperator()
         {
             var operand = DoExpression();
 
-            if (op.Kind == LexemeKind.Exclamation)
-                return new UnaryOperatorExpression(Operator.Negate, operand);
-
-            Error("invalid unary operator");
-            return null;
+            return new UnaryOperatorExpression(Operator.Negate, operand);
         }
 
         private Expression DoOperatorChain(Expression first)
@@ -588,7 +591,7 @@ namespace LICC.Internal.LSF.Parsing
             return new FunctionCallExpression(funcName, args.ToArray());
         }
 
-        private VariableAssignmentExpression DoVariableAssign()
+        private Expression DoVariableAssign()
         {
             string name = Take(LexemeKind.String, "variable name").Content;
             Operator? op = null;
@@ -601,12 +604,23 @@ namespace LICC.Internal.LSF.Parsing
                 op = Operator.Multiply;
             else if (Take(LexemeKind.Divide, out _))
                 op = Operator.Divide;
+            else if (Take(LexemeKind.Increment, out _))
+                op = Operator.IncrementByOne;
+            else if (Take(LexemeKind.Decrement, out _))
+                op = Operator.DecrementByOne;
 
-            Take(LexemeKind.EqualsAssign);
+            if (op == Operator.IncrementByOne || op == Operator.DecrementByOne)
+            {
+                return new UnaryOperatorExpression(op.Value, new VariableAccessExpression(name));
+            }
+            else
+            {
+                Take(LexemeKind.EqualsAssign);
 
-            var value = DoExpression();
+                var value = DoExpression();
 
-            return new VariableAssignmentExpression(name, value, op);
+                return new VariableAssignmentExpression(name, value, op);
+            }
         }
     }
 }

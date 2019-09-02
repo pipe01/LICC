@@ -21,6 +21,7 @@ namespace LICC.Internal.LSF.Runtime
         private readonly ContextStack ContextStack = new ContextStack();
 
         private IRunContext Context => ContextStack.Peek();
+        private bool InFunction;
 
 
         private readonly ICommandRegistryInternal CommandRegistry;
@@ -52,6 +53,10 @@ namespace LICC.Internal.LSF.Runtime
 
                     RunStatement(item);
                 }
+            }
+            catch (RuntimeException ex)
+            {
+                throw new RuntimeException($"At line {loc.Line + 1}: " + ex.Message);
             }
             catch (Exception ex) when (!(ex is ReturnException))
             {
@@ -94,7 +99,10 @@ namespace LICC.Internal.LSF.Runtime
             }
             else if (statement is ReturnStatement ret)
             {
-                throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
+                if (InFunction)
+                    throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
+                else
+                    throw new RuntimeException("unexpected return statement");
             }
         }
 
@@ -252,6 +260,7 @@ namespace LICC.Internal.LSF.Runtime
                 throw new RuntimeException($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
 
             ContextStack.Push();
+            InFunction = true;
 
             try
             {
@@ -282,6 +291,7 @@ namespace LICC.Internal.LSF.Runtime
             }
             finally
             {
+                InFunction = false;
                 ContextStack.Pop();
             }
         }
@@ -394,6 +404,19 @@ namespace LICC.Internal.LSF.Runtime
                         return !b;
                     else
                         throw new RuntimeException($"cannot negate '{operand}'");
+                case Operator.IncrementByOne:
+                case Operator.DecrementByOne:
+                    if (!(expr.Operand is VariableAccessExpression var))
+                    {
+                        throw new RuntimeException("expression on the left side of an increment operator must be a variable reference");
+                    }
+                    else
+                    {
+                        return VisitVariableAssignment(
+                           new VariableAssignmentExpression(var.VariableName,
+                           new BinaryOperatorExpression(var,
+                           new NumberLiteralExpression(expr.Operator == Operator.IncrementByOne ? 1 : -1), Operator.Add), null));
+                    }
             }
 
             throw new RuntimeException("invalid operator");
