@@ -9,53 +9,68 @@ namespace LICC
 {
     internal static class Commands
     {
-        [Command(Description = "Lists all commands or prints help for a command")]
-        private static void Help(string command = null)
+        [Command(Description = "Lists all commands")]
+        private static void Help()
         {
-            if (command == null)
+            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
+            int maxLength = cmds.Max(o => (o.Name + (o.Params.Length > 0 ? " " + o.GetParamsString() : "")).Length);
+            int padding = maxLength + 2;
+
+            LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
+
+            LineWriter writer = null;
+
+            if (LConsole.Frontend.PreferOneLine)
+                writer = LConsole.BeginLine();
+
+            int i = 0;
+            foreach (var cmd in cmds)
             {
-                var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
-                int maxLength = cmds.Max(o => o.Name.Length);
-                int padding = maxLength + 4;
-
-                LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
-
-                LineWriter writer = null;
-
-                if (LConsole.Frontend.PreferOneLine)
+                if (!LConsole.Frontend.PreferOneLine)
                     writer = LConsole.BeginLine();
 
-                int i = 0;
-                foreach (var cmd in cmds)
+                int len = 0;
+
+                writer.Write(cmd.Name, ConsoleColor.Blue);
+                len += cmd.Name.Length;
+
+                string paramsStr = " " + cmd.GetParamsString();
+                writer.Write(paramsStr, ConsoleColor.DarkGreen);
+                len += paramsStr.Length;
+
+                writer.Write(new string(' ', padding - len));
+
+                if (cmd.Description != null)
                 {
-                    if (!LConsole.Frontend.PreferOneLine)
-                        writer = LConsole.BeginLine();
-
-                    writer.Write(cmd.Name.PadRight(padding), ConsoleColor.Blue);
-
-                    if (cmd.Description != null)
-                    {
-                        writer.Write(": ", ConsoleColor.DarkGray);
-                        writer.Write(cmd.Description, ConsoleColor.DarkYellow);
-                    }
-
-                    if (!LConsole.Frontend.PreferOneLine)
-                        writer.End();
-                    else if (i++ != cmds.Length - 1)
-                        writer.Write(System.Environment.NewLine);
+                    writer.Write(": ", ConsoleColor.DarkGray);
+                    writer.Write(cmd.Description, ConsoleColor.DarkYellow);
                 }
 
-                if (LConsole.Frontend.PreferOneLine)
+                if (!LConsole.Frontend.PreferOneLine)
                     writer.End();
-            }
-            else
-            {
-                if (!CommandConsole.Current.CommandRegistry.TryGetCommand(command, out var cmd, !CommandConsole.Current.Config.CaseSensitiveCommandNames))
-                {
-                    LConsole.WriteLine($"Cannot find command with name '{command}'", ConsoleColor.Red);
-                    return;
-                }
+                else if (i != cmds.Length - 1)
+                    writer.Write(System.Environment.NewLine);
 
+                i++;
+            }
+
+            if (LConsole.Frontend.PreferOneLine)
+                writer.End();
+        }
+
+        [Command(Description = "Prints a command's usage")]
+        private static void Help(string command)
+        {
+            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().Where(o => o.Name == command).ToArray();
+
+            if (cmds.Length == 0)
+            {
+                LConsole.WriteLine($"Cannot find command with name '{command}'", ConsoleColor.Red);
+                return;
+            }
+
+            foreach (var cmd in cmds)
+            {
                 cmd.PrintUsage();
             }
         }

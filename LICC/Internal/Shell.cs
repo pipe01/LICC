@@ -90,7 +90,9 @@ namespace LICC.Internal
                 return;
             }
 
-            if (!CommandRegistry.TryGetCommand(cmdName, out var cmd, !Config.CaseSensitiveCommandNames))
+            var strArgs = GetArgs(argsLine).ToArray();
+
+            if (!CommandRegistry.TryGetCommand(cmdName, strArgs.Length, out var cmd, !Config.CaseSensitiveCommandNames))
                 throw new CommandNotFoundException(cmdName);
 
             int requiredParamCount = cmd.Params.Count(o => !o.Optional);
@@ -105,8 +107,6 @@ namespace LICC.Internal
                 }
                 else
                 {
-                    var strArgs = GetArgs(argsLine).ToArray();
-
                     if (strArgs.Length < requiredParamCount || strArgs.Length > cmd.Params.Length)
                         throw new ParameterMismatchException(requiredParamCount, cmd.Params.Length, strArgs.Length, cmd);
 
@@ -246,6 +246,9 @@ namespace LICC.Internal
 
         private IEnumerable<string> GetArgs(string str)
         {
+            if (string.IsNullOrWhiteSpace(str))
+                yield break;
+
             int i = 0;
 
             while (i < str.Length)
