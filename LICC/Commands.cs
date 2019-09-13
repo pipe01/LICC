@@ -24,34 +24,51 @@ namespace LICC
                 writer = LConsole.BeginLine();
 
             int i = 0;
-            foreach (var cmd in cmds)
+            foreach (var group in cmds.GroupBy(o => o.Method.DeclaringType.Assembly, (a, b) => new { Assembly = a, Commands = b.OrderBy(o => o.Name).ThenBy(o => o.Params.Length) }))
             {
+                var name = new System.Reflection.AssemblyName(group.Assembly.FullName).Name;
                 if (!LConsole.Frontend.PreferOneLine)
-                    writer = LConsole.BeginLine();
-
-                int len = 0;
-
-                writer.Write(cmd.Name, ConsoleColor.Blue);
-                len += cmd.Name.Length;
-
-                string paramsStr = " " + cmd.GetParamsString();
-                writer.Write(paramsStr, ConsoleColor.DarkGreen);
-                len += paramsStr.Length;
-
-                writer.Write(new string(' ', padding - len));
-
-                if (cmd.Description != null)
                 {
-                    writer.Write(": ", ConsoleColor.DarkGray);
-                    writer.Write(cmd.Description, ConsoleColor.DarkYellow);
+                    LConsole.WriteLine("------", ConsoleColor.DarkGray);
+                    LConsole.WriteLine(name, ConsoleColor.Cyan);
+                }
+                else
+                {
+                    LConsole.BeginLine()
+                            .WriteLine("------", ConsoleColor.DarkGray)
+                            .WriteLine(name, ConsoleColor.Yellow)
+                            .End();
                 }
 
-                if (!LConsole.Frontend.PreferOneLine)
-                    writer.End();
-                else if (i != cmds.Length - 1)
-                    writer.Write(System.Environment.NewLine);
+                foreach (var cmd in group.Commands)
+                {
+                    if (!LConsole.Frontend.PreferOneLine)
+                        writer = LConsole.BeginLine();
 
-                i++;
+                    int len = 0;
+
+                    writer.Write(cmd.Name, ConsoleColor.Blue);
+                    len += cmd.Name.Length;
+
+                    string paramsStr = " " + cmd.GetParamsString();
+                    writer.Write(paramsStr, ConsoleColor.DarkGreen);
+                    len += paramsStr.Length;
+
+                    writer.Write(new string(' ', padding - len));
+
+                    if (cmd.Description != null)
+                    {
+                        writer.Write(": ", ConsoleColor.DarkGray);
+                        writer.Write(cmd.Description, ConsoleColor.DarkYellow);
+                    }
+
+                    if (!LConsole.Frontend.PreferOneLine)
+                        writer.End();
+                    else if (i != cmds.Length - 1)
+                        writer.WriteLine();
+
+                    i++;
+                }
             }
 
             if (LConsole.Frontend.PreferOneLine)

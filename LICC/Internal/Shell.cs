@@ -93,7 +93,7 @@ namespace LICC.Internal
             var strArgs = GetArgs(argsLine).ToArray();
 
             if (!CommandRegistry.TryGetCommand(cmdName, strArgs.Length, out var cmd, !Config.CaseSensitiveCommandNames)
-             && !CommandRegistry.TryGetCommand(cmdName, 1, out cmd, !Config.CaseSensitiveCommandNames) && cmd.Params[0].Type == typeof(string))
+             && !(CommandRegistry.TryGetCommand(cmdName, 1, out cmd, !Config.CaseSensitiveCommandNames) && cmd.Params[0].Type == typeof(string)))
             {
                 throw new CommandNotFoundException(cmdName);
             }
@@ -129,9 +129,11 @@ namespace LICC.Internal
                 throw new ParameterMismatchException(requiredParamCount, cmd.Params.Length, 0, cmd);
             }
 
+            object result = null;
+
             try
             {
-                cmd.Method.Invoke(null, cmdArgs);
+                result = cmd.Method.Invoke(null, cmdArgs);
             }
             catch (TargetInvocationException ex)
             {
@@ -143,6 +145,11 @@ namespace LICC.Internal
             catch (Exception ex)
             {
                 HandleException(ex);
+            }
+
+            if (result != null)
+            {
+                LConsole.WriteLine("Command returned: " + result, ConsoleColor.DarkGray);
             }
 
             void HandleException(Exception ex)
