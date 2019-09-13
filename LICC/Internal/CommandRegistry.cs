@@ -71,7 +71,7 @@ namespace LICC.Internal
             }
             else
             {
-                cmd = Commands.SingleOrDefault(o => o.Key.StartsWith(name + "_", StringComparison.OrdinalIgnoreCase)).Value;
+                cmd = Commands.SingleOrDefault(o => o.Key.StartsWith(name + "_", ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Value;
                 return cmd.Name != null;
             }
 

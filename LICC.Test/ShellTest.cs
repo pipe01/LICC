@@ -23,7 +23,7 @@ namespace LICC.Test
         {
             var cmd = new Command(name, null, method);
             var registryMock = new Mock<ICommandRegistryInternal>();
-            registryMock.Setup(o => o.TryGetCommand(name, out cmd, It.IsAny<bool>())).Returns(true);
+            registryMock.Setup(o => o.TryGetCommand(name, method.GetParameters().Length, out cmd, It.IsAny<bool>())).Returns(true);
 
             return registryMock.Object;
         }
