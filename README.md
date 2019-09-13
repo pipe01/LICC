@@ -1,5 +1,7 @@
 # LICC
 
+[![Actions Status](https://github.com/pipe01/LICC/workflows/CI/badge.svg)](https://github.com/pipe01/LICC/actions)
+
 Library for Implementing C# Commands
 
 ---
