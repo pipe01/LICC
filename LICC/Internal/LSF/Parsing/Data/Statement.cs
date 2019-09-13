@@ -25,18 +25,6 @@ namespace LICC.Internal.LSF.Parsing.Data
         }
     }
 
-    internal class CommandStatement : Statement
-    {
-        public string CommandName { get; }
-        public Expression[] Arguments { get; }
-
-        public CommandStatement(string commandName, Expression[] arguments)
-        {
-            this.CommandName = commandName;
-            this.Arguments = arguments;
-        }
-    }
-
     internal class ExpressionStatement : Statement
     {
         public Expression Expression { get; }

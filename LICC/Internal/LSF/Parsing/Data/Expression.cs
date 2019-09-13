@@ -75,6 +75,20 @@ namespace LICC.Internal.LSF.Parsing.Data
         public override string ToString() => $"{FunctionName}({string.Join(", ", Arguments.Select(o => o.ToString()))})";
     }
 
+    internal class CommandCallExpression : Expression
+    {
+        public string CommandName { get; }
+        public Expression[] Arguments { get; }
+
+        public CommandCallExpression(string commandName, Expression[] arguments)
+        {
+            this.CommandName = commandName;
+            this.Arguments = arguments;
+        }
+
+        public override string ToString() => $"{CommandName}({string.Join(", ", Arguments.Select(o => o.ToString()))})";
+    }
+
     internal class BinaryOperatorExpression : Expression
     {
         public Expression Left { get; }
