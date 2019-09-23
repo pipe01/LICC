@@ -9,29 +9,52 @@ namespace LICC
 {
     internal static class Commands
     {
-        [Command(Description = "Lists all commands or prints help for a command")]
-        private static void Help(string command = null)
+        [Command(Description = "Lists all commands")]
+        private static void Help()
         {
-            if (command == null)
+            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
+            int maxLength = cmds.Max(o => (o.Name + (o.Params.Length > 0 ? " " + o.GetParamsString() : "")).Length);
+            int padding = maxLength + 2;
+
+            LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
+
+            LineWriter writer = null;
+
+            if (LConsole.Frontend.PreferOneLine)
+                writer = LConsole.BeginLine();
+
+            int i = 0;
+            foreach (var group in cmds.GroupBy(o => o.Method.DeclaringType.Assembly, (a, b) => new { Assembly = a, Commands = b.OrderBy(o => o.Name).ThenBy(o => o.Params.Length) }))
             {
-                var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
-                int maxLength = cmds.Max(o => o.Name.Length);
-                int padding = maxLength + 4;
+                var name = new System.Reflection.AssemblyName(group.Assembly.FullName).Name;
+                if (!LConsole.Frontend.PreferOneLine)
+                {
+                    LConsole.WriteLine("------", ConsoleColor.DarkGray);
+                    LConsole.WriteLine(name, ConsoleColor.Cyan);
+                }
+                else
+                {
+                    LConsole.BeginLine()
+                            .WriteLine("------", ConsoleColor.DarkGray)
+                            .WriteLine(name, ConsoleColor.Yellow)
+                            .End();
+                }
 
-                LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
-
-                LineWriter writer = null;
-
-                if (LConsole.Frontend.PreferOneLine)
-                    writer = LConsole.BeginLine();
-
-                int i = 0;
-                foreach (var cmd in cmds)
+                foreach (var cmd in group.Commands)
                 {
                     if (!LConsole.Frontend.PreferOneLine)
                         writer = LConsole.BeginLine();
 
-                    writer.Write(cmd.Name.PadRight(padding), ConsoleColor.Blue);
+                    int len = 0;
+
+                    writer.Write(cmd.Name, ConsoleColor.Blue);
+                    len += cmd.Name.Length;
+
+                    string paramsStr = " " + cmd.GetParamsString();
+                    writer.Write(paramsStr, ConsoleColor.DarkGreen);
+                    len += paramsStr.Length;
+
+                    writer.Write(new string(' ', padding - len));
 
                     if (cmd.Description != null)
                     {
@@ -41,21 +64,30 @@ namespace LICC
 
                     if (!LConsole.Frontend.PreferOneLine)
                         writer.End();
-                    else if (i++ != cmds.Length - 1)
-                        writer.Write(System.Environment.NewLine);
-                }
+                    else if (i != cmds.Length - 1)
+                        writer.WriteLine();
 
-                if (LConsole.Frontend.PreferOneLine)
-                    writer.End();
+                    i++;
+                }
             }
-            else
-            {
-                if (!CommandConsole.Current.CommandRegistry.TryGetCommand(command, out var cmd, !CommandConsole.Current.Config.CaseSensitiveCommandNames))
-                {
-                    LConsole.WriteLine($"Cannot find command with name '{command}'", ConsoleColor.Red);
-                    return;
-                }
 
+            if (LConsole.Frontend.PreferOneLine)
+                writer.End();
+        }
+
+        [Command(Description = "Prints a command's usage")]
+        private static void Help(string command)
+        {
+            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().Where(o => o.Name == command).ToArray();
+
+            if (cmds.Length == 0)
+            {
+                LConsole.WriteLine($"Cannot find command with name '{command}'", ConsoleColor.Red);
+                return;
+            }
+
+            foreach (var cmd in cmds)
+            {
                 cmd.PrintUsage();
             }
         }

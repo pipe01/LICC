@@ -7,18 +7,25 @@ namespace LICC
     public partial struct CColor
     {
         internal static IDictionary<string, CColor> ColorsByName { get; } = new Dictionary<string, CColor>();
+        private static List<CColor> AllColors { get; } = new List<CColor>();
 
         static CColor()
         {
             foreach (var item in typeof(CColor).GetFields(BindingFlags.Public | BindingFlags.Static)
                 .Where(o => o.IsInitOnly && o.FieldType == typeof(CColor)))
             {
-                ColorsByName[item.Name] = (CColor)item.GetValue(null);
+                var color = (CColor)item.GetValue(null);
+                ColorsByName[item.Name] = color;
+                AllColors.Add(color);
             }
         }
 
         public static CColor FromName(string name)
             => ColorsByName.TryGetValue(name, out var color) ? color : default;
+
+        static System.Random random = new System.Random();
+        public static CColor RandomColor()
+            => AllColors[random.Next(0, AllColors.Count)];
 
         public static readonly CColor AbsoluteZero = new CColor(0, 72, 186);
         public static readonly CColor Acajou = new CColor(76, 47, 39);

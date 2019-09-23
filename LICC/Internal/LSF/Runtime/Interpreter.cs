@@ -179,7 +179,7 @@ namespace LICC.Internal.LSF.Runtime
 
         private void RunCommand(CommandStatement statement)
         {
-            if (!CommandRegistry.TryGetCommand(statement.CommandName, out var cmd))
+            if (!CommandRegistry.TryGetCommand(statement.CommandName, statement.Arguments.Length, out var cmd))
                 throw new RuntimeException($"command with name '{statement.CommandName}' not found");
 
             if (statement.Arguments.Length < cmd.Params.Count(o => !o.Optional))

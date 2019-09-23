@@ -1,5 +1,7 @@
 # LICC
 
+[![Actions Status](https://github.com/pipe01/LICC/workflows/CI/badge.svg)](https://github.com/pipe01/LICC/actions)
+
 Library for Implementing C# Commands
 
 ---
@@ -37,4 +39,4 @@ ArgumentOutOfRangeException: the argument 'repetitions' must be at least 1
 
 LICC provides a static class which parses command text input. You have to implement a LICC frontend yourself, providing a method of input and output for the user.
 
-If you want to use LICC in your command-line project, check out [LICC the Console](todo add link), an open-source LICC frontend for the system console. If you want to implement a LICC frontend yourself, check out [The Wiki](todo make repo public so it can have a wiki) for how to do that.
+If you want to use LICC in your command-line project, check out [LICC the Console](./LICC.Console), an open-source LICC frontend for the system console. <!--If you want to implement a LICC frontend yourself, check out [The Wiki](todo make repo public so it can have a wiki) for how to do that.-->
