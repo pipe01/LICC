@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Playground
@@ -15,7 +16,7 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            ConsoleFrontend.StartDefault("cfg", true);
+            ConsoleFrontend.StartDefault("cfg", RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
         }
 
         [Command]
