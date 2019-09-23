@@ -46,7 +46,8 @@ namespace LICC.Internal
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
             this._Environment = environment;
-            this.LsfRunner = lsfRunner ?? new LsfRunner(environment, commandRegistry, fileSystem);
+            this.CommandExecutor = commandExecutor;
+            this.LsfRunner = lsfRunner ?? new LsfRunner(environment, commandRegistry, fileSystem, commandExecutor);
             this.Config = config ?? new ConsoleConfiguration();
         }
 

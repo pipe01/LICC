@@ -20,9 +20,9 @@ namespace LICC.Internal.LSF
         private readonly IPreprocessor Preprocessor;
         private readonly IFileSystem FileSystem;
 
-        public LsfRunner(IEnvironment environment, ICommandRegistryInternal commandRegistry, IFileSystem fileSystem)
+        public LsfRunner(IEnvironment environment, ICommandRegistryInternal commandRegistry, IFileSystem fileSystem, ICommandExecutor commandExecutor)
         {
-            this.Interpreter = new Interpreter(commandRegistry, environment);
+            this.Interpreter = new Interpreter(commandRegistry, environment, commandExecutor);
             this.Preprocessor = new Preprocessor(fileSystem);
             this.FileSystem = fileSystem;
         }
