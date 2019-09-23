@@ -245,7 +245,7 @@ namespace LICC.Internal.LSF.Runtime
                 }
             }
 
-            return cmd.Method.Invoke(null, args);
+            return CommandExecutor.Execute(cmd, args);
         }
 
         private object VisitFunctionCall(FunctionCallExpression funcCall)

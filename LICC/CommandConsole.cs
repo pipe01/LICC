@@ -69,8 +69,8 @@ namespace LICC
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="filesRootPath">The root folder for commands like exec.</param>
         /// <param name="config">The console configuration.</param>
-        public CommandConsole(Frontend frontend, string filesRootPath, ConsoleConfiguration config = null)
-            : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), null, config)
+        public CommandConsole(Frontend frontend, string filesRootPath, IObjectProvider objectProvider = null, ConsoleConfiguration config = null)
+            : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), objectProvider, config)
         {
         }
 
@@ -79,8 +79,8 @@ namespace LICC
         /// </summary>
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="config">The console configuration.</param>
-        public CommandConsole(Frontend frontend, ConsoleConfiguration config = null)
-            : this(frontend, new DefaultValueConverter(), null, null, config)
+        public CommandConsole(Frontend frontend, IObjectProvider objectProvider = null, ConsoleConfiguration config = null)
+            : this(frontend, new DefaultValueConverter(), null, objectProvider, config)
         {
         }
 

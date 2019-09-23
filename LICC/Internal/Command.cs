@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LICC.API;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -12,15 +13,22 @@ namespace LICC.Internal
         public (string Name, Type Type, bool Optional)[] Params { get; }
         public MethodInfo Method { get; }
         public int ArgCount { get; }
+        public (ParameterInfo Param, int Index)[] InjectedParameters { get; }
 
         public Command(string name, string desc, MethodInfo method)
         {
+            var methodParams = method.GetParameters();
+
             this.ID = Guid.NewGuid();
             this.Name = name;
             this.Description = desc;
-            this.Params = method.GetParameters().Select(o => (o.Name, o.ParameterType, o.HasDefaultValue)).ToArray();
+            this.Params = methodParams.Where(o => !o.IsDefined(typeof(InjectAttribute))).Select(o => (o.Name, o.ParameterType, o.HasDefaultValue)).ToArray();
             this.Method = method;
-            this.ArgCount = method.GetParameters().Length;
+            this.ArgCount = methodParams.Length;
+            this.InjectedParameters = methodParams
+                    .Select((param, index) => (param, index))
+                    .Where(o => o.param.IsDefined(typeof(InjectAttribute)))
+                    .ToArray();
         }
 
         public bool Equals(Command other) => other.ID == ID;

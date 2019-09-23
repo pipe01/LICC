@@ -13,19 +13,16 @@ namespace LICC
         private static void Help()
         {
             var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
-            int maxLength = cmds.Max(o => (o.Name + (o.Params.Length > 0 ? " " + o.GetParamsString() : "")).Length);
-            int padding = maxLength + 2;
 
             LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
 
             LineWriter writer = null;
 
-            if (LConsole.Frontend.PreferOneLine)
-                writer = LConsole.BeginLine();
-
             int i = 0;
             foreach (var group in cmds.GroupBy(o => o.Method.DeclaringType.Assembly, (a, b) => new { Assembly = a, Commands = b.OrderBy(o => o.Name).ThenBy(o => o.Params.Length) }))
             {
+                int maxLength = group.Commands.Max(o => (o.Name + (o.Params.Length > 0 ? " " + o.GetParamsString() : "")).Length) + 2;
+
                 var name = new System.Reflection.AssemblyName(group.Assembly.FullName).Name;
                 if (!LConsole.Frontend.PreferOneLine)
                 {
@@ -39,6 +36,9 @@ namespace LICC
                             .WriteLine(name, ConsoleColor.Yellow)
                             .End();
                 }
+
+                if (LConsole.Frontend.PreferOneLine)
+                    writer = LConsole.BeginLine();
 
                 foreach (var cmd in group.Commands)
                 {
@@ -54,7 +54,7 @@ namespace LICC
                     writer.Write(paramsStr, ConsoleColor.DarkGreen);
                     len += paramsStr.Length;
 
-                    writer.Write(new string(' ', padding - len));
+                    writer.Write(new string(' ', maxLength - len));
 
                     if (cmd.Description != null)
                     {

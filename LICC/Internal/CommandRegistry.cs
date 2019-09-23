@@ -42,7 +42,9 @@ namespace LICC.Internal
 
             string name = attr.Name ?? method.Name.ToLower();
 
-            if (Commands.ContainsKey(name + "_" + method.GetParameters().Length))
+            var cmd = new Command(name, attr.Description, method);
+
+            if (Commands.ContainsKey(name + "_" + cmd.Params.Length))
             {
                 if (ignoreInvalid)
                     return;
@@ -52,8 +54,6 @@ namespace LICC.Internal
 
             if (name.StartsWith("$"))
                 throw new InvalidCommandMethodException("Command names cannot start with '$'");
-
-            var cmd = new Command(name, attr.Description, method);
 
             for (int i = cmd.Params.Count(o => !o.Optional); i < cmd.Params.Length + 1; i++)
             {
