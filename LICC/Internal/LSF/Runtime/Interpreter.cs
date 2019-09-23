@@ -25,10 +25,12 @@ namespace LICC.Internal.LSF.Runtime
 
 
         private readonly ICommandRegistryInternal CommandRegistry;
+        private readonly ICommandExecutor CommandExecutor;
 
-        public Interpreter(ICommandRegistryInternal commandRegistry, IEnvironment environment)
+        public Interpreter(ICommandRegistryInternal commandRegistry, IEnvironment environment, ICommandExecutor commandExecutor)
         {
             this.CommandRegistry = commandRegistry;
+            this.CommandExecutor = commandExecutor;
 
             ContextStack.Push(environment);
         }

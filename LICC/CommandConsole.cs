@@ -26,7 +26,8 @@ namespace LICC
         internal readonly ICommandRegistryInternal CommandRegistry;
 
         internal CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem,
-            IShell shell, ICommandRegistryInternal commandRegistry, ConsoleConfiguration config)
+            IShell shell, ICommandRegistryInternal commandRegistry, ICommandExecutor commandExecutor,
+            ConsoleConfiguration config)
         {
             Current = this;
             LConsole.Frontend = frontend;
@@ -37,7 +38,7 @@ namespace LICC
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
-            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, commandRegistry, new Environment(), null, config);
+            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, commandRegistry, new Environment(), commandExecutor, null, config);
 
             frontend.LineInput += Frontend_LineInput;
 
@@ -55,9 +56,10 @@ namespace LICC
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="valueConverter">The value converter to use for command arguments.</param>
         /// <param name="fileSystem">The file system for commands like exec.</param>
+        /// <param name="objectProvider">The object provider for injecting dependencies into methods.</param>
         /// <param name="config">The console configuration.</param>
-        public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ConsoleConfiguration config = null)
-            : this(frontend, valueConverter, fileSystem, null, new CommandRegistry(), config ?? new ConsoleConfiguration())
+        public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, IObjectProvider objectProvider, ConsoleConfiguration config = null)
+            : this(frontend, valueConverter, fileSystem, null, new CommandRegistry(), new CommandExecutor(objectProvider), config ?? new ConsoleConfiguration())
         {
         }
 
@@ -68,7 +70,7 @@ namespace LICC
         /// <param name="filesRootPath">The root folder for commands like exec.</param>
         /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, string filesRootPath, ConsoleConfiguration config = null)
-            : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), config)
+            : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), null, config)
         {
         }
 
@@ -78,7 +80,7 @@ namespace LICC
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, ConsoleConfiguration config = null)
-            : this(frontend, new DefaultValueConverter(), null, config)
+            : this(frontend, new DefaultValueConverter(), null, null, config)
         {
         }
 

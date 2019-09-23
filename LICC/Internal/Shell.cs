@@ -31,14 +31,15 @@ namespace LICC.Internal
         private readonly ICommandRegistryInternal CommandRegistry;
         private readonly IEnvironment _Environment;
         private readonly ILsfRunner LsfRunner;
+        private readonly ICommandExecutor CommandExecutor;
         private readonly ConsoleConfiguration Config;
 
         private Exception _LastException;
         Exception IShell.LastException => _LastException;
 
         public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem,
-            ICommandRegistryInternal commandRegistry, IEnvironment environment, ILsfRunner lsfRunner = null,
-            ConsoleConfiguration config = null)
+            ICommandRegistryInternal commandRegistry, IEnvironment environment, ICommandExecutor commandExecutor,
+            ILsfRunner lsfRunner = null, ConsoleConfiguration config = null)
         {
             this.ValueConverter = valueConverter;
             this.History = history;
@@ -128,7 +129,7 @@ namespace LICC.Internal
 
             try
             {
-                cmd.Method.Invoke(null, cmdArgs);
+                CommandExecutor.Execute(cmd, cmdArgs);
             }
             catch (TargetInvocationException ex)
             {
