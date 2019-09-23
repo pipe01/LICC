@@ -228,7 +228,7 @@ namespace LICC.Internal.LSF.Parsing
                     if (Current.Kind != LexemeKind.String && Current.Kind != LexemeKind.QuotedString)
                         return null;
 
-                    ret = DoCommand();
+                    ret = new ExpressionStatement(DoCommandExpression());
                     break;
 
                 case LexemeKind.Exclamation:
@@ -393,7 +393,7 @@ namespace LICC.Internal.LSF.Parsing
             return new Parameter(name, defaultValue);
         }
 
-        private CommandStatement DoCommand()
+        private CommandCallExpression DoCommandExpression()
         {
             string cmdName = Take(LexemeKind.String).Content;
             var args = DoArguments();
@@ -403,7 +403,7 @@ namespace LICC.Internal.LSF.Parsing
             else if (Current.Kind == LexemeKind.Hashtag)
                 AdvanceUntil(LexemeKind.NewLine);
 
-            return new CommandStatement(cmdName, args.ToArray());
+            return new CommandCallExpression(cmdName, args.ToArray());
         }
 
 
@@ -443,7 +443,7 @@ namespace LICC.Internal.LSF.Parsing
             {
                 ret = new StringLiteralExpression(quotedStr.Content);
             }
-            else if (Take(LexemeKind.Exclamation, out var excl))
+            else if (Take(LexemeKind.Exclamation, out _))
             {
                 Push();
 
@@ -459,6 +459,10 @@ namespace LICC.Internal.LSF.Parsing
 
                     ret = DoFunctionCall();
                 }
+            }
+            else if (Take(LexemeKind.QuestionMark, out _))
+            {
+                ret = DoCommandExpression();
             }
             else if (Take(LexemeKind.Keyword, out var keyword))
             {

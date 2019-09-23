@@ -75,11 +75,7 @@ namespace LICC.Internal.LSF.Runtime
 
         private void RunStatement(Statement statement)
         {
-            if (statement is CommandStatement cmd)
-            {
-                RunCommand(cmd);
-            }
-            else if (statement is ExpressionStatement exprStatement)
+            if (statement is ExpressionStatement exprStatement)
             {
                 Visit(exprStatement.Expression);
             }
@@ -177,39 +173,6 @@ namespace LICC.Internal.LSF.Runtime
             }
         }
 
-        private void RunCommand(CommandStatement statement)
-        {
-            if (!CommandRegistry.TryGetCommand(statement.CommandName, statement.Arguments.Length, out var cmd))
-                throw new RuntimeException($"command with name '{statement.CommandName}' not found");
-
-            if (statement.Arguments.Length < cmd.Params.Count(o => !o.Optional))
-                throw new RuntimeException("argument count mismatch");
-
-            object[] args = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
-
-            for (int i = 0; i < statement.Arguments.Length; i++)
-            {
-                object argValue = Visit(statement.Arguments[i]);
-
-                if (argValue is float && cmd.Params[i].Type == typeof(string))
-                {
-                    args[i] = argValue.ToString();
-                    continue;
-                }
-
-                try
-                {
-                    args[i] = Convert.ChangeType(argValue, cmd.Params[i].Type);
-                }
-                catch (Exception ex)
-                {
-                    throw new RuntimeException($"failed to convert parameter {cmd.Params[i].Name}'s value", ex);
-                }
-            }
-
-            cmd.Method.Invoke(null, args);
-        }
-
         private T Visit<T>(Expression expr)
         {
             object val = Visit(expr);
@@ -246,8 +209,43 @@ namespace LICC.Internal.LSF.Runtime
                 return VisitVariableAssignment(varAss);
             else if (expr is FunctionCallExpression funcCall)
                 return VisitFunctionCall(funcCall);
+            else if (expr is CommandCallExpression cmdCall)
+                return VisitCommandCall(cmdCall);
 
             throw new RuntimeException("invalid expression?");
+        }
+
+        private object VisitCommandCall(CommandCallExpression statement)
+        {
+            if (!CommandRegistry.TryGetCommand(statement.CommandName, statement.Arguments.Length, out var cmd))
+                throw new RuntimeException($"command with name '{statement.CommandName}' not found");
+
+            if (statement.Arguments.Length < cmd.Params.Count(o => !o.Optional))
+                throw new RuntimeException("argument count mismatch");
+
+            object[] args = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
+
+            for (int i = 0; i < statement.Arguments.Length; i++)
+            {
+                object argValue = Visit(statement.Arguments[i]);
+
+                if (argValue is float && cmd.Params[i].Type == typeof(string))
+                {
+                    args[i] = argValue.ToString();
+                    continue;
+                }
+
+                try
+                {
+                    args[i] = Convert.ChangeType(argValue, cmd.Params[i].Type);
+                }
+                catch (Exception ex)
+                {
+                    throw new RuntimeException($"failed to convert parameter {cmd.Params[i].Name}'s value", ex);
+                }
+            }
+
+            return cmd.Method.Invoke(null, args);
         }
 
         private object VisitFunctionCall(FunctionCallExpression funcCall)
