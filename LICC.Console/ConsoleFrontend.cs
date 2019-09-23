@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using TrueColorConsole;
 using SConsole = System.Console;
 
 namespace LICC.Console
 {
-    public class ConsoleFrontend : Frontend
+    public class ConsoleFrontend : Frontend, ILineReader
     {
         private (int X, int Y) StartPos;
         private string Buffer;
@@ -283,13 +284,15 @@ namespace LICC.Console
         /// </summary>
         public static void StartDefault(string fileSystemRoot = null, bool enableVtMode = true)
         {
-            var frontend = new ConsoleFrontend(enableVtMode);
+            var frontend = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? (Frontend)new ConsoleFrontend(enableVtMode)
+                : new PlainTextConsoleFrontend();
             var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
             console.Commands.RegisterCommandsInAllAssemblies();
 
             console.RunAutoexec();
 
-            frontend.BeginRead();
+            (frontend as ILineReader).BeginRead();
         }
     }
 }

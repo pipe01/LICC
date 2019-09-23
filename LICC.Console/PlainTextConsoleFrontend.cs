@@ -5,7 +5,7 @@ using SConsole = System.Console;
 
 namespace LICC.Console
 {
-    public class PlainTextConsoleFrontend : Frontend
+    public class PlainTextConsoleFrontend : Frontend, ILineReader
     {
         /// <summary>
         /// Blocks the current thread and begins reading input.

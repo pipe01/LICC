@@ -16,7 +16,7 @@ namespace Playground
     {
         static void Main(string[] args)
         {
-            ConsoleFrontend.StartDefault("cfg", RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            ConsoleFrontend.StartDefault("cfg", true);
         }
 
         [Command]
