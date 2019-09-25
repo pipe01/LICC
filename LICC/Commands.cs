@@ -69,10 +69,10 @@ namespace LICC
 
                     i++;
                 }
-            }
 
-            if (LConsole.Frontend.PreferOneLine)
-                writer.End();
+                if (LConsole.Frontend.PreferOneLine)
+                    writer.End();
+            }
         }
 
         [Command(Description = "Prints a command's usage")]
