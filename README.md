@@ -1,8 +1,8 @@
-# LICC
-
-[![Actions Status](https://github.com/pipe01/LICC/workflows/CI/badge.svg)](https://github.com/pipe01/LICC/actions)
+<img src="https://raw.githubusercontent.com/pipe01/LICC/master/logo.png" width = 480>
 
 Library for Implementing C# Commands
+
+[![Actions Status](https://github.com/pipe01/LICC/workflows/CI/badge.svg)](https://github.com/pipe01/LICC/actions)
 
 ---
 
