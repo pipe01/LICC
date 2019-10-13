@@ -450,6 +450,6 @@ namespace LICC.Internal.LSF.Runtime
             return value;
         }
 
-        private static bool IsTruthy(object obj) => (obj is bool b && b) && obj != null;
+        private static bool IsTruthy(object obj) => (obj is bool b && b) || obj != null;
     }
 }
