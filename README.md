@@ -1,8 +1,8 @@
-# LICC
-
-[![Actions Status](https://github.com/pipe01/LICC/workflows/CI/badge.svg)](https://github.com/pipe01/LICC/actions)
+<img src="https://raw.githubusercontent.com/pipe01/LICC/master/logo.png" width = 480>
 
 Library for Implementing C# Commands
+
+[![Actions Status](https://github.com/pipe01/LICC/workflows/CI/badge.svg)](https://github.com/pipe01/LICC/actions)
 
 ---
 
@@ -40,3 +40,7 @@ ArgumentOutOfRangeException: the argument 'repetitions' must be at least 1
 LICC provides a static class which parses command text input. You have to implement a LICC frontend yourself, providing a method of input and output for the user.
 
 If you want to use LICC in your command-line project, check out [LICC the Console](./LICC.Console), an open-source LICC frontend for the system console. <!--If you want to implement a LICC frontend yourself, check out [The Wiki](todo make repo public so it can have a wiki) for how to do that.-->
+
+---
+
+LICC was created for the game [Logic World](https://logicworld.net/), where the console frontend in this repo is used in the standalone server application. We have also developed a LICC frontend for the Unity game engine called [Fancy Pants Console](https://www.youtube.com/watch?v=QDp5wE1Se6o) which will eventually be open sourced.
