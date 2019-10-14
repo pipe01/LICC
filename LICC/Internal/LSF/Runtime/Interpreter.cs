@@ -37,7 +37,13 @@ namespace LICC.Internal.LSF.Runtime
 
         public void Run(File file)
         {
-            Run(file.Statements);
+            try
+            {
+                Run(file.Statements);
+            }
+            catch (ReturnException)
+            {
+            }
         }
 
         private object Run(IEnumerable<Statement> statements, bool pushStack = true)
@@ -97,10 +103,7 @@ namespace LICC.Internal.LSF.Runtime
             }
             else if (statement is ReturnStatement ret)
             {
-                if (InFunction)
-                    throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
-                else
-                    throw new RuntimeException("unexpected return statement");
+                throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
             }
         }
 
