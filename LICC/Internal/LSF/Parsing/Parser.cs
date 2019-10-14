@@ -92,7 +92,10 @@ namespace LICC.Internal.LSF.Parsing
                 SkipWhitespaces();
 
             if (Current.Kind != lexemeKind)
-                Error($"expected {expected ?? lexemeKind.ToString()}, found '{Current.Content}' ({Current.Kind})");
+            {
+                var lexemeChar = lexemeKind.GetCharacter();
+                Error($"expected {expected ?? lexemeKind.ToString()}{(lexemeChar != null ? $" '{lexemeChar}'" : "")}, found '{Current.Content}' ({Current.Kind})");
+            }
 
             return TakeAny();
         }
@@ -126,7 +129,7 @@ namespace LICC.Internal.LSF.Parsing
             if (Current.Kind != LexemeKind.Keyword || Current.Content != keyword)
             {
                 if (@throw)
-                    Error(msg ?? $"expected '{keyword}' keyword, found {Current}");
+                    Error(msg ?? $"expected keyword '{keyword}', found {Current}");
                 else
                     return null;
             }
@@ -259,7 +262,7 @@ namespace LICC.Internal.LSF.Parsing
 
             var parameters = new List<Parameter>();
 
-            Take(LexemeKind.LeftParenthesis, "parameter list opening '('");
+            Take(LexemeKind.LeftParenthesis, "parameter list opening");
 
             bool anyOptionalParam = false;
             while (true)
@@ -285,7 +288,7 @@ namespace LICC.Internal.LSF.Parsing
                     Advance();
             }
 
-            Take(LexemeKind.RightParenthesis, "parameter list closing ')'");
+            Take(LexemeKind.RightParenthesis, "parameter list closing");
             SkipWhitespaces();
 
             var statements = DoStatementBlock();
@@ -296,11 +299,11 @@ namespace LICC.Internal.LSF.Parsing
         private IfStatement DoIfStatement()
         {
             TakeKeyword("if");
-            Take(LexemeKind.LeftParenthesis, "condition opening '('");
+            Take(LexemeKind.LeftParenthesis, "condition opening");
 
             var condition = DoExpression();
 
-            Take(LexemeKind.RightParenthesis, "condition closing ')'");
+            Take(LexemeKind.RightParenthesis, "condition closing");
 
             var body = DoStatementBlock();
             ElseStatement @else = null;
@@ -325,11 +328,11 @@ namespace LICC.Internal.LSF.Parsing
         private WhileStatement DoWhileStatement()
         {
             TakeKeyword("while");
-            Take(LexemeKind.LeftParenthesis, "condition opening '('");
+            Take(LexemeKind.LeftParenthesis, "condition opening");
 
             var condition = DoExpression();
 
-            Take(LexemeKind.RightParenthesis, "condition opening ')'");
+            Take(LexemeKind.RightParenthesis, "condition opening");
 
             var body = DoStatementBlock();
 
@@ -340,7 +343,7 @@ namespace LICC.Internal.LSF.Parsing
         {
             TakeKeyword("for");
             Take(LexemeKind.LeftParenthesis);
-            Take(LexemeKind.Dollar, "variable indicator '$'");
+            Take(LexemeKind.Dollar, "variable indicator");
 
             string varName = Take(LexemeKind.String, "variable name", false).Content;
 
@@ -365,7 +368,7 @@ namespace LICC.Internal.LSF.Parsing
         {
             var statements = new List<Statement>();
 
-            Take(LexemeKind.LeftBrace, "block body opening '{'");
+            Take(LexemeKind.LeftBrace, "block body opening");
             SkipWhitespaces();
 
             Statement statement;
@@ -375,7 +378,7 @@ namespace LICC.Internal.LSF.Parsing
                     statements.Add(statement);
             }
 
-            Take(LexemeKind.RightBrace, "block body closing '}'");
+            Take(LexemeKind.RightBrace, "block body closing");
 
             return statements;
         }
@@ -430,7 +433,7 @@ namespace LICC.Internal.LSF.Parsing
                 if (Take(LexemeKind.QuestionMark, out _))
                     ret = DoTernaryOperator(ret);
 
-                Take(LexemeKind.RightParenthesis, "closing parentheses ')'");
+                Take(LexemeKind.RightParenthesis, "closing parentheses");
             }
             else if (Take(LexemeKind.String, out var str))
             {
@@ -581,7 +584,7 @@ namespace LICC.Internal.LSF.Parsing
         private TernaryOperatorExpression DoTernaryOperator(Expression condition)
         {
             var ifTrue = DoExpression();
-            Take(LexemeKind.Colon, "ternary operator separator ':'");
+            Take(LexemeKind.Colon, "ternary operator separator");
             var ifFalse = DoExpression();
 
             return new TernaryOperatorExpression(condition, ifTrue, ifFalse);

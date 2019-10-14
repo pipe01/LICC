@@ -1,53 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 
 namespace LICC.Internal.LSF.Parsing.Data
 {
-    internal enum LexemeKind
-    {
-        String,
-        QuotedString,
-        Keyword,
-        Whitespace,
-        Comma,
-
-        Dollar,
-        EqualsAssign,
-        Hashtag,
-        AtSign,
-        Exclamation,
-        QuestionMark,
-        Colon,
-
-        Equals,
-        LessOrEqual,
-        Less,
-        MoreOrEqual,
-        More,
-        NotEqual,
-
-        LeftParenthesis,
-        RightParenthesis,
-        LeftBrace,
-        RightBrace,
-
-        Plus,
-        Minus,
-        Multiply,
-        Divide,
-        Percentage,
-        Increment,
-        Decrement,
-
-        And,
-        AndAlso,
-        Or,
-        OrElse,
-
-        NewLine,
-        Semicolon,
-        EndOfFile,
-    }
-
     [DebuggerDisplay("{Kind}: {Content}")]
     internal sealed class Lexeme
     {

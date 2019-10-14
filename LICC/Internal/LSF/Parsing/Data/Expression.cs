@@ -131,6 +131,8 @@ namespace LICC.Internal.LSF.Parsing.Data
             this.IfTrue = ifTrue;
             this.IfFalse = ifFalse;
         }
+
+        public override string ToString() => $"{Condition} ? {IfTrue} : {IfFalse}";
     }
 
     internal class VariableAssignmentExpression : Expression

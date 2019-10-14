@@ -159,7 +159,7 @@ namespace LICC.Internal.LSF.Parsing
                 Line++;
             }
 
-            content = content ?? Buffer.ToString();
+            content = content ?? kind.GetCharacter() ?? Buffer.ToString();
             Buffer.Clear();
 
             return new Lexeme(kind, Location, content);
@@ -203,33 +203,33 @@ namespace LICC.Internal.LSF.Parsing
             switch (Take())
             {
                 case '(':
-                    return Lexeme(LexemeKind.LeftParenthesis, "(");
+                    return Lexeme(LexemeKind.LeftParenthesis);
                 case ')':
-                    return Lexeme(LexemeKind.RightParenthesis, ")");
+                    return Lexeme(LexemeKind.RightParenthesis);
                 case '{':
-                    return Lexeme(LexemeKind.LeftBrace, "{");
+                    return Lexeme(LexemeKind.LeftBrace);
                 case '}':
-                    return Lexeme(LexemeKind.RightBrace, "}");
+                    return Lexeme(LexemeKind.RightBrace);
                 case '*':
-                    return Lexeme(LexemeKind.Multiply, "*");
+                    return Lexeme(LexemeKind.Multiply);
                 case '/':
-                    return Lexeme(LexemeKind.Divide, "/");
+                    return Lexeme(LexemeKind.Divide);
                 case ';':
-                    return Lexeme(LexemeKind.Semicolon, ";");
+                    return Lexeme(LexemeKind.Semicolon);
                 case '#':
-                    return Lexeme(LexemeKind.Hashtag, "#");
+                    return Lexeme(LexemeKind.Hashtag);
                 case ',':
-                    return Lexeme(LexemeKind.Comma, ",");
+                    return Lexeme(LexemeKind.Comma);
                 case '$':
-                    return Lexeme(LexemeKind.Dollar, "$");
+                    return Lexeme(LexemeKind.Dollar);
                 case '@':
-                    return Lexeme(LexemeKind.AtSign, "@");
+                    return Lexeme(LexemeKind.AtSign);
                 case '?':
-                    return Lexeme(LexemeKind.QuestionMark, "?");
+                    return Lexeme(LexemeKind.QuestionMark);
                 case ':':
-                    return Lexeme(LexemeKind.Colon, ":");
+                    return Lexeme(LexemeKind.Colon);
                 case '%':
-                    return Lexeme(LexemeKind.Percentage, "%");
+                    return Lexeme(LexemeKind.Percentage);
                 case '+':
                     return TwoCharOperator("++", LexemeKind.Plus, LexemeKind.Increment);
                 case '-':
