@@ -21,7 +21,6 @@ namespace LICC.Internal.LSF.Runtime
         private readonly ContextStack ContextStack = new ContextStack();
 
         private IRunContext Context => ContextStack.Peek();
-        private bool InFunction;
 
 
         private readonly ICommandRegistryInternal CommandRegistry;
@@ -46,7 +45,7 @@ namespace LICC.Internal.LSF.Runtime
             }
         }
 
-        private object Run(IEnumerable<Statement> statements, bool pushStack = true)
+        private void Run(IEnumerable<Statement> statements, bool pushStack = true)
         {
             SourceLocation loc = default;
 
@@ -75,8 +74,6 @@ namespace LICC.Internal.LSF.Runtime
                 if (pushStack)
                     ContextStack.Pop();
             }
-
-            return null;
         }
 
         private void RunStatement(Statement statement)
@@ -263,7 +260,6 @@ namespace LICC.Internal.LSF.Runtime
                 throw new RuntimeException($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
 
             ContextStack.Push();
-            InFunction = true;
 
             try
             {
@@ -279,11 +275,11 @@ namespace LICC.Internal.LSF.Runtime
                     Context.SetVariable(func.Parameters[i].Name, value);
                 }
 
-                object retValue;
+                object retValue = null;
 
                 try
                 {
-                    retValue = Run(func.Statements, false);
+                    Run(func.Statements, false);
                 }
                 catch (ReturnException ex)
                 {
@@ -294,7 +290,6 @@ namespace LICC.Internal.LSF.Runtime
             }
             finally
             {
-                InFunction = false;
                 ContextStack.Pop();
             }
         }
