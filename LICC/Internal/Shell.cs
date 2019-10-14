@@ -106,7 +106,7 @@ namespace LICC.Internal
 
             if (cmdNameSeparatorIndex != -1)
             {
-                if (cmd.Params.Length == 1 && cmd.Params[0].Type == typeof(string))
+                if (cmd.Params.Length == 1 && cmd.Params[0].Type == typeof(string) && strArgs.Length > 1)
                 {
                     cmdArgs[0] = argsLine;
                 }
@@ -297,7 +297,7 @@ namespace LICC.Internal
                 {
                     char c = Take();
 
-                    if (c == '\\')
+                    if (c == '\\' && i < str.Length - 1)
                     {
                         char escaped = Take();
                         buffer += escaped;
