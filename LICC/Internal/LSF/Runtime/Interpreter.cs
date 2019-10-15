@@ -22,6 +22,7 @@ namespace LICC.Internal.LSF.Runtime
 
         private IRunContext Context => ContextStack.Peek();
 
+        private SourceLocation Location;
 
         private readonly ICommandRegistryInternal CommandRegistry;
         private readonly ICommandExecutor CommandExecutor;
@@ -47,8 +48,6 @@ namespace LICC.Internal.LSF.Runtime
 
         private void Run(IEnumerable<Statement> statements, bool pushStack = true)
         {
-            SourceLocation loc = default;
-
             if (pushStack)
                 ContextStack.Push();
 
@@ -56,18 +55,14 @@ namespace LICC.Internal.LSF.Runtime
             {
                 foreach (var item in statements)
                 {
-                    loc = item.Location;
+                    Location = item.Location;
 
                     RunStatement(item);
                 }
             }
-            catch (RuntimeException ex)
+            catch (Exception ex) when (!(ex is ReturnException) && !(ex is RuntimeException))
             {
-                throw new RuntimeException($"At line {loc.Line + 1}: " + ex.Message);
-            }
-            catch (Exception ex) when (!(ex is ReturnException))
-            {
-                throw new AggregateException($"At line {loc.Line + 1}", ex);
+                throw Error(ex.Message, ex);
             }
             finally
             {
@@ -75,6 +70,9 @@ namespace LICC.Internal.LSF.Runtime
                     ContextStack.Pop();
             }
         }
+
+        private Exception Error(string msg, Exception innerException = null)
+            => new RuntimeException($"Runtime exception at {Location} : " + msg, innerException);
 
         private void RunStatement(Statement statement)
         {
@@ -183,7 +181,7 @@ namespace LICC.Internal.LSF.Runtime
             }
             catch (Exception ex)
             {
-                throw new RuntimeException($"failed to convert '{val}' to a {typeof(T).Name}", ex);
+                throw Error($"failed to convert '{val}' to a {typeof(T).Name}", ex);
             }
         }
 
@@ -212,16 +210,16 @@ namespace LICC.Internal.LSF.Runtime
             else if (expr is CommandCallExpression cmdCall)
                 return VisitCommandCall(cmdCall);
 
-            throw new RuntimeException("invalid expression?");
+            throw Error("invalid expression?");
         }
 
         private object VisitCommandCall(CommandCallExpression statement)
         {
             if (!CommandRegistry.TryGetCommand(statement.CommandName, statement.Arguments.Length, out var cmd))
-                throw new RuntimeException($"command with name '{statement.CommandName}' not found");
+                throw Error($"command with name '{statement.CommandName}' and {statement.Arguments.Length} parameters not found");
 
             if (statement.Arguments.Length < cmd.Params.Count(o => !o.Optional))
-                throw new RuntimeException("argument count mismatch");
+                throw Error("argument count mismatch");
 
             object[] args = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
 
@@ -241,7 +239,7 @@ namespace LICC.Internal.LSF.Runtime
                 }
                 catch (Exception ex)
                 {
-                    throw new RuntimeException($"failed to convert parameter {cmd.Params[i].Name}'s value", ex);
+                    throw Error($"failed to convert parameter {cmd.Params[i].Name}'s value", ex);
                 }
             }
 
@@ -251,13 +249,13 @@ namespace LICC.Internal.LSF.Runtime
         private object VisitFunctionCall(FunctionCallExpression funcCall)
         {
             if (!ContextStack.TryGetFunction(funcCall.FunctionName, out var func))
-                throw new RuntimeException($"function with name '{funcCall.FunctionName}' not found");
+                throw Error($"function with name '{funcCall.FunctionName}' not found");
 
             int requiredParamCount = func.Parameters.Count(o => !o.IsOptional);
             int totalParamCount = func.Parameters.Length;
 
             if (funcCall.Arguments.Length < requiredParamCount)
-                throw new RuntimeException($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
+                throw Error($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
 
             ContextStack.Push();
 
@@ -299,13 +297,13 @@ namespace LICC.Internal.LSF.Runtime
             if (expr.Operator == Operator.And)
             {
                 if (!(Visit(expr.Left) is bool leftB))
-                    throw new RuntimeException("invalid left operand type, expected boolean");
+                    throw Error("invalid left operand type, expected boolean");
 
                 if (!leftB)
                     return false;
 
                 if (!(Visit(expr.Right) is bool rightB))
-                    throw new RuntimeException("invalid right operand type, expected boolean");
+                    throw Error("invalid right operand type, expected boolean");
 
                 return rightB;
             }
@@ -313,13 +311,13 @@ namespace LICC.Internal.LSF.Runtime
             if (expr.Operator == Operator.Or)
             {
                 if (!(Visit(expr.Left) is bool leftB))
-                    throw new RuntimeException("invalid left operand type, expected boolean");
+                    throw Error("invalid left operand type, expected boolean");
 
                 if (leftB)
                     return true;
 
                 if (!(Visit(expr.Right) is bool rightB))
-                    throw new RuntimeException("invalid right operand type, expected boolean");
+                    throw Error("invalid right operand type, expected boolean");
 
                 return rightB;
             }
@@ -343,7 +341,7 @@ namespace LICC.Internal.LSF.Runtime
                 {
                     case Operator.Divide:
                     case Operator.Subtract:
-                        throw new RuntimeException("invalid operation");
+                        throw Error("invalid operation");
                     case Operator.Multiply when (right is float f):
                         return string.Join("", Enumerable.Repeat(leftStr, (int)f));
                     case Operator.Add:
@@ -357,7 +355,7 @@ namespace LICC.Internal.LSF.Runtime
                     case Operator.Multiply:
                     case Operator.Divide:
                     case Operator.Subtract:
-                        throw new RuntimeException("invalid operation");
+                        throw Error("invalid operation");
                     case Operator.Add:
                         return left + rightStr;
                 }
@@ -388,7 +386,7 @@ namespace LICC.Internal.LSF.Runtime
                 }
             }
 
-            throw new RuntimeException("invalid operator or operand types");
+            throw Error("invalid operator or operand types");
         }
 
         private object VisitUnaryOperator(UnaryOperatorExpression expr)
@@ -401,12 +399,12 @@ namespace LICC.Internal.LSF.Runtime
                     if (operand is bool b)
                         return !b;
                     else
-                        throw new RuntimeException($"cannot negate '{operand}'");
+                        throw Error($"cannot negate '{operand}'");
                 case Operator.IncrementByOne:
                 case Operator.DecrementByOne:
                     if (!(expr.Operand is VariableAccessExpression var))
                     {
-                        throw new RuntimeException("expression on the left side of an increment operator must be a variable reference");
+                        throw Error("expression on the left side of an increment operator must be a variable reference");
                     }
                     else
                     {
@@ -417,7 +415,7 @@ namespace LICC.Internal.LSF.Runtime
                     }
             }
 
-            throw new RuntimeException("invalid operator");
+            throw Error("invalid operator");
         }
 
         private object VisitTernaryOperator(TernaryOperatorExpression expr)

@@ -42,7 +42,14 @@ namespace LICC.Internal.LSF
                 return;
             }
 
-            Interpreter.Run(ast);
+            try
+            {
+                Interpreter.Run(ast);
+            }
+            catch (RuntimeException ex) when (!Debugger.IsAttached)
+            {
+                LConsole.WriteLine(ex.Message, ConsoleColor.Red);
+            }
         }
     }
 }

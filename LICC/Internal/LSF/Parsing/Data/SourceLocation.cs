@@ -12,5 +12,7 @@
             this.Column = column;
             this.FileName = fileName;
         }
+
+        public override string ToString() => $"{FileName}:{Line + 1}";
     }
 }

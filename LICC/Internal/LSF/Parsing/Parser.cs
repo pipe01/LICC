@@ -121,6 +121,15 @@ namespace LICC.Internal.LSF.Parsing
         }
 
         [DebuggerStepThrough]
+        private bool Peek(LexemeKind kind, bool ignoreWhitespace = true)
+        {
+            if (ignoreWhitespace)
+                SkipWhitespaces();
+
+            return Index < Lexemes.Length - 1 && Lexemes[Index + 1].Kind == kind;
+        }
+
+        [DebuggerStepThrough]
         private Lexeme TakeKeyword(string keyword, bool ignoreWhitespace = true, bool @throw = true, string msg = null)
         {
             if (ignoreWhitespace)
@@ -231,12 +240,10 @@ namespace LICC.Internal.LSF.Parsing
                     if (Current.Kind != LexemeKind.String && Current.Kind != LexemeKind.QuotedString)
                         return null;
 
-                    ret = new ExpressionStatement(DoCommandExpression());
-                    break;
+                    ret = Peek(LexemeKind.Exclamation)
+                            ? new ExpressionStatement(DoFunctionCall())
+                            : new ExpressionStatement(DoCommandExpression());
 
-                case LexemeKind.Exclamation:
-                    Advance();
-                    ret = new ExpressionStatement(DoFunctionCall());
                     break;
 
                 case LexemeKind.Dollar:
@@ -396,10 +403,14 @@ namespace LICC.Internal.LSF.Parsing
             return new Parameter(name, defaultValue);
         }
 
-        private CommandCallExpression DoCommandExpression()
+        private CommandCallExpression DoCommandExpression(string cmdName = null)
         {
-            string cmdName = Take(LexemeKind.String).Content;
+            cmdName = cmdName ?? Take(LexemeKind.String).Content;
+            bool parenthesised = Take(LexemeKind.LeftParenthesis, out _);
             var args = DoArguments();
+
+            if (parenthesised)
+                Take(LexemeKind.RightParenthesis, "parameter list closing");
 
             if (Current.Kind == LexemeKind.Semicolon)
                 Advance();
@@ -438,9 +449,24 @@ namespace LICC.Internal.LSF.Parsing
             else if (Take(LexemeKind.String, out var str))
             {
                 if (float.TryParse(str.Content, NumberStyles.Float, CultureInfo.InvariantCulture, out var f))
+                {
                     ret = new NumberLiteralExpression(f);
+                }
+                else if (Current.Kind == LexemeKind.Exclamation)
+                {
+                    ret = DoFunctionCall(str.Content);
+                }
                 else
-                    Error($"unxpected string '{str.Content}' found");
+                {
+                    if (Current.Kind == LexemeKind.LeftParenthesis)
+                    {
+                        ret = DoCommandExpression(str.Content);
+                    }
+                    else
+                    {
+                        Error($"unxpected string '{str.Content}' found");
+                    }
+                }
             }
             else if (Take(LexemeKind.QuotedString, out var quotedStr))
             {
@@ -448,24 +474,7 @@ namespace LICC.Internal.LSF.Parsing
             }
             else if (Take(LexemeKind.Exclamation, out _))
             {
-                Push();
-
-                if (!Take(LexemeKind.String, out _))
-                {
-                    Pop();
-
-                    ret = DoNegateOperator();
-                }
-                else
-                {
-                    Pop();
-
-                    ret = DoFunctionCall();
-                }
-            }
-            else if (Take(LexemeKind.QuestionMark, out _))
-            {
-                ret = DoCommandExpression();
+                ret = DoNegateOperator();
             }
             else if (Take(LexemeKind.Keyword, out var keyword))
             {
@@ -590,10 +599,14 @@ namespace LICC.Internal.LSF.Parsing
             return new TernaryOperatorExpression(condition, ifTrue, ifFalse);
         }
 
-        private FunctionCallExpression DoFunctionCall()
+        private FunctionCallExpression DoFunctionCall(string funcName = null)
         {
-            string funcName = Take(LexemeKind.String, "function name", false).Content;
+            funcName = funcName ?? Take(LexemeKind.String, "function name", false).Content;
+            Take(LexemeKind.Exclamation, "exclamation");
+
+            Take(LexemeKind.LeftParenthesis, "parameter list opening");
             var args = DoArguments();
+            Take(LexemeKind.RightParenthesis, "parameter list closing");
 
             return new FunctionCallExpression(funcName, args.ToArray());
         }
