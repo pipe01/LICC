@@ -6,7 +6,7 @@ namespace LICC.Internal.LSF.Runtime
 {
     internal class ContextStack : Stack<IRunContext>
     {
-        public void Push() => Push(new RunContext());
+        public void Push() => Push(new RunContext(RunContextType.Block, null));
 
         public bool TryGetVariable(string name, out object value)
         {

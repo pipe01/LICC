@@ -3,6 +3,7 @@ using LICC.Internal.LSF.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace LICC.Internal.LSF.Runtime
 {
@@ -39,14 +40,14 @@ namespace LICC.Internal.LSF.Runtime
         {
             try
             {
-                Run(file.Statements);
+                Run(file.Statements, false);
             }
             catch (ReturnException)
             {
             }
         }
 
-        private void Run(IEnumerable<Statement> statements, bool pushStack = true)
+        private void Run(IEnumerable<Statement> statements, bool isFunc, bool pushStack = true)
         {
             if (pushStack)
                 ContextStack.Push();
@@ -72,7 +73,17 @@ namespace LICC.Internal.LSF.Runtime
         }
 
         private Exception Error(string msg, Exception innerException = null)
-            => new RuntimeException($"Runtime exception at {Location} : " + msg, innerException);
+        {
+            var callStack = new StringBuilder();
+
+            foreach (var item in ContextStack)
+            {
+                if (item.Type == RunContextType.Function)
+                    callStack.Append("at ").AppendLine(item.Descriptor);
+            }
+
+            return new RuntimeException($"Runtime exception at {Location} : " + msg + System.Environment.NewLine + callStack, innerException);
+        }
 
         private void RunStatement(Statement statement)
         {
@@ -110,7 +121,7 @@ namespace LICC.Internal.LSF.Runtime
             {
                 while (IsTruthy(Visit(whileStatement.Condition)))
                 {
-                    Run(whileStatement.Body);
+                    Run(whileStatement.Body, false);
                 }
             }
             finally
@@ -129,7 +140,7 @@ namespace LICC.Internal.LSF.Runtime
 
                 if (IsTruthy(condition))
                 {
-                    Run(ifStatement.Body);
+                    Run(ifStatement.Body, false);
                 }
                 else
                 {
@@ -139,7 +150,7 @@ namespace LICC.Internal.LSF.Runtime
                     }
                     else if (ifStatement.Else is ElseStatement @else)
                     {
-                        Run(@else.Body);
+                        Run(@else.Body, false);
                     }
                 }
             }
@@ -162,7 +173,7 @@ namespace LICC.Internal.LSF.Runtime
                 {
                     ContextStack.SetVariable(forStatement.VariableName, (float)i);
 
-                    Run(forStatement.Body, false);
+                    Run(forStatement.Body, false, false);
                 }
             }
             finally
@@ -257,7 +268,7 @@ namespace LICC.Internal.LSF.Runtime
             if (funcCall.Arguments.Length < requiredParamCount)
                 throw Error($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
 
-            ContextStack.Push();
+            ContextStack.Push(new RunContext(RunContextType.Function, funcCall.FunctionName + "! in " + Location));
 
             try
             {

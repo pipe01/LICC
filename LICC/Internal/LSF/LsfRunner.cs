@@ -46,7 +46,7 @@ namespace LICC.Internal.LSF
             {
                 Interpreter.Run(ast);
             }
-            catch (RuntimeException ex) when (!Debugger.IsAttached)
+            catch (RuntimeException ex) //when (!Debugger.IsAttached)
             {
                 LConsole.WriteLine(ex.Message, ConsoleColor.Red);
             }

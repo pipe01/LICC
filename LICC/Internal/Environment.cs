@@ -18,6 +18,10 @@ namespace LICC.Internal
         private readonly IDictionary<string, string> Variables = new Dictionary<string, string>();
         private readonly IDictionary<string, Function> Functions = new Dictionary<string, Function>();
 
+        public RunContextType Type => RunContextType.Document;
+        public string Descriptor => null;
+
+
         public IReadOnlyDictionary<string, string> GetAll()
             => new ReadOnlyDictionary<string, string>(Variables);
 
