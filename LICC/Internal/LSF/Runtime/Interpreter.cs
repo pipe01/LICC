@@ -79,7 +79,7 @@ namespace LICC.Internal.LSF.Runtime
             foreach (var item in ContextStack)
             {
                 if (item.Type == RunContextType.Function)
-                    callStack.Append("at ").AppendLine(item.Descriptor);
+                    callStack.Append("  at ").AppendLine(item.Descriptor);
             }
 
             return new RuntimeException($"Runtime exception at {Location} : " + msg + System.Environment.NewLine + callStack, innerException);
@@ -268,18 +268,18 @@ namespace LICC.Internal.LSF.Runtime
             if (funcCall.Arguments.Length < requiredParamCount)
                 throw Error($"function '{funcCall.FunctionName}' expects {(requiredParamCount == totalParamCount ? requiredParamCount.ToString() : $"between {requiredParamCount} and {totalParamCount}")} parameters but {funcCall.Arguments.Length} were found");
 
-            ContextStack.Push(new RunContext(RunContextType.Function, funcCall.FunctionName + "! in " + Location));
+            ContextStack.Push(new RunContext(RunContextType.Function,
+                funcCall.FunctionName + "!(" +
+                string.Join(", ", func.Parameters.Select(o => o.Name)) +
+                ") in " + Location));
 
             try
             {
                 for (int i = 0; i < func.Parameters.Length; i++)
                 {
-                    object value;
-
-                    if (i < funcCall.Arguments.Length)
-                        value = Visit(funcCall.Arguments[i]);
-                    else
-                        value = Visit(func.Parameters[i].DefaultValue);
+                    object value = i < funcCall.Arguments.Length
+                        ? Visit(funcCall.Arguments[i])
+                        : Visit(func.Parameters[i].DefaultValue);
 
                     Context.SetVariable(func.Parameters[i].Name, value);
                 }
