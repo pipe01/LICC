@@ -76,13 +76,15 @@ namespace LICC.Internal.LSF.Runtime
         {
             var callStack = new StringBuilder();
 
+            callStack.Append("  at ").AppendLine(Location.ToString());
+
             foreach (var item in ContextStack)
             {
                 if (item.Type == RunContextType.Function)
                     callStack.Append("  at ").AppendLine(item.Descriptor);
             }
 
-            return new RuntimeException($"Runtime exception at {Location} : " + msg + System.Environment.NewLine + callStack, innerException);
+            return new RuntimeException($"Fatal runtime exception occurred: " + msg + System.Environment.NewLine + callStack, innerException);
         }
 
         private void RunStatement(Statement statement)
@@ -415,7 +417,7 @@ namespace LICC.Internal.LSF.Runtime
                 case Operator.DecrementByOne:
                     if (!(expr.Operand is VariableAccessExpression var))
                     {
-                        throw Error("expression on the left side of an increment operator must be a variable reference");
+                        throw Error("expression on the left side of an increment or decrement operator must be a variable reference");
                     }
                     else
                     {
