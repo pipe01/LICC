@@ -298,7 +298,7 @@ namespace LICC.Internal.LSF.Parsing
             Take(LexemeKind.RightParenthesis, "parameter list closing");
             SkipWhitespaces();
 
-            var statements = DoStatementBlock();
+            var statements = DoStatementBlock(true);
 
             return new FunctionDeclarationStatement(name, statements, parameters);
         }
@@ -371,11 +371,18 @@ namespace LICC.Internal.LSF.Parsing
             return new ForStatement(varName, from, to, body);
         }
 
-        private IEnumerable<Statement> DoStatementBlock()
+        private IEnumerable<Statement> DoStatementBlock(bool forceBlock = false)
         {
+            if (!forceBlock && !Take(LexemeKind.LeftBrace, out _))
+            {
+                return GetStatement().Yield();
+            }
+
             var statements = new List<Statement>();
 
-            Take(LexemeKind.LeftBrace, "block body opening");
+            if (forceBlock)
+                Take(LexemeKind.LeftBrace, "block body opening");
+
             SkipWhitespaces();
 
             Statement statement;

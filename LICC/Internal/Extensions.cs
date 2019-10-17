@@ -25,5 +25,10 @@ namespace LICC.Internal
                 return lines.ToArray();
             }
         }
+
+        public static IEnumerable<T> Yield<T>(this T obj)
+        {
+            yield return obj;
+        }
     }
 }
