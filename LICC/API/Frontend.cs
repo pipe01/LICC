@@ -34,6 +34,11 @@ namespace LICC.API
         protected internal virtual void Init() { }
 
         /// <summary>
+        /// Exits the application. Uses <see cref="Environment.Exit(int)"/> by default.
+        /// </summary>
+        protected internal virtual void Exit() => Environment.Exit(0);
+
+        /// <summary>
         /// Pause and clear input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
         protected internal virtual void PauseInput() { }

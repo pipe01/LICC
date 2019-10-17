@@ -19,6 +19,7 @@ namespace LICC
             LineWriter writer = null;
 
             int i = 0;
+
             foreach (var group in cmds.GroupBy(o => o.Method.DeclaringType.Assembly, (a, b) => new { Assembly = a, Commands = b.OrderBy(o => o.Name).ThenBy(o => o.Params.Length) }))
             {
                 int maxLength = group.Commands.Max(o => (o.Name + (o.Params.Length > 0 ? " " + o.GetParamsString() : "")).Length) + 2;
@@ -54,7 +55,8 @@ namespace LICC
                     writer.Write(paramsStr, ConsoleColor.DarkGreen);
                     len += paramsStr.Length;
 
-                    writer.Write(new string(' ', maxLength - len));
+                    writer.Write(
+                        new string(cmd.Description == null ? ' ' : '-', maxLength - len), CColor.DimGray);
 
                     if (cmd.Description != null)
                     {
@@ -143,6 +145,12 @@ namespace LICC
                     .Write(item.Value)
                     .End();
             }
+        }
+
+        [Command]
+        private static void Quit()
+        {
+            LConsole.Frontend.Exit();
         }
     }
 }
