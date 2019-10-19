@@ -59,6 +59,20 @@ namespace LICC.Internal.LSF.Parsing.Data
         public override string ToString() => "$" + VariableName;
     }
 
+    internal class MemberAccessExpression : Expression
+    {
+        public Expression Object { get; }
+        public string MemberName { get; }
+
+        public MemberAccessExpression(Expression obj, string memberName)
+        {
+            this.Object = obj;
+            this.MemberName = memberName;
+        }
+
+        public override string ToString() => $"{Object}.{MemberName}";
+    }
+
     internal class FunctionCallExpression : Expression
     {
         public override bool CanStandAlone => true;
@@ -73,6 +87,20 @@ namespace LICC.Internal.LSF.Parsing.Data
         }
 
         public override string ToString() => $"{FunctionName}({string.Join(", ", Arguments.Select(o => o.ToString()))})";
+    }
+
+    internal class MemberCallExpression : Expression
+    {
+        public Expression FunctionExpression { get; }
+        public Expression[] Arguments { get; }
+
+        public MemberCallExpression(Expression functionExpression, Expression[] arguments)
+        {
+            this.FunctionExpression = functionExpression;
+            this.Arguments = arguments;
+        }
+
+        public override string ToString() => $"{FunctionExpression}({string.Join(", ", Arguments.Select(o => o.ToString()))})";
     }
 
     internal class CommandCallExpression : Expression

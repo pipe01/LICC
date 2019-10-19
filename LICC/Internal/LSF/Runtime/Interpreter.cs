@@ -3,6 +3,7 @@ using LICC.Internal.LSF.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace LICC.Internal.LSF.Runtime
@@ -222,8 +223,54 @@ namespace LICC.Internal.LSF.Runtime
                 return VisitFunctionCall(funcCall);
             else if (expr is CommandCallExpression cmdCall)
                 return VisitCommandCall(cmdCall);
+            else if (expr is MemberAccessExpression memAccess)
+                return VisitMemberAccess(memAccess);
+            else if (expr is MemberCallExpression memCall)
+                return VisitMemberCall(memCall);
 
             throw Error("invalid expression?");
+        }
+
+        private object VisitMemberCall(MemberCallExpression memCall)
+        {
+            if (!(memCall.FunctionExpression is MemberAccessExpression member))
+                throw Error("expected a method access expression");
+
+            string funcName = member.MemberName;
+            var obj = Visit(member.Object);
+
+            var args = new object[memCall.Arguments.Length];
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                args[i] = Visit(memCall.Arguments[i]);
+            }
+
+            return obj.GetType().GetMethod(funcName).Invoke(obj, args);
+        }
+
+        private object VisitMemberAccess(MemberAccessExpression memAccess)
+        {
+            var obj = Visit(memAccess.Object);
+
+            if (obj == null)
+                throw Error($"null reference to '{memAccess.Object}'");
+
+            var type = obj.GetType();
+
+            var prop = type.GetProperty(memAccess.MemberName);
+            if (prop != null)
+                return prop.GetValue(obj);
+
+            var field = type.GetField(memAccess.MemberName);
+            if (field != null)
+                return field.GetValue(obj);
+
+            var method = type.GetMethod(memAccess.MemberName);
+            if (method != null)
+                return method;
+
+            throw Error($"field or property '{memAccess.MemberName}' not found");
         }
 
         private object VisitCommandCall(CommandCallExpression statement)

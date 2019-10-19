@@ -519,17 +519,33 @@ namespace LICC.Internal.LSF.Parsing
                 }
             }
 
+            while (Take(LexemeKind.Dot, out _))
+            {
+                ret = new MemberAccessExpression(ret, Take(LexemeKind.String, "member name").Content);
+
+                if (Take(LexemeKind.Exclamation, out _))
+                {
+                    ret = DoMemberCall(ret);
+                }
+            }
+
             if (ret != null && doOperator)
             {
-                if (Take(LexemeKind.QuestionMark, out _))
-                {
-                    return DoTernaryOperator(ret);
-                }
-
-                return DoOperatorChain(ret) ?? ret;
+                ret = Take(LexemeKind.QuestionMark, out _)
+                    ? DoTernaryOperator(ret)
+                    : (DoOperatorChain(ret) ?? ret);
             }
 
             return ret;
+        }
+
+        private MemberCallExpression DoMemberCall(Expression obj)
+        {
+            Take(LexemeKind.LeftParenthesis, "parameter list opening");
+            var args = DoArguments();
+            Take(LexemeKind.RightParenthesis, "parameter list closing");
+
+            return new MemberCallExpression(obj, args.ToArray());
         }
 
         private UnaryOperatorExpression DoNegateOperator()
@@ -609,7 +625,7 @@ namespace LICC.Internal.LSF.Parsing
         private FunctionCallExpression DoFunctionCall(string funcName = null)
         {
             funcName = funcName ?? Take(LexemeKind.String, "function name", false).Content;
-            Take(LexemeKind.Exclamation, "exclamation");
+            Take(LexemeKind.Exclamation);
 
             Take(LexemeKind.LeftParenthesis, "parameter list opening");
             var args = DoArguments();

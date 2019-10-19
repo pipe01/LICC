@@ -12,6 +12,7 @@ namespace LICC.Internal.LSF.Parsing.Data
         [Description(null)] Keyword,
         [Description(" ")]  Whitespace,
         [Description(",")]  Comma,
+        [Description(".")]  Dot,
 
         [Description("$")]  Dollar,
         [Description("=")]  EqualsAssign,

@@ -107,10 +107,10 @@ namespace LICC
             }
         }
 
-        [Command(Description = "Print a string to screen")]
-        private static void Echo(string str)
+        [Command(Description = "Print an object to screen")]
+        private static void Echo(object obj)
         {
-            LConsole.WriteLine(str);
+            LConsole.WriteLine(obj is string str ? str : obj?.ToString());
         }
 
         [Command("printex", Description = "Prints detailed info about the last exception encountered by a command")]

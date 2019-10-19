@@ -23,7 +23,7 @@ namespace LICC.Internal.LSF.Parsing
 
         private bool IsEOF => Char == '\0';
         private bool IsNewLine => Char == '\n';
-        private bool IsSymbol => "{}()<>+-*/;#,!$=&|@?:%".Contains(Char);
+        private bool IsSymbol => "{}()<>+-*/;#,!$=&|@?:%.".Contains(Char);
         private bool IsWhitespace => Char == ' ' || Char == '\t';
         private bool IsKeyword => Keywords.Contains(Buffer.ToString());
 
@@ -220,6 +220,8 @@ namespace LICC.Internal.LSF.Parsing
                     return Lexeme(LexemeKind.Hashtag);
                 case ',':
                     return Lexeme(LexemeKind.Comma);
+                case '.':
+                    return Lexeme(LexemeKind.Dot);
                 case '$':
                     return Lexeme(LexemeKind.Dollar);
                 case '@':
