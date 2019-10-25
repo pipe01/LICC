@@ -26,6 +26,7 @@ namespace LICC.Internal.LSF.Runtime
 
         private SourceLocation Location;
         private bool StrictMode = false;
+        private int FunctionCallDepth = 0;
 
         private readonly ICommandRegistryInternal CommandRegistry;
         private readonly ICommandExecutor CommandExecutor;
@@ -80,10 +81,33 @@ namespace LICC.Internal.LSF.Runtime
 
             callStack.Append("  at ").AppendLine(Location.ToString());
 
+            string prev = null, desc;
+            int sameContextCount = 0;
             foreach (var item in ContextStack)
             {
                 if (item.Type == RunContextType.Function)
-                    callStack.Append("  at ").AppendLine(item.Descriptor);
+                {
+                    desc = "  at " + item.Descriptor;
+
+                    if (desc == prev)
+                    {
+                        sameContextCount++;
+
+                        if (sameContextCount < 4)
+                            callStack.AppendLine(desc);
+                    }
+                    else if (sameContextCount > 4)
+                    {
+                        callStack.Append("  ...x").Append(sameContextCount - 4).AppendLine();
+                        sameContextCount = 0;
+                    }
+                    else
+                    {
+                        callStack.AppendLine(desc);
+                    }
+
+                    prev = desc;
+                }
             }
 
             return new RuntimeException($"Fatal runtime exception occurred: " + msg + System.Environment.NewLine + callStack, innerException);
@@ -328,6 +352,9 @@ namespace LICC.Internal.LSF.Runtime
 
         private object VisitFunctionCall(FunctionCallExpression funcCall)
         {
+            if (FunctionCallDepth >= 700)
+                throw Error("max call stack size reached");
+
             if (!ContextStack.TryGetFunction(funcCall.FunctionName, out var func))
                 throw Error($"function with name '{funcCall.FunctionName}' not found");
 
@@ -355,6 +382,8 @@ namespace LICC.Internal.LSF.Runtime
 
                 object retValue = null;
 
+                FunctionCallDepth++;
+
                 try
                 {
                     Run(func.Statements, false);
@@ -362,6 +391,10 @@ namespace LICC.Internal.LSF.Runtime
                 catch (ReturnException ex)
                 {
                     retValue = ex.Value;
+                }
+                finally
+                {
+                    FunctionCallDepth--;
                 }
 
                 return retValue;
