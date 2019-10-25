@@ -25,6 +25,7 @@ namespace LICC.Internal.LSF.Runtime
         private IRunContext Context => ContextStack.Peek();
 
         private SourceLocation Location;
+        private bool StrictMode = false;
 
         private readonly ICommandRegistryInternal CommandRegistry;
         private readonly ICommandExecutor CommandExecutor;
@@ -113,6 +114,25 @@ namespace LICC.Internal.LSF.Runtime
             else if (statement is ReturnStatement ret)
             {
                 throw new ReturnException(ret.Value == null ? null : Visit(ret.Value));
+            }
+            else if (statement is DirectiveStatement dir)
+            {
+                DoDirective(dir);
+            }
+        }
+
+        private void DoDirective(DirectiveStatement dir)
+        {
+            switch (dir.Name)
+            {
+                case "use":
+                    if (dir.Arguments.Length == 1 && dir.Arguments[0] == "strict")
+                        StrictMode = true;
+                    else
+                        throw Error("invalid mode");
+                    break;
+                default:
+                    throw Error("invalid directive");
             }
         }
 
@@ -488,9 +508,16 @@ namespace LICC.Internal.LSF.Runtime
         private object VisitVariableAccess(VariableAccessExpression expr)
         {
             if (ContextStack.TryGetVariable(expr.VariableName, out var val))
+            {
                 return val;
+            }
             else
-                return null; //Maybe throw instead?
+            {
+                if (StrictMode)
+                    throw Error($"tried to access undeclared variable ${expr.VariableName}");
+                else
+                    return null;
+            }
         }
 
         private object VisitVariableAssignment(VariableAssignmentExpression expr)

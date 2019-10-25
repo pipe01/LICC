@@ -250,6 +250,10 @@ namespace LICC.Internal.LSF.Parsing
                     Advance();
                     ret = new ExpressionStatement(DoVariableAssign());
                     break;
+
+                case LexemeKind.AtSign:
+                    ret = DoDirectiveStatement();
+                    break;
             }
 
             if (ret != null)
@@ -258,6 +262,19 @@ namespace LICC.Internal.LSF.Parsing
                 Error($"unexpected {Current.Kind} found");
 
             return ret;
+        }
+
+        private DirectiveStatement DoDirectiveStatement()
+        {
+            Take(LexemeKind.AtSign);
+
+            var cmdName = Take(LexemeKind.String, "directive name");
+            var args = new List<string>();
+
+            while (Current.Kind != LexemeKind.NewLine && Take(LexemeKind.String, out var arg))
+                args.Add(arg.Content);
+
+            return new DirectiveStatement(cmdName.Content, args.ToArray());
         }
 
         private FunctionDeclarationStatement DoFunction()

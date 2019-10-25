@@ -46,6 +46,7 @@ namespace LICC.Internal.LSF.Parsing
         public IEnumerable<Lexeme> Lex()
         {
             Lexeme prev = null;
+            Lexeme directiveLexeme = null;
 
             while (!IsEOF)
             {
@@ -54,8 +55,14 @@ namespace LICC.Internal.LSF.Parsing
 
                 if (lexeme != null)
                 {
-                    if (FileSystem != null && (prev == null || prev.Kind == LexemeKind.NewLine) && lexeme.Kind == LexemeKind.AtSign)
+                    if (FileSystem != null
+                        && (prev == null || prev.Kind == LexemeKind.NewLine)
+                        && lexeme.Kind == LexemeKind.AtSign
+                        && (directiveLexeme = GetLexeme()).Kind == LexemeKind.String
+                        && directiveLexeme.Content == "include")
                     {
+                        directiveLexeme = null;
+
                         foreach (var item in TryIncludeFile())
                         {
                             yield return item;
@@ -64,7 +71,17 @@ namespace LICC.Internal.LSF.Parsing
                     else
                     {
                         yield return lexeme;
-                        prev = lexeme;
+
+                        if (directiveLexeme == null)
+                        {
+                            prev = lexeme;
+                        }
+                        else
+                        {
+                            yield return directiveLexeme;
+                            prev = directiveLexeme;
+                            directiveLexeme = null;
+                        }
                     }
                 }
             }
@@ -73,35 +90,26 @@ namespace LICC.Internal.LSF.Parsing
 
             IEnumerable<Lexeme> TryIncludeFile()
             {
-                var directiveLexeme = GetLexeme();
+                GetLexeme(); //Skip whitespace
 
-                if (directiveLexeme.Kind == LexemeKind.String && directiveLexeme.Content == "include")
+                var fileNameLexeme = GetLexeme();
+
+                if (fileNameLexeme.Kind == LexemeKind.QuotedString)
                 {
-                    GetLexeme(); //Skip whitespace
+                    if (!FileSystem.FileExists(fileNameLexeme.Content))
+                        Error($"cannot find file on '{fileNameLexeme.Content}'");
 
-                    var fileNameLexeme = GetLexeme();
-
-                    if (fileNameLexeme.Kind == LexemeKind.QuotedString)
+                    foreach (var item in Lex(fileNameLexeme.Content, FileSystem))
                     {
-                        if (!FileSystem.FileExists(fileNameLexeme.Content))
-                            Error($"cannot find file on '{fileNameLexeme.Content}'");
+                        if (item.Kind == LexemeKind.EndOfFile)
+                            break;
 
-                        foreach (var item in Lex(fileNameLexeme.Content, FileSystem))
-                        {
-                            if (item.Kind == LexemeKind.EndOfFile)
-                                break;
-
-                            yield return item;
-                        }
-                    }
-                    else
-                    {
-                        Error($"expected quoted file path, found {fileNameLexeme}");
+                        yield return item;
                     }
                 }
                 else
                 {
-                    Error($"invalid preprocessor directive '{directiveLexeme.Content}'");
+                    Error($"expected quoted file path, found {fileNameLexeme}");
                 }
             }
         }

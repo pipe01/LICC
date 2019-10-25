@@ -11,6 +11,18 @@ namespace LICC.Internal.LSF.Parsing.Data
     {
     }
 
+    internal class DirectiveStatement : Statement
+    {
+        public string Name { get; }
+        public string[] Arguments { get; }
+
+        public DirectiveStatement(string name, string[] arguments)
+        {
+            this.Name = name;
+            this.Arguments = arguments;
+        }
+    }
+
     internal class FunctionDeclarationStatement : Statement
     {
         public string Name { get; }
