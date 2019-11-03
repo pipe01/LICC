@@ -93,6 +93,12 @@ namespace LICC
                 Shell.ExecuteLsf("autoexec.lsf");
         }
 
+        public void SwitchFrontend(Frontend frontend)
+        {
+            LConsole.Frontend.Stop();
+            LConsole.Frontend = frontend;
+        }
+
         private void Frontend_LineInput(string line)
         {
             try

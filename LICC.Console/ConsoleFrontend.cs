@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 using TrueColorConsole;
 using SConsole = System.Console;
 
@@ -18,6 +19,8 @@ namespace LICC.Console
 
         private bool VTModeEnabled;
         private bool IsInputPaused;
+        private bool StopRequested;
+        private Thread ReaderThread;
 
         private bool IsVTConsoleEnabled => VTModeEnabled && VTConsole.IsEnabled;
 
@@ -47,53 +50,61 @@ namespace LICC.Console
         /// </summary>
         public void BeginRead()
         {
-            while (true)
+            ReaderThread = new Thread(() =>
             {
-                var key = SConsole.ReadKey(true);
-                bool ctrl = (key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control;
-
-                if (VTModeEnabled)
+                while (!StopRequested)
                 {
-                    if (key.KeyChar == 27)
-                    {
-                        string keySeq = "" + SConsole.ReadKey(true).KeyChar + SConsole.ReadKey(true).KeyChar;
-                        ConsoleKey? newKey = null;
+                    var key = SConsole.ReadKey(true);
+                    bool ctrl = (key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control;
 
-                        if (keySeq == "[A")
-                            newKey = ConsoleKey.UpArrow;
-                        else if (keySeq == "[B")
-                            newKey = ConsoleKey.DownArrow;
-                        else if (keySeq == "[C")
-                            newKey = ConsoleKey.RightArrow;
-                        else if (keySeq == "[D")
-                            newKey = ConsoleKey.LeftArrow;
-                        else if (keySeq == "[3" && SConsole.ReadKey(true).KeyChar == '~')
-                            newKey = ConsoleKey.Delete;
+                    if (VTModeEnabled)
+                    {
+                        if (key.KeyChar == 27)
+                        {
+                            string keySeq = "" + SConsole.ReadKey(true).KeyChar + SConsole.ReadKey(true).KeyChar;
+                            ConsoleKey? newKey = null;
 
-                        if (newKey != null)
-                            key = new ConsoleKeyInfo('\0', newKey.Value, false, false, ctrl);
-                        else
-                            SConsole.Beep();
+                            if (keySeq == "[A")
+                                newKey = ConsoleKey.UpArrow;
+                            else if (keySeq == "[B")
+                                newKey = ConsoleKey.DownArrow;
+                            else if (keySeq == "[C")
+                                newKey = ConsoleKey.RightArrow;
+                            else if (keySeq == "[D")
+                                newKey = ConsoleKey.LeftArrow;
+                            else if (keySeq == "[3" && SConsole.ReadKey(true).KeyChar == '~')
+                                newKey = ConsoleKey.Delete;
+
+                            if (newKey != null)
+                                key = new ConsoleKeyInfo('\0', newKey.Value, false, false, ctrl);
+                            else
+                                SConsole.Beep();
+                        }
+                        else if (key.KeyChar == 3)
+                        {
+                            key = new ConsoleKeyInfo('c', ConsoleKey.C, false, false, true);
+                        }
+                        else if (key.KeyChar == 127)
+                        {
+                            key = new ConsoleKeyInfo('\0', ConsoleKey.Backspace, false, false, false);
+                        }
+                        else if (key.KeyChar == '\b')
+                        {
+                            key = new ConsoleKeyInfo('\0', ConsoleKey.Backspace, false, false, true);
+                        }
                     }
-                    else if (key.KeyChar == 3)
-                    {
-                        key = new ConsoleKeyInfo('c', ConsoleKey.C, false, false, true);
-                    }
-                    else if (key.KeyChar == 127)
-                    {
-                        key = new ConsoleKeyInfo('\0', ConsoleKey.Backspace, false, false, false);
-                    }
-                    else if (key.KeyChar == '\b')
-                    {
-                        key = new ConsoleKeyInfo('\0', ConsoleKey.Backspace, false, false, true);
-                    }
+
+                    if (IsInputPaused)
+                        QueuedKeys.Enqueue(key);
+                    else
+                        HandleKey(key);
                 }
-
-                if (IsInputPaused)
-                    QueuedKeys.Enqueue(key);
-                else
-                    HandleKey(key);
-            }
+            })
+            {
+                IsBackground = true
+            };
+            ReaderThread.Start();
+            ReaderThread.Join();
         }
 
         private void HandleKey(ConsoleKeyInfo key)
@@ -279,20 +290,31 @@ namespace LICC.Console
             }
         }
 
+        protected override void Stop()
+        {
+            ReaderThread.Abort();
+        }
+
         /// <summary>
         /// Fires up a console with the default settings.
         /// </summary>
-        public static void StartDefault(string fileSystemRoot = null, bool enableVtMode = true)
+        public static void StartDefault(out CommandConsole console, string fileSystemRoot = null, bool enableVtMode = true)
         {
             var frontend = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? (Frontend)new ConsoleFrontend(enableVtMode)
                 : new PlainTextConsoleFrontend();
-            var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
+            console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
             console.Commands.RegisterCommandsInAllAssemblies();
 
             console.RunAutoexec();
 
             (frontend as ILineReader).BeginRead();
         }
+
+        /// <summary>
+        /// Fires up a console with the default settings.
+        /// </summary>
+        public static void StartDefault(string fileSystemRoot = null, bool enableVtMode = true)
+            => StartDefault(out _, fileSystemRoot, enableVtMode);
     }
 }

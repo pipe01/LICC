@@ -38,6 +38,8 @@ namespace LICC.API
         /// </summary>
         protected internal virtual void Exit() => Environment.Exit(0);
 
+        protected internal virtual void Stop() => throw new InvalidOperationException("The current frontend does not support switching");
+
         /// <summary>
         /// Pause and clear input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>

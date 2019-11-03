@@ -25,15 +25,19 @@ namespace Playground
 
     class Program
     {
+        private static CommandConsole Console;
+
         static void Main(string[] args)
         {
-            ConsoleFrontend.StartDefault("cfg", true);
+            ConsoleFrontend.StartDefault(out Console, "cfg", true);
         }
 
         [Command]
         public static object Test(int num, string str = "default")
         {
             LConsole.WriteLine($"Hello {num}, {str}", ConsoleColor.Blue);
+            if (num == 42)
+                Console.SwitchFrontend(new PlainTextConsoleFrontend());
             return new TestClass();
         }
     }
