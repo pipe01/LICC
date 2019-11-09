@@ -1,12 +1,18 @@
 ﻿using LICC.API;
-using System;
-using System.Drawing;
 using SConsole = System.Console;
 
 namespace LICC.Console
 {
     public class PlainTextConsoleFrontend : Frontend, ILineReader
     {
+        private readonly ConsoleOptions Options;
+
+        public PlainTextConsoleFrontend(ConsoleOptions options = null)
+        {
+            this.Options = options ?? ConsoleOptions.Default;
+        }
+
+
         /// <summary>
         /// Blocks the current thread and begins reading input.
         /// </summary>
@@ -22,10 +28,17 @@ namespace LICC.Console
 
         public override void Write(string str, CColor color)
         {
-            var prev = SConsole.ForegroundColor;
-            SConsole.ForegroundColor = color.ToConsoleColor();
-            SConsole.Write(str);
-            SConsole.ForegroundColor = prev;
+            if (Options.UseColoredOutput)
+            {
+                var prev = SConsole.ForegroundColor;
+                SConsole.ForegroundColor = color.ToConsoleColor();
+                SConsole.Write(str);
+                SConsole.ForegroundColor = prev;
+            }
+            else
+            {
+                SConsole.Write(str);
+            }
         }
 
         /// <summary>

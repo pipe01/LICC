@@ -16,10 +16,10 @@ namespace LICC.Console
         private int CursorPos;
 
         private readonly Queue<ConsoleKeyInfo> QueuedKeys = new Queue<ConsoleKeyInfo>();
+        private readonly ConsoleOptions Options;
 
         private bool VTModeEnabled;
         private bool IsInputPaused;
-        private bool StopRequested;
         private Thread ReaderThread;
 
         private bool IsVTConsoleEnabled => VTModeEnabled && VTConsole.IsEnabled;
@@ -28,9 +28,10 @@ namespace LICC.Console
 
         public override CColor DefaultForeground => SConsole.ForegroundColor;
 
-        public ConsoleFrontend(bool enableVTMode)
+        public ConsoleFrontend(bool enableVTMode, ConsoleOptions options = null)
         {
             this.VTModeEnabled = enableVTMode && VTConsole.IsSupported;
+            this.Options = options ?? ConsoleOptions.Default;
         }
 
         protected override void Init()
@@ -52,7 +53,7 @@ namespace LICC.Console
         {
             ReaderThread = new Thread(() =>
             {
-                while (!StopRequested)
+                while (true)
                 {
                     var key = SConsole.ReadKey(true);
                     bool ctrl = (key.Modifiers & ConsoleModifiers.Control) == ConsoleModifiers.Control;
@@ -276,17 +277,31 @@ namespace LICC.Console
         {
             if (IsVTConsoleEnabled)
             {
-                VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
+                if (Options.UseColoredOutput)
+                {
+                    VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
 
-                var c = CColor.FromConsoleColor(ConsoleColor.Gray);
-                VTConsole.SetColorForeground(Color.FromArgb(c.R, c.G, c.B));
+                    var c = CColor.FromConsoleColor(ConsoleColor.Gray);
+                    VTConsole.SetColorForeground(Color.FromArgb(c.R, c.G, c.B));
+                }
+                else
+                {
+                    VTConsole.Write(str);
+                }
             }
             else
             {
-                var prev = SConsole.ForegroundColor;
-                SConsole.ForegroundColor = color.ToConsoleColor();
-                SConsole.Write(str);
-                SConsole.ForegroundColor = prev;
+                if (Options.UseColoredOutput)
+                {
+                    var prev = SConsole.ForegroundColor;
+                    SConsole.ForegroundColor = color.ToConsoleColor();
+                    SConsole.Write(str);
+                    SConsole.ForegroundColor = prev;
+                }
+                else
+                {
+                    SConsole.Write(str);
+                }
             }
         }
 
