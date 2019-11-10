@@ -30,7 +30,18 @@ namespace LICC.Internal
 
         void ICommandRegistryInternal.RegisterCommand(MethodInfo method, bool ignoreInvalid)
         {
-            var attr = method.GetCustomAttribute<CommandAttribute>();
+            CommandAttribute attr;
+
+            try
+            {
+                attr = method.GetCustomAttribute<CommandAttribute>();
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                // if the method has an attribute which is part of an assembly that isn't loaded,
+                // you'll get a FileNotFoundException here.
+                return;
+            }
 
             if (attr == null)
             {
