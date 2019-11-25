@@ -6,11 +6,13 @@ namespace LICC.Exceptions
     {
         public string CommandName { get; }
 
-        public override string Message => $"No command found with name '{CommandName}'";
+        public override string Message { get; }
 
-        public CommandNotFoundException(string commandName)
+        public CommandNotFoundException(string commandName, int argsCount)
         {
             this.CommandName = commandName;
+
+            this.Message = $"No command found with name '{CommandName}' and '{argsCount}' arguments";
         }
     }
 }

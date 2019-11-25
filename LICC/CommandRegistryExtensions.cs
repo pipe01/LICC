@@ -25,7 +25,8 @@ namespace LICC
         {
             foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
             {
-                registry.RegisterCommandsIn(item);
+                if (!item.FullName.StartsWith("Unity"))
+                    registry.RegisterCommandsIn(item);
             }
         }
     }

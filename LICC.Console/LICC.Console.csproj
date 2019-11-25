@@ -1,15 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TrueColorConsole" Version="1.0.2" />
+    <PackageReference Include="TrueColorConsole" Version="1.0.2" Condition="'$(TargetFramework)' != 'net45'" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LICC\LICC.csproj" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <Compile Remove="ConsoleFrontend.cs" />
+  </ItemGroup>
 </Project>

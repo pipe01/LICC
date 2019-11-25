@@ -102,6 +102,7 @@ namespace LICC.Console
                 }
             })
             {
+                Name = "LICC Reader thread",
                 IsBackground = true
             };
             ReaderThread.Start();

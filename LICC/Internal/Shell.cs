@@ -97,7 +97,7 @@ namespace LICC.Internal
             if (!CommandRegistry.TryGetCommand(cmdName, strArgs.Length, out var cmd, !Config.CaseSensitiveCommandNames)
              && !(CommandRegistry.TryGetCommand(cmdName, 1, out cmd, !Config.CaseSensitiveCommandNames) && cmd.Params[0].Type == typeof(string)))
             {
-                throw new CommandNotFoundException(cmdName);
+                throw new CommandNotFoundException(cmdName, strArgs.Length);
             }
 
             int requiredParamCount = cmd.Params.Count(o => !o.Optional);
