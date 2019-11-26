@@ -33,11 +33,13 @@ namespace Playground
         }
 
         [Command]
-        public static object Test(int num, string str = "default")
+        public static object Test(int num, object str = null)
         {
-            LConsole.WriteLine($"Hello {num}, {str}", ConsoleColor.Blue);
+            LConsole.WriteLine($"Hello {num}, {str} ({str?.GetType()})", ConsoleColor.Blue);
+
             if (num == 42)
                 Console.SwitchFrontend(new PlainTextConsoleFrontend());
+
             return new TestClass();
         }
     }

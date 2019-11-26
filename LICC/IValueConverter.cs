@@ -3,7 +3,7 @@
 namespace LICC
 {
     /// <summary>
-    /// Interface for a class that can conver a value from its string representation to an object.
+    /// Interface for a class that can convert a value from its string representation to an object.
     /// </summary>
     public interface IValueConverter
     {

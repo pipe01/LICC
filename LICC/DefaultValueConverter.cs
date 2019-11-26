@@ -7,7 +7,10 @@ namespace LICC
     {
         public (bool Success, object Value) TryConvertValue(Type targetType, string arg)
         {
-            if (targetType == typeof(string))
+            if (targetType == typeof(object))
+                return (true, ParseObj());
+
+            else if (targetType == typeof(string))
                 return T(true, arg);
 
             else if (targetType == typeof(int))
@@ -34,6 +37,18 @@ namespace LICC
             return (false, null);
 
             (bool, object) T(bool success, object val) => (success, val);
+
+            object ParseObj()
+            {
+                if (int.TryParse(arg, out var i))
+                    return i;
+                else if (float.TryParse(arg, out var f))
+                    return f;
+                else if (bool.TryParse(arg, out var b))
+                    return b;
+
+                return arg;
+            }
         }
     }
 }
