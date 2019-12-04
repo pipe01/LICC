@@ -38,7 +38,8 @@ namespace LICC
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
-            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, commandRegistry, new Environment(), commandExecutor, null, config);
+            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, new CommandFinder(commandRegistry, config),
+                new Environment(), commandExecutor, null, config);
 
             frontend.LineInput += Frontend_LineInput;
 

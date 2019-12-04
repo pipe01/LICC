@@ -28,13 +28,13 @@ namespace LICC.Internal.LSF.Runtime
         private bool StrictMode = false;
         private int FunctionCallDepth = 0;
 
-        private readonly ICommandRegistryInternal CommandRegistry;
+        private readonly ICommandFinder CommandFinder;
         private readonly ICommandExecutor CommandExecutor;
 
-        public Interpreter(ICommandRegistryInternal commandRegistry, IEnvironment environment, ICommandExecutor commandExecutor)
+        public Interpreter(IEnvironment environment, ICommandExecutor commandExecutor, ICommandFinder commandFinder)
         {
-            this.CommandRegistry = commandRegistry;
             this.CommandExecutor = commandExecutor;
+            this.CommandFinder = commandFinder;
 
             ContextStack.Push(environment);
         }
@@ -319,7 +319,9 @@ namespace LICC.Internal.LSF.Runtime
 
         private object VisitCommandCall(CommandCallExpression statement)
         {
-            if (!CommandRegistry.TryGetCommand(statement.CommandName, statement.Arguments.Length, out var cmd))
+            var (cmdFound, cmd, _) = CommandFinder.Find(statement.CommandName, statement.Arguments.Length);
+
+            if (!cmdFound)
                 throw Error($"command with name '{statement.CommandName}' and {statement.Arguments.Length} parameters not found");
 
             if (statement.Arguments.Length < cmd.Params.Count(o => !o.Optional))

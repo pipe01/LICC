@@ -1,16 +1,20 @@
 ﻿using LICC.API;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace LICC.Internal
 {
-    internal struct Command : IEquatable<Command>
+    [DebuggerDisplay("{Name} {Params.Length}")]
+    internal class Command : IEquatable<Command>
     {
         public Guid ID { get; }
         public string Name { get; }
         public string Description { get; }
         public (string Name, Type Type, bool Optional)[] Params { get; }
+        public int RequiredParamCount { get; }
+        public int OptionalParamCount { get; }
         public MethodInfo Method { get; }
         public int ArgCount { get; }
         public (ParameterInfo Param, int Index)[] InjectedParameters { get; }
@@ -23,6 +27,8 @@ namespace LICC.Internal
             this.Name = name;
             this.Description = desc;
             this.Params = methodParams.Where(o => !o.IsDefined(typeof(InjectAttribute))).Select(o => (o.Name, o.ParameterType, o.HasDefaultValue)).ToArray();
+            this.RequiredParamCount = Params.Count(o => !o.Optional);
+            this.OptionalParamCount = Params.Count(o => o.Optional);
             this.Method = method;
             this.ArgCount = methodParams.Length;
             this.InjectedParameters = methodParams

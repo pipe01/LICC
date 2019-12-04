@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using TrueColorConsole;
@@ -30,8 +31,14 @@ namespace LICC.Console
 
         public ConsoleFrontend(bool enableVTMode, ConsoleOptions options = null)
         {
-            this.VTModeEnabled = enableVTMode && VTConsole.IsSupported;
+            this.VTModeEnabled = enableVTMode && IsWindows() && VTConsole.IsSupported;
             this.Options = options ?? ConsoleOptions.Default;
+        }
+
+        private static bool IsWindows()
+        {
+            string windir = Environment.GetEnvironmentVariable("windir");
+            return !string.IsNullOrEmpty(windir) && windir.Contains(@"\") && Directory.Exists(windir);
         }
 
         protected override void Init()
@@ -207,10 +214,12 @@ namespace LICC.Console
                     SConsole.WriteLine();
                     StartPos = (SConsole.CursorLeft, SConsole.CursorTop);
 
-                    if (key.Key == ConsoleKey.Enter)
-                        OnLineInput(Buffer);
-
+                    string line = Buffer;
                     RewriteBuffer("");
+
+                    if (key.Key == ConsoleKey.Enter)
+                        OnLineInput(line);
+
                     break;
 
                 default:

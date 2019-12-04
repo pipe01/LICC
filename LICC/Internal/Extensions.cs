@@ -1,5 +1,7 @@
 ﻿using LICC.API;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LICC.Internal
 {
@@ -29,6 +31,12 @@ namespace LICC.Internal
         public static IEnumerable<T> Yield<T>(this T obj)
         {
             yield return obj;
+        }
+
+        public static bool TrySingle<T>(this IEnumerable<T> ienum, Predicate<T> predicate, out T value)
+        {
+            value = ienum.SingleOrDefault(o => predicate(o));
+            return value != default;
         }
     }
 }

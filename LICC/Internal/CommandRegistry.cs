@@ -10,15 +10,13 @@ namespace LICC.Internal
     internal interface ICommandRegistryInternal : ICommandRegistry
     {
         IEnumerable<Command> GetCommands();
-        bool TryGetCommand(string name, int argCount, out Command cmd);
-        bool TryGetCommand(string name, int argCount, out Command cmd, bool ignoreCase);
 
         void RegisterCommand(MethodInfo method, bool ignoreInvalid);
     }
 
     internal sealed class CommandRegistry : ICommandRegistryInternal
     {
-        private readonly IDictionary<string, Command> Commands = new Dictionary<string, Command>();
+        private readonly IList<Command> Commands = new List<Command>();
 
         private ICommandRegistryInternal Internal => this;
 
@@ -26,7 +24,7 @@ namespace LICC.Internal
         {
         }
 
-        IEnumerable<Command> ICommandRegistryInternal.GetCommands() => Commands.Values.Distinct();
+        IEnumerable<Command> ICommandRegistryInternal.GetCommands() => Commands.Distinct();
 
         void ICommandRegistryInternal.RegisterCommand(MethodInfo method, bool ignoreInvalid)
         {
@@ -55,7 +53,8 @@ namespace LICC.Internal
 
             var cmd = new Command(name, attr.Description, method);
 
-            if (Commands.ContainsKey(name + "_" + cmd.Params.Length))
+            if (Commands.Any(o => o.Name == name && o.RequiredParamCount == cmd.RequiredParamCount
+                                && o.OptionalParamCount == cmd.OptionalParamCount))
             {
                 if (ignoreInvalid)
                     return;
@@ -66,35 +65,7 @@ namespace LICC.Internal
             if (name.StartsWith("$"))
                 throw new InvalidCommandMethodException("Command names cannot start with '$'");
 
-            for (int i = cmd.Params.Count(o => !o.Optional); i < cmd.Params.Length + 1; i++)
-            {
-                Commands.Add(name + "_" + i, cmd);
-            }
-        }
-
-        bool ICommandRegistryInternal.TryGetCommand(string name, int argCount, out Command cmd) => Internal.TryGetCommand(name, argCount, out cmd, false);
-
-        bool ICommandRegistryInternal.TryGetCommand(string name, int argCount, out Command cmd, bool ignoreCase)
-        {
-            if (argCount != -1)
-            {
-                name += "_" + argCount;
-            }
-            else
-            {
-                cmd = Commands.SingleOrDefault(o => o.Key.StartsWith(name + "_", ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Value;
-                return cmd.Name != null;
-            }
-
-            if (ignoreCase)
-            {
-                cmd = Commands.SingleOrDefault(o => o.Key.Equals(name, StringComparison.OrdinalIgnoreCase)).Value;
-                return cmd.Name != null;
-            }
-            else
-            {
-                return Commands.TryGetValue(name, out cmd);
-            }
+            Commands.Add(cmd);
         }
 
         public void RegisterCommand(MethodInfo method) => Internal.RegisterCommand(method, false);

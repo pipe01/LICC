@@ -28,7 +28,7 @@ namespace LICC.Internal
         private readonly IValueConverter ValueConverter;
         private readonly IWriteableHistory History;
         private readonly IFileSystem FileSystem;
-        private readonly ICommandRegistryInternal CommandRegistry;
+        private readonly ICommandFinder CommandFinder;
         private readonly IEnvironment _Environment;
         private readonly ILsfRunner LsfRunner;
         private readonly ICommandExecutor CommandExecutor;
@@ -38,16 +38,16 @@ namespace LICC.Internal
         Exception IShell.LastException => _LastException;
 
         public Shell(IValueConverter valueConverter, IWriteableHistory history, IFileSystem fileSystem,
-            ICommandRegistryInternal commandRegistry, IEnvironment environment, ICommandExecutor commandExecutor,
-            ILsfRunner lsfRunner = null, ConsoleConfiguration config = null)
+            ICommandFinder commandFinder, IEnvironment environment,
+            ICommandExecutor commandExecutor, ILsfRunner lsfRunner = null, ConsoleConfiguration config = null)
         {
             this.ValueConverter = valueConverter;
             this.History = history;
             this.FileSystem = fileSystem;
-            this.CommandRegistry = commandRegistry;
+            this.CommandFinder = commandFinder;
             this._Environment = environment;
             this.CommandExecutor = commandExecutor;
-            this.LsfRunner = lsfRunner ?? new LsfRunner(environment, commandRegistry, fileSystem, commandExecutor);
+            this.LsfRunner = lsfRunner ?? new LsfRunner(environment, commandFinder, fileSystem, commandExecutor);
             this.Config = config ?? new ConsoleConfiguration();
         }
 
@@ -67,8 +67,6 @@ namespace LICC.Internal
 
         ///<summary>Executes a single line</summary>
         /// <exception cref="CommandNotFoundException"></exception>
-        /// <exception cref="ParameterMismatchException"></exception>
-        /// <exception cref="ParameterConversionException"></exception>
         /// <exception cref="ParserException"></exception>
         public void ExecuteLine(string line, bool addToHistory = true)
         {
@@ -94,42 +92,44 @@ namespace LICC.Internal
 
             var strArgs = GetArgs(argsLine).ToArray();
 
-            if (!CommandRegistry.TryGetCommand(cmdName, strArgs.Length, out var cmd, !Config.CaseSensitiveCommandNames)
-             && !(CommandRegistry.TryGetCommand(cmdName, 1, out cmd, !Config.CaseSensitiveCommandNames) && cmd.Params[0].Type == typeof(string)))
+            var (success, _, cmdSuggestions) = CommandFinder.Find(cmdName, strArgs.Length);
+
+            if (!success)
             {
-                throw new CommandNotFoundException(cmdName, strArgs.Length);
-            }
-
-            int requiredParamCount = cmd.Params.Count(o => !o.Optional);
-
-            object[] cmdArgs = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
-
-            if (cmdNameSeparatorIndex != -1)
-            {
-                if (cmd.Params.Length == 1 && cmd.Params[0].Type == typeof(string) && strArgs.Length > 1)
+                if (cmdSuggestions == null || cmdSuggestions.Length == 0)
                 {
-                    cmdArgs[0] = argsLine;
+                    LConsole.WriteLine("Command not found");
                 }
                 else
                 {
-                    if (strArgs.Length < requiredParamCount || strArgs.Length > cmd.Params.Length)
-                        throw new ParameterMismatchException(requiredParamCount, cmd.Params.Length, strArgs.Length, cmd);
-
-                    for (int i = 0; i < strArgs.Length; i++)
+                    foreach (var item in cmdSuggestions)
                     {
-                        var (success, value) = ValueConverter.TryConvertValue(cmd.Params[i].Type, strArgs[i]);
-
-                        if (!success)
-                            throw new ParameterConversionException(cmd.Params[i].Name, cmd.Params[i].Type);
-                        else
-                            cmdArgs[i] = value;
+                        item.PrintUsage();
                     }
                 }
+
+                return;
             }
-            else if (requiredParamCount > 0)
+
+            object[] cmdArgs = null;
+            Command cmd = null;
+
+            foreach (var possibleCmd in cmdSuggestions)
             {
-                throw new ParameterMismatchException(requiredParamCount, cmd.Params.Length, 0, cmd);
+                if (possibleCmd.RequiredParamCount > strArgs.Length)
+                    continue;
+
+                var (transformSuccess, transformError) = TryTransformParameters(argsLine, strArgs, possibleCmd, out cmdArgs);
+
+                if (transformSuccess)
+                {
+                    cmd = possibleCmd;
+                    break;
+                }
             }
+
+            if (cmd == null)
+                return;
 
             object result = null;
 
@@ -160,6 +160,42 @@ namespace LICC.Internal
 
                 LConsole.Frontend.PrintException(ex);
             }
+        }
+
+        private (bool Success, Exception Error) TryTransformParameters(string argsLine, string[] strArgs, Command cmd, out object[] cmdArgs)
+        {
+            int requiredParamCount = cmd.Params.Count(o => !o.Optional);
+
+            cmdArgs = Enumerable.Repeat(Type.Missing, cmd.Params.Length).ToArray();
+
+            if (strArgs.Length > 0)
+            {
+                if (cmd.Params.Length == 1 && cmd.Params[0].Type == typeof(string) && strArgs.Length > 1)
+                {
+                    cmdArgs[0] = argsLine;
+                }
+                else
+                {
+                    if (strArgs.Length < requiredParamCount || strArgs.Length > cmd.Params.Length)
+                        return (false, new ParameterMismatchException(requiredParamCount, cmd.Params.Length, strArgs.Length, cmd));
+
+                    for (int i = 0; i < strArgs.Length; i++)
+                    {
+                        var (valueConverted, value) = ValueConverter.TryConvertValue(cmd.Params[i].Type, strArgs[i]);
+
+                        if (!valueConverted)
+                            return (false, new ParameterConversionException(cmd.Params[i].Name, cmd.Params[i].Type));
+                        else
+                            cmdArgs[i] = value;
+                    }
+                }
+            }
+            else if (requiredParamCount > 0)
+            {
+                return (false, new ParameterMismatchException(requiredParamCount, cmd.Params.Length, 0, cmd));
+            }
+
+            return (true, null);
         }
 
         private string ReplaceVariables(string str)
