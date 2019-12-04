@@ -60,6 +60,12 @@ namespace LICC
         }
 
         /// <summary>
+        /// Writes a colored string, delimited by a newline separator at the end.
+        /// </summary>
+        /// <param name="obj">The line to write.</param>
+        public static void WriteLine(object obj, CColor color) => WriteLine(obj?.ToString(), color);
+
+        /// <summary>
         /// Writes a formatted string, delimited by a newline separator at the end.
         /// </summary>
         /// <param name="format">The format string.</param>
