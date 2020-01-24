@@ -36,7 +36,7 @@ namespace LICC.Internal
         public static bool TrySingle<T>(this IEnumerable<T> ienum, Predicate<T> predicate, out T value)
         {
             value = ienum.SingleOrDefault(o => predicate(o));
-            return value != default;
+            return Equals(default(T), value);
         }
     }
 }
