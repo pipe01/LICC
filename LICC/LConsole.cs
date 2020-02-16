@@ -6,13 +6,19 @@ using System.Threading;
 
 namespace LICC
 {
+    public delegate void LineOutputDelegate(string line);
+
     /// <summary>
     /// Replacement for <see cref="Console"/>, meant to provide a frontend-independant way of outputting
     /// colorful text.
     /// </summary>
     public static class LConsole
     {
+        public static event LineOutputDelegate LineWritten = delegate { };
+
         internal static Frontend Frontend { get; set; }
+
+        internal static void OnLineWritten(string line) => LineWritten(line);
 
         internal static void Write(string str) => Frontend.Write(str);
         internal static void Write(string str, CColor color) => Frontend.Write(str, color);
@@ -36,6 +42,8 @@ namespace LICC
         /// <param name="str">The line to write.</param>
         public static void WriteLine(string str)
         {
+            LineWritten(str);
+
             Frontend.PauseInput();
             Frontend.WriteLine(str);
             Frontend.ResumeInput();
@@ -54,6 +62,8 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(string str, CColor color)
         {
+            LineWritten(str);
+
             Frontend.PauseInput();
             Frontend.WriteLine(str, color);
             Frontend.ResumeInput();
@@ -109,6 +119,8 @@ namespace LICC
         public void End()
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
+
+            LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
 
             if (LConsole.Frontend.SupportsPartialLines)
             {
