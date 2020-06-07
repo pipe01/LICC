@@ -100,6 +100,11 @@ namespace LICC
             LConsole.Frontend = frontend;
         }
 
+        public void RunCommand(string cmd, bool addToHistory = false)
+        {
+            Shell.ExecuteLine(cmd, addToHistory);
+        }
+
         private void Frontend_LineInput(string line)
         {
             try

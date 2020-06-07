@@ -12,7 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
     <None Remove="**/*.meta" />
+    <None Remove="obj\**" />
   </ItemGroup>
 
   <ItemGroup>

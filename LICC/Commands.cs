@@ -16,7 +16,7 @@ namespace LICC
 
             LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
 
-            LineWriter writer = null;
+            LineWriter writer = default;
 
             int i = 0;
 

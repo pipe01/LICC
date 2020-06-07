@@ -29,7 +29,7 @@ namespace LICC
         /// Makes and returns a new line writer. This must be used if you want to write a line with different
         /// colored words.
         /// </summary>
-        public static LineWriter BeginLine() => new LineWriter();
+        public static LineWriter BeginLine() => LineWriter.Start();
 
         /// <summary>
         /// Writes a newline separator.
@@ -95,15 +95,19 @@ namespace LICC
     /// <summary>
     /// Class used to write a message containing multiple differently-colored segments.
     /// </summary>
-    public class LineWriter : IDisposable
+    public struct LineWriter : IDisposable
     {
         private static readonly SemaphoreSlim WriteSemaphore = new SemaphoreSlim(1);
 
-        private bool Disposed;
-        private IList<(string Text, CColor? Color)> TextRegions = new List<(string Text, CColor? Color)>();
+        public static LineWriter Start() => new LineWriter(new List<(string Text, CColor? Color)>());
 
-        internal LineWriter()
+        private bool Disposed;
+        private IList<(string Text, CColor? Color)> TextRegions;
+
+        private LineWriter(IList<(string Text, CColor? Color)> textRegions) : this()
         {
+            this.TextRegions = textRegions ?? throw new ArgumentNullException(nameof(textRegions));
+
             if (LConsole.Frontend.SupportsPartialLines)
             {
                 WriteSemaphore.Wait();

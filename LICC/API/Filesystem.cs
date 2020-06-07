@@ -21,7 +21,7 @@ namespace LICC.API
 
         public SystemIOFilesystem(string rootPath)
         {
-            this.RootPath = rootPath;
+            this.RootPath = Path.GetFullPath(rootPath);
         }
 
         private string FilePath(string path) => Path.Combine(RootPath, path);
