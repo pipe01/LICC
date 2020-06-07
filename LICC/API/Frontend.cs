@@ -20,7 +20,7 @@ namespace LICC.API
         /// <summary>
         /// Command history for the current session.
         /// </summary>
-        protected internal IHistory History { get; internal set; }
+        protected IHistory History { get; internal set; }
 
         /// <summary>
         /// Submits a line command to the shell.
@@ -31,23 +31,23 @@ namespace LICC.API
         /// <summary>
         /// Initialises the frontend.
         /// </summary>
-        protected internal virtual void Init() { }
+        protected virtual void Init() { }
 
         /// <summary>
         /// Exits the application. Uses <see cref="Environment.Exit(int)"/> by default.
         /// </summary>
-        protected internal virtual void Exit() => Environment.Exit(0);
+        protected virtual void Exit() => Environment.Exit(0);
 
-        protected internal virtual void Stop() => throw new NotSupportedException("The current frontend does not support switching");
+        protected virtual void Stop() => throw new NotSupportedException("The current frontend does not support switching");
 
         /// <summary>
         /// Pause and clear input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
-        protected internal virtual void PauseInput() { }
+        protected virtual void PauseInput() { }
         /// <summary>
         /// Resume input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
-        protected internal virtual void ResumeInput() { }
+        protected virtual void ResumeInput() { }
 
         /// <summary>
         /// Writes an uncolored string to the output.
