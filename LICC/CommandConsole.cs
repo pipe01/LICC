@@ -90,8 +90,15 @@ namespace LICC
         /// </summary>
         public void RunAutoexec()
         {
-            if (FileSystem?.FileExists("autoexec.lsf") ?? false)
-                Shell.ExecuteLsf("autoexec.lsf");
+            const string autoExecFileName = "autoexec.lsf";
+
+            if (FileSystem != null)
+            {
+                if (FileSystem.FileExists(autoExecFileName))
+                    Shell.ExecuteLsf(autoExecFileName);
+                else
+                    FileSystem.CreateFile(autoExecFileName);
+            }
         }
 
         public void SwitchFrontend(Frontend frontend)
