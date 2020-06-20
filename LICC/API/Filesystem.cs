@@ -29,7 +29,12 @@ namespace LICC.API
 
         public bool FileExists(string path) => File.Exists(FilePath(path));
 
-        public void CreateFile(string path) => File.Create(FilePath(path)).Close();
+        public void CreateFile(string path)
+        {
+            var file = new FileInfo(FilePath(path));
+            file.Directory.Create();
+            file.Create().Close();
+        }
 
         public StreamReader OpenRead(string path)
             => new StreamReader(File.OpenRead(FilePath(path)), Encoding.UTF8, true, 4096, false);
