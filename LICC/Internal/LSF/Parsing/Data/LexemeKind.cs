@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -10,45 +9,45 @@ namespace LICC.Internal.LSF.Parsing.Data
         [Description(null)] String,
         [Description(null)] QuotedString,
         [Description(null)] Keyword,
-        [Description(" ")]  Whitespace,
-        [Description(",")]  Comma,
-        [Description(".")]  Dot,
+        [Description(" ")] Whitespace,
+        [Description(",")] Comma,
+        [Description(".")] Dot,
 
-        [Description("$")]  Dollar,
-        [Description("=")]  EqualsAssign,
-        [Description("#")]  Hashtag,
-        [Description("@")]  AtSign,
-        [Description("!")]  Exclamation,
-        [Description("?")]  QuestionMark,
-        [Description(":")]  Colon,
+        [Description("$")] Dollar,
+        [Description("=")] EqualsAssign,
+        [Description("#")] Hashtag,
+        [Description("@")] AtSign,
+        [Description("!")] Exclamation,
+        [Description("?")] QuestionMark,
+        [Description(":")] Colon,
 
         [Description("==")] Equals,
         [Description("<=")] LessOrEqual,
-        [Description("<")]  Less,
+        [Description("<")] Less,
         [Description(">=")] MoreOrEqual,
-        [Description(">")]  More,
+        [Description(">")] More,
         [Description(">=")] NotEqual,
 
-        [Description("(")]  LeftParenthesis,
-        [Description(")")]  RightParenthesis,
-        [Description("{")]  LeftBrace,
-        [Description("}")]  RightBrace,
+        [Description("(")] LeftParenthesis,
+        [Description(")")] RightParenthesis,
+        [Description("{")] LeftBrace,
+        [Description("}")] RightBrace,
 
-        [Description("+")]  Plus,
-        [Description("-")]  Minus,
-        [Description("*")]  Multiply,
-        [Description("/")]  Divide,
-        [Description("%")]  Percentage,
+        [Description("+")] Plus,
+        [Description("-")] Minus,
+        [Description("*")] Multiply,
+        [Description("/")] Divide,
+        [Description("%")] Percentage,
         [Description("++")] Increment,
         [Description("--")] Decrement,
 
-        [Description("&")]  And,
+        [Description("&")] And,
         [Description("&&")] AndAlso,
-        [Description("|")]  Or,
+        [Description("|")] Or,
         [Description("||")] OrElse,
 
         [Description(null)] NewLine,
-        [Description(";")]  Semicolon,
+        [Description(";")] Semicolon,
         [Description(null)] EndOfFile,
     }
 

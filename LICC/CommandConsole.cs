@@ -2,8 +2,6 @@
 using LICC.Exceptions;
 using LICC.Internal;
 using System;
-using System.Linq;
-using System.Reflection;
 using Environment = LICC.Internal.Environment;
 
 namespace LICC

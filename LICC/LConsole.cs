@@ -102,7 +102,7 @@ namespace LICC
         public static LineWriter Start() => new LineWriter(new List<(string Text, CColor? Color)>());
 
         private bool Disposed;
-        private IList<(string Text, CColor? Color)> TextRegions;
+        private readonly IList<(string Text, CColor? Color)> TextRegions;
 
         private LineWriter(IList<(string Text, CColor? Color)> textRegions) : this()
         {
@@ -169,7 +169,7 @@ namespace LICC
         public LineWriter Write(string format, CColor color, params object[] args)
             => RunIfNotDisposed(() => LConsole.Write(format, color, args), () => (string.Format(format, args), color));
 
-        
+
         public LineWriter WriteLine()
             => Write(Environment.NewLine);
 

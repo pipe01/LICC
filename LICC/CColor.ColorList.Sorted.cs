@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿
+/* Unmerged change from project 'LICC (net461)'
+Before:
 using System.Reflection;
 using System.Linq;
-
+After:
+using System.Linq;
+using System.Reflection;
+*/
 namespace LICC
 {
     public partial struct CColor

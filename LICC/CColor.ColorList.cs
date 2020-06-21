@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace LICC
 {
@@ -23,7 +23,7 @@ namespace LICC
         public static CColor FromName(string name)
             => ColorsByName.TryGetValue(name, out var color) ? color : default;
 
-        static System.Random random = new System.Random();
+        static readonly System.Random random = new System.Random();
         public static CColor RandomColor()
             => AllColors[random.Next(0, AllColors.Count)];
 

@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LICC.Internal.LSF.Parsing
 {
@@ -34,7 +32,7 @@ namespace LICC.Internal.LSF.Parsing
         private SourceLocation Location => Current.Begin;
 
         private Lexeme[] Lexemes;
-        private Stack<int> IndexStack = new Stack<int>();
+        private readonly Stack<int> IndexStack = new Stack<int>();
 
         #region Utils
         [DebuggerStepThrough]
@@ -217,15 +215,15 @@ namespace LICC.Internal.LSF.Parsing
                 case LexemeKind.Keyword when Current.Content == "function":
                     ret = DoFunction();
                     break;
-                    
+
                 case LexemeKind.Keyword when Current.Content == "if":
                     ret = DoIfStatement();
                     break;
-                    
+
                 case LexemeKind.Keyword when Current.Content == "while":
                     ret = DoWhileStatement();
                     break;
-                    
+
                 case LexemeKind.Keyword when Current.Content == "for":
                     ret = DoForStatement();
                     break;
@@ -348,7 +346,7 @@ namespace LICC.Internal.LSF.Parsing
 
             return new IfStatement(condition, body, @else);
         }
-        
+
         private WhileStatement DoWhileStatement()
         {
             TakeKeyword("while");

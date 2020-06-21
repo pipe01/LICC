@@ -1,6 +1,5 @@
 ﻿using LICC.API;
 using System;
-using System.Linq;
 
 namespace LICC.Internal
 {

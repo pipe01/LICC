@@ -3,7 +3,6 @@ using LICC.Internal.LSF.Runtime.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace LICC.Internal.LSF.Runtime
@@ -422,7 +421,7 @@ namespace LICC.Internal.LSF.Runtime
 
                 return rightB;
             }
-            
+
             if (expr.Operator == Operator.Or)
             {
                 if (!(Visit(expr.Left) is bool leftB))
