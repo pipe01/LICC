@@ -12,7 +12,7 @@ namespace LICC
         [Command(Description = "Lists all commands")]
         private static void Help()
         {
-            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().ToArray();
+            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().Where(o => !o.Hidden).ToArray();
 
             LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
 

@@ -12,6 +12,7 @@ namespace LICC.Internal
         public Guid ID { get; }
         public string Name { get; }
         public string Description { get; }
+        public bool Hidden { get; }
         public (string Name, Type Type, bool Optional)[] Params { get; }
         public int RequiredParamCount { get; }
         public int OptionalParamCount { get; }
@@ -20,13 +21,14 @@ namespace LICC.Internal
         public int ArgCount { get; }
         public (ParameterInfo Param, int Index)[] InjectedParameters { get; }
 
-        public Command(string name, string desc, MethodInfo method, Type instanceType)
+        public Command(string name, string desc, MethodInfo method, Type instanceType, bool hidden)
         {
             var methodParams = method.GetParameters();
 
             this.ID = Guid.NewGuid();
             this.Name = name;
             this.Description = desc;
+            this.Hidden = hidden;
             this.Params = methodParams.Where(o => !o.IsDefined(typeof(InjectAttribute))).Select(o => (o.Name, o.ParameterType, o.HasDefaultValue)).ToArray();
             this.RequiredParamCount = Params.Count(o => !o.Optional);
             this.OptionalParamCount = Params.Count(o => o.Optional);

@@ -24,6 +24,11 @@ namespace LICC
         public Type ProviderType { get; set; }
 
         /// <summary>
+        /// If true, the method won't be shown when the "help" command is shown.
+        /// </summary>
+        public bool Hidden { get; set; }
+
+        /// <summary>
         /// Marks this method as a command whose name will be derived from the method's name.
         /// </summary>
         public CommandAttribute()

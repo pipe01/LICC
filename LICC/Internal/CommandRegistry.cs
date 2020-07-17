@@ -51,7 +51,7 @@ namespace LICC.Internal
 
             string name = attr.Name ?? method.Name.ToLower();
 
-            var cmd = new Command(name, attr.Description, method, attr.ProviderType);
+            var cmd = new Command(name, attr.Description, method, attr.ProviderType, attr.Hidden);
 
             if (Commands.Any(o => o.Name == name && o.RequiredParamCount == cmd.RequiredParamCount
                                 && o.OptionalParamCount == cmd.OptionalParamCount))
