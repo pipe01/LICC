@@ -37,7 +37,7 @@ namespace LICC.Internal.LSF.Parsing
             this.FileName = fileName;
             this.FileSystem = fileSystem;
 
-            if (this.Source[this.Source.Length - 1] != '\0')
+            if (Source.Length == 0 || Source[Source.Length - 1] != '\0')
                 this.Source += "\0";
         }
 

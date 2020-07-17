@@ -80,7 +80,10 @@ namespace LICC
         [Command(Description = "Prints a command's usage")]
         private static void Help(string command)
         {
-            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().Where(o => o.Name == command).ToArray();
+            var cmds = CommandConsole.Current.CommandRegistry
+                .GetCommands()
+                .Where(o => o.Name.Equals(command, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             if (cmds.Length == 0)
             {

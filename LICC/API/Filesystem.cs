@@ -9,6 +9,7 @@ namespace LICC.API
     public interface IFileSystem
     {
         bool FileExists(string path);
+        void CreateFile(string path);
         StreamReader OpenRead(string path);
     }
 
@@ -27,6 +28,13 @@ namespace LICC.API
         private string FilePath(string path) => Path.Combine(RootPath, path);
 
         public bool FileExists(string path) => File.Exists(FilePath(path));
+
+        public void CreateFile(string path)
+        {
+            var file = new FileInfo(FilePath(path));
+            file.Directory.Create();
+            file.Create().Close();
+        }
 
         public StreamReader OpenRead(string path)
             => new StreamReader(File.OpenRead(FilePath(path)), Encoding.UTF8, true, 4096, false);
