@@ -19,6 +19,11 @@ namespace LICC
         public string Description { get; set; }
 
         /// <summary>
+        /// If the method is an instance method, this type will be fetched from the <see cref="API.IObjectProvider"/> instead of the method's declaring type.
+        /// </summary>
+        public Type ProviderType { get; set; }
+
+        /// <summary>
         /// Marks this method as a command whose name will be derived from the method's name.
         /// </summary>
         public CommandAttribute()

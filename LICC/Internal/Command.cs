@@ -16,10 +16,11 @@ namespace LICC.Internal
         public int RequiredParamCount { get; }
         public int OptionalParamCount { get; }
         public MethodInfo Method { get; }
+        public Type InstanceType { get; }
         public int ArgCount { get; }
         public (ParameterInfo Param, int Index)[] InjectedParameters { get; }
 
-        public Command(string name, string desc, MethodInfo method)
+        public Command(string name, string desc, MethodInfo method, Type instanceType)
         {
             var methodParams = method.GetParameters();
 
@@ -30,6 +31,7 @@ namespace LICC.Internal
             this.RequiredParamCount = Params.Count(o => !o.Optional);
             this.OptionalParamCount = Params.Count(o => o.Optional);
             this.Method = method;
+            this.InstanceType = instanceType ?? method.DeclaringType;
             this.ArgCount = methodParams.Length;
             this.InjectedParameters = methodParams
                     .Select((param, index) => (param, index))

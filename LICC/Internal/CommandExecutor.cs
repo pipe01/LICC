@@ -54,7 +54,7 @@ namespace LICC.Internal
             {
                 try
                 {
-                    instance = ObjectProvider.Get(cmd.Method.DeclaringType);
+                    instance = ObjectProvider.Get(cmd.InstanceType);
                 }
                 catch (Exception ex)
                 {
