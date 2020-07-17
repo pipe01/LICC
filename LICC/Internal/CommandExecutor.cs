@@ -1,5 +1,7 @@
 ﻿using LICC.API;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LICC.Internal
 {
@@ -46,7 +48,21 @@ namespace LICC.Internal
                 args = newArgs;
             }
 
-            return cmd.Method.Invoke(null, args);
+            object instance = null;
+
+            if (!cmd.Method.IsStatic)
+            {
+                try
+                {
+                    instance = ObjectProvider.Get(cmd.Method.DeclaringType);
+                }
+                catch (Exception ex)
+                {
+                    throw new KeyNotFoundException($"Failed to get object instance for command {cmd.Name}", ex);
+                }
+            }
+
+            return cmd.Method.Invoke(instance, args);
         }
     }
 }

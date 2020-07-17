@@ -72,7 +72,7 @@ namespace LICC.Internal
 
         public void RegisterCommandsIn(Type type)
         {
-            foreach (var item in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic))
+            foreach (var item in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
             {
                 Internal.RegisterCommand(item, true);
             }
