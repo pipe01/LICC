@@ -23,7 +23,7 @@ namespace LICC
                 }
                 catch (Exception ex)
                 {
-                    (exceptions ??= new List<Exception>()).Add(ex);
+                    (exceptions ?? (exceptions = new List<Exception>())).Add(ex);
                 }
             }
 
@@ -47,7 +47,7 @@ namespace LICC
                 }
                 catch (Exception ex)
                 {
-                    (exceptions ??= new List<Exception>()).Add(ex);
+                    (exceptions ?? (exceptions = new List<Exception>())).Add(ex);
                 }
             }
 
