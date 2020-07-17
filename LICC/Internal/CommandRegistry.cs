@@ -72,10 +72,22 @@ namespace LICC.Internal
 
         public void RegisterCommandsIn(Type type)
         {
+            List<Exception> exceptions = null;
+
             foreach (var item in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
             {
-                Internal.RegisterCommand(item, true);
+                try
+                {
+                    Internal.RegisterCommand(item, true);
+                }
+                catch (Exception ex)
+                {
+                    (exceptions ??= new List<Exception>()).Add(ex);
+                }
             }
+
+            if (exceptions != null)
+                throw new AggregateException("Exceptions when registering commands in type", exceptions);
         }
     }
 }

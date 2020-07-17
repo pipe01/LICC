@@ -1,5 +1,6 @@
 ﻿using LICC.API;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace LICC
@@ -12,10 +13,22 @@ namespace LICC
         /// <param name="assembly">The assembly containing types containing commands.</param>
         public static void RegisterCommandsIn(this ICommandRegistry registry, Assembly assembly)
         {
+            List<Exception> exceptions = null;
+
             foreach (var item in assembly.GetTypes())
             {
-                registry.RegisterCommandsIn(item);
+                try
+                {
+                    registry.RegisterCommandsIn(item);
+                }
+                catch (Exception ex)
+                {
+                    (exceptions ??= new List<Exception>()).Add(ex);
+                }
             }
+
+            if (exceptions != null)
+                throw new AggregateException("Exceptions when registering commands in assembly", exceptions);
         }
 
         /// <summary>
@@ -23,11 +36,23 @@ namespace LICC
         /// </summary>
         public static void RegisterCommandsInAllAssemblies(this ICommandRegistry registry)
         {
+            List<Exception> exceptions = null;
+
             foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (!item.FullName.StartsWith("Unity"))
-                    registry.RegisterCommandsIn(item);
+                try
+                {
+                    if (!item.FullName.StartsWith("Unity"))
+                        registry.RegisterCommandsIn(item);
+                }
+                catch (Exception ex)
+                {
+                    (exceptions ??= new List<Exception>()).Add(ex);
+                }
             }
+
+            if (exceptions != null)
+                throw new AggregateException("Exceptions when registering commands in assemblies", exceptions);
         }
     }
 }
