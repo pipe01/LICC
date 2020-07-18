@@ -16,6 +16,8 @@ namespace LICC
     {
         public static event LineOutputDelegate LineWritten = delegate { };
 
+        private static object LineLock = new object();
+
         internal static Frontend Frontend { get; set; }
 
         internal static void OnLineWritten(string line) => LineWritten(line);
@@ -42,11 +44,14 @@ namespace LICC
         /// <param name="str">The line to write.</param>
         public static void WriteLine(string str)
         {
-            LineWritten(str);
+            lock (LineLock)
+            {
+                LineWritten(str);
 
-            Frontend.PauseInput();
-            Frontend.WriteLine(str);
-            Frontend.ResumeInput();
+                Frontend.PauseInput();
+                Frontend.WriteLine(str);
+                Frontend.ResumeInput();
+            }
         }
 
         /// <summary>
@@ -62,11 +67,14 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(string str, CColor color)
         {
-            LineWritten(str);
+            lock (LineLock)
+            {
+                LineWritten(str);
 
-            Frontend.PauseInput();
-            Frontend.WriteLine(str, color);
-            Frontend.ResumeInput();
+                Frontend.PauseInput();
+                Frontend.WriteLine(str, color);
+                Frontend.ResumeInput();
+            }
         }
 
         /// <summary>
@@ -89,7 +97,6 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         /// <param name="args">The arguments to format the string with.</param>
         public static void WriteLine(string format, CColor color, params object[] args) => WriteLine(string.Format(format, args), color);
-
     }
 
     /// <summary>
