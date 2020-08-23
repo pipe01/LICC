@@ -57,7 +57,7 @@ namespace LICC
         /// <param name="fileSystem">The file system for commands like exec.</param>
         /// <param name="objectProvider">The object provider for injecting dependencies into methods.</param>
         /// <param name="config">The console configuration.</param>
-        public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, IObjectProvider objectProvider, ConsoleConfiguration config = null)
+        public CommandConsole(Frontend frontend, IValueConverter valueConverter, IFileSystem fileSystem, ObjectProviderDelegate objectProvider, ConsoleConfiguration config = null)
             : this(frontend, valueConverter, fileSystem, null, new CommandRegistry(), new CommandExecutor(objectProvider), config ?? new ConsoleConfiguration())
         {
         }
@@ -68,7 +68,7 @@ namespace LICC
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="filesRootPath">The root folder for commands like exec.</param>
         /// <param name="config">The console configuration.</param>
-        public CommandConsole(Frontend frontend, string filesRootPath, IObjectProvider objectProvider = null, ConsoleConfiguration config = null)
+        public CommandConsole(Frontend frontend, string filesRootPath, ObjectProviderDelegate objectProvider = null, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), objectProvider, config)
         {
         }
@@ -78,7 +78,7 @@ namespace LICC
         /// </summary>
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="config">The console configuration.</param>
-        public CommandConsole(Frontend frontend, IObjectProvider objectProvider = null, ConsoleConfiguration config = null)
+        public CommandConsole(Frontend frontend, ObjectProviderDelegate objectProvider = null, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), null, objectProvider, config)
         {
         }

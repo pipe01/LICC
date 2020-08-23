@@ -10,11 +10,13 @@ namespace LICC.Internal
         object Execute(Command cmd, object[] args);
     }
 
+    public delegate object ObjectProviderDelegate(Type type);
+
     internal class CommandExecutor : ICommandExecutor
     {
-        private readonly IObjectProvider ObjectProvider;
+        private readonly ObjectProviderDelegate ObjectProvider;
 
-        public CommandExecutor(IObjectProvider objectProvider)
+        public CommandExecutor(ObjectProviderDelegate objectProvider)
         {
             this.ObjectProvider = objectProvider;
         }
@@ -35,7 +37,7 @@ namespace LICC.Internal
 
                         if (injectedParam != default)
                         {
-                            newArgs[i] = ObjectProvider.Get(injectedParam.Param.ParameterType);
+                            newArgs[i] = ObjectProvider(injectedParam.Param.ParameterType);
                             offset++;
                         }
                         else
@@ -54,7 +56,7 @@ namespace LICC.Internal
             {
                 try
                 {
-                    instance = ObjectProvider.Get(cmd.InstanceType);
+                    instance = ObjectProvider(cmd.InstanceType);
                 }
                 catch (Exception ex)
                 {
