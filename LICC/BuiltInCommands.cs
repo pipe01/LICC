@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace LICC
 {
-    internal static class Commands
+    internal static class BuiltInCommands
     {
         [Command(Description = "Lists all available commands")]
         private static void Help()
