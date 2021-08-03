@@ -13,8 +13,6 @@ namespace LICC.API
 
         public virtual bool SupportsPartialLines { get; } = true;
 
-        public virtual bool PreferOneLine { get; } = false;
-
         public virtual CColor DefaultForeground => ConsoleColor.Gray;
 
         /// <summary>
