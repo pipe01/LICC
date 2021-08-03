@@ -1,5 +1,7 @@
 ﻿using LICC.Internal;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -20,10 +22,8 @@ namespace LICC
                 return;
             }
 
-            const int hardMaxLength = 100;
-            int maxLength = CommandConsole.Current.CommandRegistry.AllRegisteredCommands.EnumerateAllCommands().Max(c => (c.Name + (c.Params.Length > 0 ? " " + c.GetParamsString() : "")).Length) + 2;
-            maxLength = Math.Min(maxLength, hardMaxLength);
 
+            int maxUsageLength = GetMaxCommandUsageLength(CommandConsole.Current.CommandRegistry.AllRegisteredCommands.EnumerateAllCommands());
 
             LineWriter writer = LConsole.BeginLine();
             writer.WriteLine($"Available commands ({totalCommandCount}):", ConsoleColor.Magenta);
@@ -31,7 +31,7 @@ namespace LICC
 
             foreach (string assemblyName in CommandConsole.Current.CommandRegistry.CommandsByAssembly.Keys.OrderBy(s => s))
             {
-                WriteAssemblyCommands(maxLength, writer, assemblyName);
+                WriteAssemblyCommands(maxUsageLength, writer, assemblyName);
                 writer.WriteLine();
             }
 
@@ -48,16 +48,30 @@ namespace LICC
             }
 
 
-            const int hardMaxLength = 100;
-            int maxLength = commands.Max(c => (c.Name + (c.Params.Length > 0 ? " " + c.GetParamsString() : "")).Length) + 2;
-            maxLength = Math.Min(maxLength, hardMaxLength);
+            int maxUsageLength = GetMaxCommandUsageLength(commands);
 
             LineWriter writer = LConsole.BeginLine();
-            WriteAssemblyCommands(maxLength, writer, assemblyName);
+            WriteAssemblyCommands(maxUsageLength, writer, assemblyName);
             writer.End();
         }
 
-        private static void WriteAssemblyCommands(int maxLength, LineWriter writer, string assemblyName)
+        private static int GetMaxCommandUsageLength(IEnumerable<Command> commands)
+        {
+            const int hardMaxLength = 100;
+            int maxLength = 0;
+
+            foreach (var command in commands)
+            {
+                int commandUsageLength = (command.Name + (command.Params.Length > 0 ? " " + command.GetParamsString() : "")).Length + 2;
+
+                if (commandUsageLength < hardMaxLength)
+                    maxLength = Math.Max(maxLength, commandUsageLength);
+            }
+
+            return maxLength;
+        }
+
+        private static void WriteAssemblyCommands(int maxUsageLength, LineWriter writer, string assemblyName)
         {
             var assemblyCommands = CommandConsole.Current.CommandRegistry.CommandsByAssembly[assemblyName];
 
@@ -81,8 +95,8 @@ namespace LICC
 
                 if (command.Description != null)
                 {
-                    if (lineLength < maxLength)
-                        writer.Write(new string('-', maxLength - lineLength), ConsoleColor.DarkGray);
+                    if (lineLength < maxUsageLength)
+                        writer.Write(new string('-', maxUsageLength - lineLength), ConsoleColor.DarkGray);
 
                     writer.Write(": ", ConsoleColor.DarkGray);
                     writer.Write(command.Description, ConsoleColor.DarkYellow);
