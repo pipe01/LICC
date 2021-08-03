@@ -42,6 +42,7 @@ namespace LICC
             frontend.LineInput += Frontend_LineInput;
 
             Commands.RegisterCommandsIn(this.GetType().Assembly);
+            Commands.RegisterCommandsIn(frontend.GetType().Assembly);
 
             if (config.RegisterAllCommandsOnStartup)
                 Commands.RegisterCommandsInAllAssemblies();
