@@ -90,17 +90,17 @@ namespace LICC.Internal
 
             var strArgs = GetArgs(argsLine).ToArray();
 
-            var (success, _, cmdSuggestions) = CommandFinder.Find(cmdName, strArgs.Length);
+            var (success, _, commandsWithSameName) = CommandFinder.Find(cmdName, strArgs.Length);
 
             if (!success)
             {
-                if (cmdSuggestions == null || cmdSuggestions.Length == 0)
+                if (commandsWithSameName == null || commandsWithSameName.Length == 0)
                 {
                     LConsole.WriteLine("Command not found");
                 }
                 else
                 {
-                    foreach (var item in cmdSuggestions)
+                    foreach (var item in commandsWithSameName)
                     {
                         item.PrintUsage();
                     }
@@ -112,7 +112,7 @@ namespace LICC.Internal
             object[] cmdArgs = null;
             Command cmd = null;
 
-            foreach (var possibleCmd in cmdSuggestions)
+            foreach (var possibleCmd in commandsWithSameName)
             {
                 if (possibleCmd.RequiredParamCount > strArgs.Length)
                     continue;
