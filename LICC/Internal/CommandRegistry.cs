@@ -142,7 +142,9 @@ namespace LICC.Internal
                 }
                 catch (Exception ex)
                 {
-                    exceptions ??= new List<Exception>();
+                    if (exceptions == null)
+                        exceptions = new List<Exception>();
+
                     exceptions.Add(ex);
                 }
             }
