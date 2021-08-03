@@ -48,11 +48,11 @@ namespace LICC.Internal
     {
         public static void PrintUsage(this Command cmd)
         {
-            if (cmd.Description != null)
-                LConsole.WriteLine(cmd.Description, ConsoleColor.Cyan);
-
             using (var writer = LConsole.BeginLine())
             {
+                if (cmd.Description != null)
+                    writer.WriteLine(cmd.Description, ConsoleColor.Cyan);
+
                 writer.Write("Usage: ", ConsoleColor.DarkYellow);
 
                 string usage = cmd.Name + " " + cmd.GetParamsString();

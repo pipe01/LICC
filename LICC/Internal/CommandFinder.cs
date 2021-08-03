@@ -5,26 +5,25 @@ namespace LICC.Internal
 {
     internal interface ICommandFinder
     {
-        (bool Found, Command Command, Command[] ClosestCommands) Find(string cmdName, int argsCount);
+        (bool Found, Command Command, Command[] CommandsWithSameName) Find(string cmdName, int argsCount);
     }
 
     internal class CommandFinder : ICommandFinder
     {
         private readonly ICommandRegistryInternal CommandRegistry;
-        private readonly ConsoleConfiguration Config;
 
-        public CommandFinder(ICommandRegistryInternal commandRegistry, ConsoleConfiguration config)
+        public CommandFinder(ICommandRegistryInternal commandRegistry)
         {
             this.CommandRegistry = commandRegistry;
-            this.Config = config;
         }
 
-        public (bool Found, Command Command, Command[] ClosestCommands) Find(string cmdName, int argsCount)
+        public (bool Found, Command Command, Command[] CommandsWithSameName) Find(string cmdName, int argsCount)
         {
-            var allCmds = CommandRegistry.GetCommands();
-            var cmdsWithMatchingName = allCmds
-                .Where(o => o.Name.Equals(cmdName, Config.CaseSensitiveCommandNames ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase))
-                .OrderBy(o => o.OptionalParamCount) //Commands with the least optional params will be chosen first
+            if (!CommandRegistry.AllRegisteredCommands.ContainsCommand(cmdName))
+                return (false, default, null);
+
+            var cmdsWithMatchingName = CommandRegistry.AllRegisteredCommands.GetEntry(cmdName).Commands
+                .OrderBy(o => o.OptionalParamCount) //Commands with the fewest optional params will be chosen first
                 .ToArray();
 
             if (cmdsWithMatchingName.Length == 0)

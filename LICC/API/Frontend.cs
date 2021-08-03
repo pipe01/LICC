@@ -13,8 +13,6 @@ namespace LICC.API
 
         public virtual bool SupportsPartialLines { get; } = true;
 
-        public virtual bool PreferOneLine { get; } = false;
-
         public virtual CColor DefaultForeground => ConsoleColor.Gray;
 
         /// <summary>
@@ -32,11 +30,6 @@ namespace LICC.API
         /// Initialises the frontend.
         /// </summary>
         protected internal virtual void Init() { }
-
-        /// <summary>
-        /// Exits the application. Uses <see cref="Environment.Exit(int)"/> by default.
-        /// </summary>
-        protected internal virtual void Exit() => Environment.Exit(0);
 
         protected internal virtual void Stop() => throw new NotSupportedException("The current frontend does not support switching");
 
