@@ -12,86 +12,73 @@ namespace LICC
         [Command(Description = "Lists all available commands")]
         private static void Help()
         {
-            var cmds = CommandConsole.Current.CommandRegistry.GetCommands().Where(o => !o.Hidden).ToArray();
+            int totalCommandCount = CommandConsole.Current.CommandRegistry.AllRegisteredCommands.GetCommandCount();
 
-            LConsole.WriteLine("Available commands:", ConsoleColor.Magenta);
-
-            LineWriter writer = default;
-
-            int i = 0;
-
-            foreach (var group in cmds.GroupBy(o => o.Method.DeclaringType.Assembly, (a, b) => new { Assembly = a, Commands = b.OrderBy(o => o.Name).ThenBy(o => o.Params.Length) }))
+            if (totalCommandCount == 0)
             {
-                int maxLength = group.Commands.Max(o => (o.Name + (o.Params.Length > 0 ? " " + o.GetParamsString() : "")).Length) + 2;
-
-                var name = new System.Reflection.AssemblyName(group.Assembly.FullName).Name;
-                if (!LConsole.Frontend.PreferOneLine)
-                {
-                    LConsole.WriteLine("------", ConsoleColor.DarkGray);
-                    LConsole.WriteLine(name, ConsoleColor.Cyan);
-                }
-                else
-                {
-                    LConsole.BeginLine()
-                            .WriteLine("------", ConsoleColor.DarkGray)
-                            .WriteLine(name, ConsoleColor.Yellow)
-                            .End();
-                }
-
-                if (LConsole.Frontend.PreferOneLine)
-                    writer = LConsole.BeginLine();
-
-                foreach (var cmd in group.Commands)
-                {
-                    if (!LConsole.Frontend.PreferOneLine)
-                        writer = LConsole.BeginLine();
-
-                    int len = 0;
-
-                    writer.Write(cmd.Name, ConsoleColor.Blue);
-                    len += cmd.Name.Length;
-
-                    string paramsStr = " " + cmd.GetParamsString();
-                    writer.Write(paramsStr, ConsoleColor.DarkGreen);
-                    len += paramsStr.Length;
-
-                    writer.Write(
-                        new string(cmd.Description == null ? ' ' : '-', maxLength - len), CColor.DimGray);
-
-                    if (cmd.Description != null)
-                    {
-                        writer.Write(": ", ConsoleColor.DarkGray);
-                        writer.Write(cmd.Description, ConsoleColor.DarkYellow);
-                    }
-
-                    if (!LConsole.Frontend.PreferOneLine)
-                        writer.End();
-                    else if (i != cmds.Length - 1)
-                        writer.WriteLine();
-
-                    i++;
-                }
-
-                if (LConsole.Frontend.PreferOneLine)
-                    writer.End();
-            }
-        }
-
-        [Command(Description = "Prints a command's usage")]
-        private static void Help(string command)
-        {
-            var cmds = CommandConsole.Current.CommandRegistry
-                .GetCommands()
-                .Where(o => o.Name.Equals(command, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            if (cmds.Length == 0)
-            {
-                LConsole.WriteLine($"Cannot find command with name '{command}'", ConsoleColor.Red);
+                LConsole.WriteLine("Uh oh, there aren't any registered commands");
                 return;
             }
 
-            foreach (var cmd in cmds)
+            const int hardMaxLength = 100;
+            int maxLength = CommandConsole.Current.CommandRegistry.AllRegisteredCommands.EnumerateAllCommands().Max(c => (c.Name + (c.Params.Length > 0 ? " " + c.GetParamsString() : "")).Length) + 2;
+            maxLength = Math.Min(maxLength, hardMaxLength);
+
+
+            LineWriter writer = LConsole.BeginLine();
+            writer.WriteLine($"Available commands ({totalCommandCount}):", ConsoleColor.Magenta);
+            writer.WriteLine();
+
+            foreach (string assemblyName in CommandConsole.Current.CommandRegistry.CommandsByAssembly.Keys.OrderBy(s => s))
+            {
+                var assemblyCommands = CommandConsole.Current.CommandRegistry.CommandsByAssembly[assemblyName];
+
+                string assemblyHeader = $"{assemblyName} ({assemblyCommands.Count} commands)";
+                writer.WriteLine(assemblyHeader, ConsoleColor.Yellow);
+
+                foreach (var command in assemblyCommands.OrderBy(c => c.Name).ThenBy(c => c.RequiredParamCount).ThenBy(c => c.OptionalParamCount))
+                {
+                    if (command.Hidden)
+                        continue;
+
+
+                    int lineLength = 0;
+
+                    writer.Write(command.Name, ConsoleColor.Blue);
+                    lineLength += command.Name.Length;
+
+                    string paramsStr = " " + command.GetParamsString();
+                    writer.Write(paramsStr, ConsoleColor.DarkGreen);
+                    lineLength += paramsStr.Length;
+
+                    if (command.Description != null)
+                    {
+                        if (lineLength < maxLength)
+                            writer.Write(new string('-', maxLength - lineLength), ConsoleColor.DarkGray);
+
+                        writer.Write(": ", ConsoleColor.DarkGray);
+                        writer.Write(command.Description, ConsoleColor.DarkYellow);
+                    }
+
+                    writer.WriteLine();
+                }
+
+                writer.WriteLine();
+            }
+
+            writer.End();
+        }
+
+        [Command(Description = "Prints a command's usage")]
+        private static void Help(string commandName)
+        {
+            if (!CommandConsole.Current.CommandRegistry.AllRegisteredCommands.ContainsCommand(commandName))
+            {
+                LConsole.WriteLine($"No registered command with name '{commandName}'", ConsoleColor.Red);
+                return;
+            }
+
+            foreach (var cmd in CommandConsole.Current.CommandRegistry.AllRegisteredCommands.GetEntry(commandName).Commands)
             {
                 cmd.PrintUsage();
             }

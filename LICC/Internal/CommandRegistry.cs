@@ -10,7 +10,7 @@ namespace LICC.Internal
     internal interface ICommandRegistryInternal : ICommandRegistry
     {
         CommandRegistry.CommandCollectionByName AllRegisteredCommands { get; }
-        Dictionary<string, CommandRegistry.CommandCollectionByName> CommandsByAssembly { get; }
+        Dictionary<string, List<Command>> CommandsByAssembly { get; }
 
         void RegisterCommand(MethodInfo method, bool ignoreInvalid);
     }
@@ -22,6 +22,9 @@ namespace LICC.Internal
             private readonly Dictionary<string, NamedCommandEntry> CommandsByName = new Dictionary<string, NamedCommandEntry>(StringComparer.OrdinalIgnoreCase); // Note that command case is ignored
 
             public bool ContainsCommand(string commandName) => CommandsByName.ContainsKey(commandName);
+
+            public IReadOnlyCollection<string> CommandNames => CommandsByName.Keys;
+            public IReadOnlyCollection<NamedCommandEntry> CommandEntries => CommandsByName.Values;
 
             public NamedCommandEntry GetEntry(string commandName)
             {
@@ -43,6 +46,15 @@ namespace LICC.Internal
 
                 return count;
             }
+
+            public IEnumerable<Command> EnumerateAllCommands()
+            {
+                foreach (var entry in CommandEntries)
+                {
+                    foreach (var command in entry.Commands)
+                        yield return command;
+                }
+            }
         }
 
         internal sealed class NamedCommandEntry
@@ -53,7 +65,7 @@ namespace LICC.Internal
 
 
         public CommandCollectionByName AllRegisteredCommands { get; } = new CommandCollectionByName();
-        public Dictionary<string, CommandCollectionByName> CommandsByAssembly { get; } = new Dictionary<string, CommandCollectionByName>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, List<Command>> CommandsByAssembly { get; } = new Dictionary<string, List<Command>>();
 
         internal CommandRegistry()
         {
@@ -108,12 +120,12 @@ namespace LICC.Internal
 
             // Also track commands by assembly, for nicer `help` methods
             string assemblyName = method.DeclaringType.Assembly.GetName().Name;
-            if (!CommandsByAssembly.TryGetValue(assemblyName, out var assemblyCommandCollection))
+            if (!CommandsByAssembly.TryGetValue(assemblyName, out var assemblyCommandList))
             {
-                assemblyCommandCollection = new CommandCollectionByName();
-                CommandsByAssembly.Add(assemblyName, assemblyCommandCollection);
+                assemblyCommandList = new List<Command>();
+                CommandsByAssembly.Add(assemblyName, assemblyCommandList);
             }
-            assemblyCommandCollection.GetEntry(commandName).Commands.Add(command);
+            assemblyCommandList.Add(command);
         }
 
         public void RegisterCommand(MethodInfo method) => RegisterCommand(method, false);
