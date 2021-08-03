@@ -15,11 +15,11 @@ namespace LICC
         {
             List<Exception> exceptions = null;
 
-            foreach (var item in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
                 try
                 {
-                    registry.RegisterCommandsIn(item);
+                    registry.RegisterCommandsIn(type);
                 }
                 catch (Exception ex)
                 {
