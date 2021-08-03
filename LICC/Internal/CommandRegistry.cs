@@ -65,7 +65,7 @@ namespace LICC.Internal
 
 
         public CommandCollectionByName AllRegisteredCommands { get; } = new CommandCollectionByName();
-        public Dictionary<string, List<Command>> CommandsByAssembly { get; } = new Dictionary<string, List<Command>>();
+        public Dictionary<string, List<Command>> CommandsByAssembly { get; } = new Dictionary<string, List<Command>>(StringComparer.OrdinalIgnoreCase);
 
         internal CommandRegistry()
         {
