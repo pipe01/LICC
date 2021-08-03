@@ -9,7 +9,7 @@ namespace LICC
 {
     internal static class Commands
     {
-        [Command(Description = "Lists all commands")]
+        [Command(Description = "Lists all available commands")]
         private static void Help()
         {
             var cmds = CommandConsole.Current.CommandRegistry.GetCommands().Where(o => !o.Hidden).ToArray();
@@ -113,7 +113,7 @@ namespace LICC
         [Command(Description = "Print an object to screen")]
         private static void Echo(object obj)
         {
-            LConsole.WriteLine(obj is string str ? str : obj?.ToString());
+            LConsole.WriteLine(obj?.ToString() ?? "null");
         }
 
         [Command("printex", Description = "Prints detailed info about the last exception encountered by a command")]
