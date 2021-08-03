@@ -31,11 +31,6 @@ namespace LICC.API
         /// </summary>
         protected internal virtual void Init() { }
 
-        /// <summary>
-        /// Exits the application. Uses <see cref="Environment.Exit(int)"/> by default.
-        /// </summary>
-        protected internal virtual void Exit() => Environment.Exit(0);
-
         protected internal virtual void Stop() => throw new NotSupportedException("The current frontend does not support switching");
 
         /// <summary>

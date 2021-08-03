@@ -161,11 +161,5 @@ namespace LICC
                     .End();
             }
         }
-
-        [Command]
-        private static void Quit()
-        {
-            LConsole.Frontend.Exit();
-        }
     }
 }
