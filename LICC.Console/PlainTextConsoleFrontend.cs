@@ -20,7 +20,9 @@ namespace LICC.Console
         {
             while (true)
             {
-                SConsole.Write("> ");
+                if (Options.ShowPrompt)
+                    SConsole.Write("> ");
+
                 string line = SConsole.ReadLine();
                 OnLineInput(line);
             }
