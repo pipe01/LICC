@@ -46,7 +46,7 @@ namespace LICC.API
         /// Writes an uncolored string to the output.
         /// </summary>
         /// <param name="str">The string to write</param>
-        public virtual void Write(string str) => this.Write(str, DefaultForeground);
+        public virtual void Write(string str) => Write(str, DefaultForeground);
         /// <summary>
         /// Writes a colored string to the output.
         /// </summary>
@@ -69,7 +69,7 @@ namespace LICC.API
         /// </summary>
         /// <param name="str">The line to write.</param>
         /// <param name="color">The color to give to the line.</param>
-        public virtual void WriteLine(string str, CColor color) => Write(str + Environment.NewLine, color);
+        public virtual void WriteLine(string str, CColor color) => Write(str + "\n", color);
 
         public virtual void PrintException(Exception ex)
         {
