@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
@@ -9,6 +8,7 @@
   <PropertyGroup>
     <OutputPath>..\bin\</OutputPath>
     <BaseIntermediateOutputPath>..\obj\</BaseIntermediateOutputPath>
+    <TargetFrameworks>netstandard2.1;net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
