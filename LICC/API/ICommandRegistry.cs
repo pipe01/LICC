@@ -10,7 +10,7 @@ namespace LICC.API
         /// <summary>
         /// Registers all command methods in <paramref name="type"/>.
         /// </summary>
-        /// <param name="type">The type containin methods marked with the <see cref="CommandAttribute"/> attribute.</param>
+        /// <param name="type">The type containing methods marked with the <see cref="CommandAttribute"/> attribute.</param>
         void RegisterCommandsIn(Type type);
     }
 }

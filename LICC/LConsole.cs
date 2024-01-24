@@ -9,7 +9,7 @@ namespace LICC
     public delegate void LineOutputDelegate(string line);
 
     /// <summary>
-    /// Replacement for <see cref="Console"/>, meant to provide a frontend-independant way of outputting
+    /// Replacement for <see cref="Console"/>, meant to provide a frontend-independent way of outputting
     /// colorful text.
     /// </summary>
     public static class LConsole
