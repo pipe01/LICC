@@ -486,7 +486,7 @@ namespace LICC.Internal.LSF.Parsing
                     }
                     else
                     {
-                        Error($"unxpected string '{str.Content}' found");
+                        Error($"unexpected string '{str.Content}' found");
                     }
                 }
             }
