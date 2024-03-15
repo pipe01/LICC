@@ -7,6 +7,7 @@ using System.Threading;
 namespace LICC
 {
     public delegate void LineOutputDelegate(string line);
+    public delegate void ColoredLineOutputDelegate(IReadOnlyList<(string Text, CColor? Color)> segments);
 
     /// <summary>
     /// Replacement for <see cref="Console"/>, meant to provide a frontend-independent way of outputting
@@ -15,12 +16,15 @@ namespace LICC
     public static class LConsole
     {
         public static event LineOutputDelegate LineWritten = delegate { };
+        public static event ColoredLineOutputDelegate ColoredLineWritten = delegate { };
 
         private static object LineLock = new object();
 
         internal static Frontend Frontend { get; set; }
 
         internal static void OnLineWritten(string line) => LineWritten(line);
+        internal static void OnColoredLineWritten(IReadOnlyList<(string Text, CColor? Color)> segments) => ColoredLineWritten(segments);
+        private static void OnColoredLineWritten(string Text, CColor? Color) => ColoredLineWritten(new (string Text, CColor? Color)[] {(Text, Color)});
 
         internal static void Write(string str) => Frontend?.Write(str);
         internal static void Write(string str, CColor color) => Frontend?.Write(str, color);
@@ -47,6 +51,7 @@ namespace LICC
             lock (LineLock)
             {
                 LineWritten(str);
+                OnColoredLineWritten(str, null);
 
                 if (Frontend != null)
                 {
@@ -73,6 +78,7 @@ namespace LICC
             lock (LineLock)
             {
                 LineWritten(str);
+                OnColoredLineWritten(str, color);
 
                 if (Frontend != null)
                 {
@@ -116,9 +122,9 @@ namespace LICC
 
         private bool Disposed;
         private readonly bool UsingPartial;
-        private readonly IList<(string Text, CColor? Color)> TextRegions;
+        private readonly List<(string Text, CColor? Color)> TextRegions;
 
-        private LineWriter(IList<(string Text, CColor? Color)> textRegions) : this()
+        private LineWriter(List<(string Text, CColor? Color)> textRegions) : this()
         {
             this.TextRegions = textRegions ?? throw new ArgumentNullException(nameof(textRegions));
 
@@ -154,6 +160,8 @@ namespace LICC
                     LConsole.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? LConsole.Frontend.DefaultForeground)).ToArray());
                 }
             }
+
+            LConsole.OnColoredLineWritten(TextRegions);
 
             Disposed = true;
         }
