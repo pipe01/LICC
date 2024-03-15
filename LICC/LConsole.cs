@@ -166,14 +166,14 @@ namespace LICC
             Disposed = true;
         }
 
-        private LineWriter RunIfNotDisposed(Action partialAction, Func<(string, CColor?)> nonPartialRegionGetter = null)
+        private LineWriter RunIfNotDisposed(Action partialAction, Func<(string, CColor?)> nonPartialRegionGetter)
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
             if (UsingPartial)
                 partialAction();
-            else if (nonPartialRegionGetter != null)
-                TextRegions.Add(nonPartialRegionGetter());
+
+            TextRegions.Add(nonPartialRegionGetter());
 
             return this;
         }
