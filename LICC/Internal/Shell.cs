@@ -1,4 +1,4 @@
-﻿using LICC.API;
+using LICC.API;
 using LICC.Exceptions;
 using LICC.Internal.LSF;
 using System;
@@ -156,7 +156,7 @@ namespace LICC.Internal
             {
                 _LastException = ex;
 
-                LConsole.Frontend.PrintException(ex);
+                LConsole.PrintException(ex, "An exception occurred while executing the command: ");
             }
         }
 

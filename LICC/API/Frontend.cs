@@ -71,12 +71,21 @@ namespace LICC.API
         /// <param name="color">The color to give to the line.</param>
         public virtual void WriteLine(string str, CColor color) => Write(str + "\n", color);
 
-        public virtual void PrintException(Exception ex)
+        public virtual void PrintException(Exception ex, string prefix = null)
         {
-            LConsole.BeginLine()
-                .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
-                .Write(ex.Message, ConsoleColor.DarkRed)
-                .End();
+            if (prefix == null)
+            {
+                WriteLine(ex.Message, ConsoleColor.DarkRed);
+            }
+            else
+            {
+                WriteLineWithRegions(new (string Text, CColor Color)[]
+                    {
+                        (prefix, ConsoleColor.Red),
+                        (ex.Message, ConsoleColor.DarkRed)
+                    }
+                );
+            }
         }
 
         public virtual void WriteLineWithRegions((string Text, CColor Color)[] regions)

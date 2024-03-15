@@ -8,6 +8,7 @@ namespace LICC
 {
     public delegate void LineOutputDelegate(string line);
     public delegate void ColoredLineOutputDelegate(IReadOnlyList<(string Text, CColor? Color)> segments);
+    public delegate void ExceptionOutputDelegate(Exception exception, string prefix = null);
 
     /// <summary>
     /// Replacement for <see cref="Console"/>, meant to provide a frontend-independent way of outputting
@@ -17,6 +18,7 @@ namespace LICC
     {
         public static event LineOutputDelegate LineWritten = delegate { };
         public static event ColoredLineOutputDelegate ColoredLineWritten = delegate { };
+        public static event ExceptionOutputDelegate ExceptionWritten = delegate { };
 
         private static object LineLock = new object();
 
@@ -109,6 +111,23 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         /// <param name="args">The arguments to format the string with.</param>
         public static void WriteLine(string format, CColor color, params object[] args) => WriteLine(string.Format(format, args), color);
+
+        /// <summary>
+        /// Prints an exception. How this exception is printed, is up to the Frontend implementation. It can have an optional prefix.
+        /// </summary>
+        /// <param name="exception">The exception to print.</param>
+        /// <param name="messagePrefix">An nullable prefix for the exception, describing circumstances.</param>
+        public static void PrintException(Exception exception, string messagePrefix = null)
+        {
+            ExceptionWritten(exception, messagePrefix);
+
+            if(Frontend != null)
+            {
+                Frontend.PauseInput();
+                Frontend.PrintException(exception, messagePrefix);
+                Frontend.ResumeInput();
+            }
+        }
     }
 
     /// <summary>

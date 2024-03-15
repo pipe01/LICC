@@ -1,4 +1,4 @@
-﻿using LICC.API;
+using LICC.API;
 using LICC.Exceptions;
 using LICC.Internal;
 using System;
@@ -136,8 +136,7 @@ namespace LICC
             }
             catch (Exception ex)
             {
-                LConsole.WriteLine("An error occurred when executing this command:", ConsoleColor.Red);
-                LConsole.WriteLine(ex.ToString(), ConsoleColor.Red);
+                LConsole.PrintException(ex, "An error occurred when executing this command:");
             }
         }
     }
