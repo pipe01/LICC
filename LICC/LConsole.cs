@@ -1,4 +1,4 @@
-﻿using LICC.API;
+using LICC.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,8 +22,8 @@ namespace LICC
 
         internal static void OnLineWritten(string line) => LineWritten(line);
 
-        internal static void Write(string str) => Frontend.Write(str);
-        internal static void Write(string str, CColor color) => Frontend.Write(str, color);
+        internal static void Write(string str) => Frontend?.Write(str);
+        internal static void Write(string str, CColor color) => Frontend?.Write(str, color);
         internal static void Write(string format, params object[] args) => Write(string.Format(format, args));
         internal static void Write(string format, CColor color, params object[] args) => Write(string.Format(format, args), color);
 
@@ -48,9 +48,12 @@ namespace LICC
             {
                 LineWritten(str);
 
-                Frontend.PauseInput();
-                Frontend.WriteLine(str);
-                Frontend.ResumeInput();
+                if (Frontend != null)
+                {
+                    Frontend.PauseInput();
+                    Frontend.WriteLine(str);
+                    Frontend.ResumeInput();
+                }
             }
         }
 
@@ -71,9 +74,12 @@ namespace LICC
             {
                 LineWritten(str);
 
-                Frontend.PauseInput();
-                Frontend.WriteLine(str, color);
-                Frontend.ResumeInput();
+                if (Frontend != null)
+                {
+                    Frontend.PauseInput();
+                    Frontend.WriteLine(str, color);
+                    Frontend.ResumeInput();
+                }
             }
         }
 
@@ -109,14 +115,16 @@ namespace LICC
         public static LineWriter Start() => new LineWriter(new List<(string Text, CColor? Color)>());
 
         private bool Disposed;
+        private readonly bool UsingPartial;
         private readonly IList<(string Text, CColor? Color)> TextRegions;
 
         private LineWriter(IList<(string Text, CColor? Color)> textRegions) : this()
         {
             this.TextRegions = textRegions ?? throw new ArgumentNullException(nameof(textRegions));
 
-            if (LConsole.Frontend.SupportsPartialLines)
+            if (LConsole.Frontend != null && LConsole.Frontend.SupportsPartialLines)
             {
+                UsingPartial = true;
                 WriteSemaphore.Wait();
                 LConsole.Frontend.PauseInput();
             }
@@ -133,15 +141,18 @@ namespace LICC
 
             LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
 
-            if (LConsole.Frontend.SupportsPartialLines)
+            if (LConsole.Frontend != null)
             {
-                WriteSemaphore.Release();
-                LConsole.Frontend.WriteLine("");
-                LConsole.Frontend.ResumeInput();
-            }
-            else
-            {
-                LConsole.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? LConsole.Frontend.DefaultForeground)).ToArray());
+                if (UsingPartial)
+                {
+                    WriteSemaphore.Release();
+                    LConsole.Frontend.WriteLine("");
+                    LConsole.Frontend.ResumeInput();
+                }
+                else
+                {
+                    LConsole.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? LConsole.Frontend.DefaultForeground)).ToArray());
+                }
             }
 
             Disposed = true;
@@ -151,7 +162,7 @@ namespace LICC
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
-            if (LConsole.Frontend.SupportsPartialLines)
+            if (UsingPartial)
                 partialAction();
             else if (nonPartialRegionGetter != null)
                 TextRegions.Add(nonPartialRegionGetter());
