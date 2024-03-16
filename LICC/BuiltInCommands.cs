@@ -128,7 +128,7 @@ namespace LICC
         {
             try
             {
-                CommandConsole.Current.Shell.ExecuteLsf(fileName);
+                CommandConsole.Current.ExecuteLsf(fileName);
             }
             catch (FileNotFoundException)
             {

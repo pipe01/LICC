@@ -1,4 +1,4 @@
-using LICC.API;
+﻿using LICC.API;
 using LICC.Exceptions;
 using LICC.Internal;
 using System;
@@ -6,12 +6,19 @@ using Environment = LICC.Internal.Environment;
 
 namespace LICC
 {
+    public delegate void LsfExecutedDelegate(string path);
+    public delegate void CommandExecutedDelegate(string command);
+
     /// <summary>
     /// The main console class.
     /// </summary>
     public sealed class CommandConsole
     {
         internal static CommandConsole Current { get; private set; }
+
+        public event LsfExecutedDelegate LsfExecuted = delegate { };
+        public event CommandExecutedDelegate CommandExecutedExternal = delegate { };
+        public event CommandExecutedDelegate CommandExecutedInternal = delegate { };
 
         /// <summary>
         /// Command registry instance, used to register commands.
@@ -94,10 +101,16 @@ namespace LICC
             if (FileSystem != null)
             {
                 if (FileSystem.FileExists(autoExecFileName))
-                    Shell.ExecuteLsf(autoExecFileName);
+                    ExecuteLsf(autoExecFileName);
                 else
                     FileSystem.CreateFile(autoExecFileName);
             }
+        }
+
+        public void ExecuteLsf(string path)
+        {
+            LsfExecuted(path);
+            Shell.ExecuteLsf(path);
         }
 
         public void SwitchFrontend(Frontend frontend)
@@ -108,11 +121,13 @@ namespace LICC
 
         public void RunCommand(string cmd, bool addToHistory = false)
         {
+            CommandExecutedExternal(cmd);
             Shell.ExecuteLine(cmd, addToHistory);
         }
 
         private void Frontend_LineInput(string line)
         {
+            CommandExecutedInternal(line);
             try
             {
                 Shell.ExecuteLine(line);
