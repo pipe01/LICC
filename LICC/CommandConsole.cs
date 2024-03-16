@@ -1,4 +1,4 @@
-﻿using LICC.API;
+using LICC.API;
 using LICC.Exceptions;
 using LICC.Internal;
 using System;
@@ -35,26 +35,21 @@ namespace LICC
             ConsoleConfiguration config)
         {
             Current = this;
-            LConsole.Frontend = frontend;
-
-            var history = new History();
-            frontend.History = history;
 
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
-            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, new CommandFinder(commandRegistry),
-                new Environment(), commandExecutor, null, config);
+            // The history cast here is kind of bad, but the history should only ever be set by LICC, thus it works.
+            this.Shell = shell ?? new Shell(valueConverter, (IWriteableHistory) frontend.History, fileSystem, new CommandFinder(commandRegistry),
+                new Environment(), commandExecutor, null, this.Config);
 
             frontend.LineInput += Frontend_LineInput;
 
             Commands.RegisterCommandsIn(this.GetType().Assembly);
             Commands.RegisterCommandsIn(frontend.GetType().Assembly);
 
-            if (config.RegisterAllCommandsOnStartup)
+            if (this.Config.RegisterAllCommandsOnStartup)
                 Commands.RegisterCommandsInAllAssemblies();
-
-            frontend.Init();
         }
 
         /// <summary>
@@ -75,6 +70,7 @@ namespace LICC
         /// </summary>
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="filesRootPath">The root folder for commands like exec.</param>
+        /// <param name="objectProvider">The object provider for injecting dependencies into methods.</param>
         /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, string filesRootPath, ObjectProviderDelegate objectProvider = null, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), objectProvider, config)
@@ -85,6 +81,7 @@ namespace LICC
         /// Instantiate a new <see cref="CommandConsole"/> instance.
         /// </summary>
         /// <param name="frontend">The frontend to use for this console.</param>
+        /// <param name="objectProvider">The object provider for injecting dependencies into methods.</param>
         /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, ObjectProviderDelegate objectProvider = null, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), null, objectProvider, config)
@@ -111,12 +108,6 @@ namespace LICC
         {
             LsfExecuted(path);
             Shell.ExecuteLsf(path);
-        }
-
-        public void SwitchFrontend(Frontend frontend)
-        {
-            LConsole.Frontend.Stop();
-            LConsole.Frontend = frontend;
         }
 
         public void RunCommand(string cmd, bool addToHistory = false)

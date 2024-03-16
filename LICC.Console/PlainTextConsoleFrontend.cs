@@ -49,6 +49,7 @@ namespace LICC.Console
         public static void StartDefault(string fileSystemRoot = null)
         {
             var frontend = new PlainTextConsoleFrontend();
+            FrontendManager.Frontend = frontend;
             var console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
             console.Commands.RegisterCommandsInAllAssemblies();
 

@@ -326,6 +326,7 @@ namespace LICC.Console
             var frontend = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? (Frontend)new ConsoleFrontend(enableVtMode)
                 : new PlainTextConsoleFrontend();
+            FrontendManager.Frontend = frontend;
             console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
             console.Commands.RegisterCommandsInAllAssemblies();
 

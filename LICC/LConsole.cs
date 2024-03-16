@@ -1,4 +1,3 @@
-using LICC.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,14 +21,12 @@ namespace LICC
 
         private static object LineLock = new object();
 
-        internal static Frontend Frontend { get; set; }
-
         internal static void OnLineWritten(string line) => LineWritten(line);
         internal static void OnColoredLineWritten(IReadOnlyList<(string Text, CColor? Color)> segments) => ColoredLineWritten(segments);
         private static void OnColoredLineWritten(string Text, CColor? Color) => ColoredLineWritten(new (string Text, CColor? Color)[] {(Text, Color)});
 
-        internal static void Write(string str) => Frontend?.Write(str);
-        internal static void Write(string str, CColor color) => Frontend?.Write(str, color);
+        internal static void Write(string str) => FrontendManager.Frontend?.Write(str);
+        internal static void Write(string str, CColor color) => FrontendManager.Frontend?.Write(str, color);
         internal static void Write(string format, params object[] args) => Write(string.Format(format, args));
         internal static void Write(string format, CColor color, params object[] args) => Write(string.Format(format, args), color);
 
@@ -55,11 +52,11 @@ namespace LICC
                 LineWritten(str);
                 OnColoredLineWritten(str, null);
 
-                if (Frontend != null)
+                if (FrontendManager.HasFrontend)
                 {
-                    Frontend.PauseInput();
-                    Frontend.WriteLine(str);
-                    Frontend.ResumeInput();
+                    FrontendManager.Frontend.PauseInput();
+                    FrontendManager.Frontend.WriteLine(str);
+                    FrontendManager.Frontend.ResumeInput();
                 }
             }
         }
@@ -82,11 +79,11 @@ namespace LICC
                 LineWritten(str);
                 OnColoredLineWritten(str, color);
 
-                if (Frontend != null)
+                if (FrontendManager.HasFrontend)
                 {
-                    Frontend.PauseInput();
-                    Frontend.WriteLine(str, color);
-                    Frontend.ResumeInput();
+                    FrontendManager.Frontend.PauseInput();
+                    FrontendManager.Frontend.WriteLine(str, color);
+                    FrontendManager.Frontend.ResumeInput();
                 }
             }
         }
@@ -95,6 +92,7 @@ namespace LICC
         /// Writes a colored string, delimited by a newline separator at the end.
         /// </summary>
         /// <param name="obj">The line to write.</param>
+        /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(object obj, CColor color) => WriteLine(obj?.ToString(), color);
 
         /// <summary>
@@ -121,11 +119,11 @@ namespace LICC
         {
             ExceptionWritten(exception, messagePrefix);
 
-            if(Frontend != null)
+            if(FrontendManager.HasFrontend)
             {
-                Frontend.PauseInput();
-                Frontend.PrintException(exception, messagePrefix);
-                Frontend.ResumeInput();
+                FrontendManager.Frontend.PauseInput();
+                FrontendManager.Frontend.PrintException(exception, messagePrefix);
+                FrontendManager.Frontend.ResumeInput();
             }
         }
     }
@@ -147,11 +145,11 @@ namespace LICC
         {
             this.TextRegions = textRegions ?? throw new ArgumentNullException(nameof(textRegions));
 
-            if (LConsole.Frontend != null && LConsole.Frontend.SupportsPartialLines)
+            if (FrontendManager.HasFrontend && FrontendManager.Frontend.SupportsPartialLines)
             {
                 UsingPartial = true;
                 WriteSemaphore.Wait();
-                LConsole.Frontend.PauseInput();
+                FrontendManager.Frontend.PauseInput();
             }
         }
 
@@ -166,17 +164,17 @@ namespace LICC
 
             LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
 
-            if (LConsole.Frontend != null)
+            if (FrontendManager.HasFrontend)
             {
                 if (UsingPartial)
                 {
                     WriteSemaphore.Release();
-                    LConsole.Frontend.WriteLine("");
-                    LConsole.Frontend.ResumeInput();
+                    FrontendManager.Frontend.WriteLine("");
+                    FrontendManager.Frontend.ResumeInput();
                 }
                 else
                 {
-                    LConsole.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? LConsole.Frontend.DefaultForeground)).ToArray());
+                    FrontendManager.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? FrontendManager.Frontend.DefaultForeground)).ToArray());
                 }
             }
 
