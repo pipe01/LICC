@@ -91,6 +91,19 @@ namespace LICC.API
         }
 
         public virtual void WriteLineWithRegions((string Text, CColor Color)[] regions)
-            => throw new InvalidOperationException($"This class doesn't support partial lines but doesn't override the {nameof(WriteLineWithRegions)} method");
+        {
+            if (SupportsPartialLines)
+            {
+                foreach (var (text, color) in regions)
+                {
+                    Write(text, color);
+                }
+                WriteLine("");
+            }
+            else
+            {
+                throw new InvalidOperationException($"{GetType().Name} doesn't support partial lines and didn't override the {nameof(WriteLineWithRegions)} method");
+            }
+        }
     }
 }
