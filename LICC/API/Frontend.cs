@@ -15,6 +15,8 @@ namespace LICC.API
 
         public virtual CColor DefaultForeground => ConsoleColor.Gray;
 
+        public readonly object Lock = new object();
+
         /// <summary>
         /// Command history for the current session.
         /// </summary>
@@ -36,11 +38,11 @@ namespace LICC.API
         /// <summary>
         /// Pause and clear input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
-        protected internal virtual void PauseInput() { }
+        public virtual void PauseInput() { }
         /// <summary>
         /// Resume input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
-        protected internal virtual void ResumeInput() { }
+        public virtual void ResumeInput() { }
 
         /// <summary>
         /// Writes an uncolored string to the output.

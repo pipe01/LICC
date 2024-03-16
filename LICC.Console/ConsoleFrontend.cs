@@ -256,7 +256,7 @@ namespace LICC.Console
             SConsole.SetCursorPosition(StartPos.X + CursorPos + 2, StartPos.Y);
         }
 
-        protected override void PauseInput()
+        public override void PauseInput()
         {
             IsInputPaused = true;
 
@@ -265,7 +265,7 @@ namespace LICC.Console
             SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
         }
 
-        protected override void ResumeInput()
+        public override void ResumeInput()
         {
             IsInputPaused = false;
 

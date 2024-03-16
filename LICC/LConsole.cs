@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using LICC.API;
 
 namespace LICC
 {
@@ -18,8 +19,6 @@ namespace LICC
         public static event LineOutputDelegate LineWritten = delegate { };
         public static event ColoredLineOutputDelegate ColoredLineWritten = delegate { };
         public static event ExceptionOutputDelegate ExceptionWritten = delegate { };
-
-        private static object LineLock = new object();
 
         internal static void OnLineWritten(string line) => LineWritten(line);
         internal static void OnColoredLineWritten(IReadOnlyList<(string Text, CColor? Color)> segments) => ColoredLineWritten(segments);
@@ -47,16 +46,17 @@ namespace LICC
         /// <param name="str">The line to write.</param>
         public static void WriteLine(string str)
         {
-            lock (LineLock)
-            {
-                LineWritten(str);
-                OnColoredLineWritten(str, null);
+            LineWritten(str);
+            OnColoredLineWritten(str, null);
 
-                if (FrontendManager.HasFrontend)
+            if (FrontendManager.HasFrontend)
+            {
+                var frontend = FrontendManager.Frontend;
+                lock (frontend.Lock)
                 {
-                    FrontendManager.Frontend.PauseInput();
-                    FrontendManager.Frontend.WriteLine(str);
-                    FrontendManager.Frontend.ResumeInput();
+                    frontend.PauseInput();
+                    frontend.WriteLine(str);
+                    frontend.ResumeInput();
                 }
             }
         }
@@ -74,16 +74,17 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(string str, CColor color)
         {
-            lock (LineLock)
-            {
-                LineWritten(str);
-                OnColoredLineWritten(str, color);
+            LineWritten(str);
+            OnColoredLineWritten(str, color);
 
-                if (FrontendManager.HasFrontend)
+            if (FrontendManager.HasFrontend)
+            {
+                var frontend = FrontendManager.Frontend;
+                lock (frontend.Lock)
                 {
-                    FrontendManager.Frontend.PauseInput();
-                    FrontendManager.Frontend.WriteLine(str, color);
-                    FrontendManager.Frontend.ResumeInput();
+                    frontend.PauseInput();
+                    frontend.WriteLine(str, color);
+                    frontend.ResumeInput();
                 }
             }
         }
@@ -133,23 +134,22 @@ namespace LICC
     /// </summary>
     public struct LineWriter : IDisposable
     {
-        private static readonly SemaphoreSlim WriteSemaphore = new SemaphoreSlim(1);
-
         public static LineWriter Start() => new LineWriter(new List<(string Text, CColor? Color)>());
 
         private bool Disposed;
-        private readonly bool UsingPartial;
+        private readonly Frontend FrontendUsed;
         private readonly List<(string Text, CColor? Color)> TextRegions;
 
         private LineWriter(List<(string Text, CColor? Color)> textRegions) : this()
         {
             this.TextRegions = textRegions ?? throw new ArgumentNullException(nameof(textRegions));
 
-            if (FrontendManager.HasFrontend && FrontendManager.Frontend.SupportsPartialLines)
+            FrontendUsed = FrontendManager.Frontend;
+            if (FrontendUsed != null && FrontendUsed.SupportsPartialLines)
             {
-                UsingPartial = true;
-                WriteSemaphore.Wait();
-                FrontendManager.Frontend.PauseInput();
+                // Start critical section, that will block all other threads printing to this frontend.
+                Monitor.Enter(FrontendUsed.Lock);
+                FrontendUsed.PauseInput();
             }
         }
 
@@ -162,22 +162,29 @@ namespace LICC
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
-            LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
-
-            if (FrontendManager.HasFrontend)
+            if (FrontendUsed != null)
             {
-                if (UsingPartial)
+                // If the frontend got replaced or removed, we do not care about the lock of it either.
+                if (FrontendUsed.SupportsPartialLines)
                 {
-                    WriteSemaphore.Release();
-                    FrontendManager.Frontend.WriteLine("");
-                    FrontendManager.Frontend.ResumeInput();
+                    FrontendUsed.WriteLine("");
+                    FrontendUsed.ResumeInput();
+                    // Leave critical section, other threads may access this frontend again.
+                    Monitor.Exit(FrontendUsed.Lock);
                 }
                 else
                 {
-                    FrontendManager.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? FrontendManager.Frontend.DefaultForeground)).ToArray());
+                    lock (FrontendUsed.Lock)
+                    {
+                        FrontendUsed.PauseInput();
+                        var FrontendUsedCopy = FrontendUsed;
+                        FrontendUsed.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? FrontendUsedCopy.DefaultForeground)).ToArray());
+                        FrontendUsed.ResumeInput();
+                    }
                 }
             }
 
+            LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
             LConsole.OnColoredLineWritten(TextRegions);
 
             Disposed = true;
@@ -187,7 +194,7 @@ namespace LICC
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
-            if (UsingPartial)
+            if (FrontendUsed != null && FrontendUsed.SupportsPartialLines)
                 partialAction();
 
             TextRegions.Add(nonPartialRegionGetter());
