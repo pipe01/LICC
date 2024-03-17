@@ -14,7 +14,7 @@ namespace LICC
     /// </summary>
     public sealed class CommandConsole
     {
-        internal static CommandConsole Current { get; private set; }
+        public static CommandConsole Current { get; private set; }
 
         public event LsfExecutedDelegate LsfExecuted = delegate { };
         public event CommandExecutedDelegate CommandExecutedExternal = delegate { };
