@@ -83,7 +83,7 @@ namespace LICC.API
             {
                 WriteLineWithRegions(new (string Text, CColor Color)[]
                     {
-                        (prefix, ConsoleColor.Red),
+                        (prefix + " ", ConsoleColor.Red),
                         (ex.Message, ConsoleColor.DarkRed)
                     }
                 );

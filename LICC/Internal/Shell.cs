@@ -156,7 +156,7 @@ namespace LICC.Internal
             {
                 _LastException = ex;
 
-                LConsole.PrintException(ex, "An exception occurred while executing the command: ");
+                LConsole.PrintException(ex, "An exception occurred while executing the command:");
             }
         }
 
