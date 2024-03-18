@@ -285,7 +285,7 @@ namespace LICC.Console
         {
             if (IsVTConsoleEnabled)
             {
-                if (Options.UseColoredOutput)
+                if (Options.ColorMode != ConsoleOptions.ColorLevel.NoColor)
                 {
                     VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
 
@@ -299,7 +299,7 @@ namespace LICC.Console
             }
             else
             {
-                if (Options.UseColoredOutput)
+                if (Options.ColorMode != ConsoleOptions.ColorLevel.NoColor)
                 {
                     var prev = SConsole.ForegroundColor;
                     SConsole.ForegroundColor = color.ToConsoleColor();

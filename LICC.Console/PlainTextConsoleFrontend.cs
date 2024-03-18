@@ -1,4 +1,5 @@
-﻿using LICC.API;
+﻿using System;
+using LICC.API;
 using SConsole = System.Console;
 
 namespace LICC.Console
@@ -30,17 +31,42 @@ namespace LICC.Console
 
         public override void Write(string str, CColor color)
         {
-            if (Options.UseColoredOutput)
+            switch (Options.ColorMode)
             {
-                var prev = SConsole.ForegroundColor;
-                SConsole.ForegroundColor = color.ToConsoleColor();
-                SConsole.Write(str);
-                SConsole.ForegroundColor = prev;
+                case ConsoleOptions.ColorLevel.NoColor:
+                {
+                    SConsole.Write(str);
+                    break;
+                }
+                case ConsoleOptions.ColorLevel.Color:
+                {
+                    var prev = SConsole.ForegroundColor;
+                    SConsole.ForegroundColor = color.ToConsoleColor();
+                    SConsole.Write(str);
+                    SConsole.ForegroundColor = prev;
+                    break;
+                }
+                case ConsoleOptions.ColorLevel.AnsiRGBColor:
+                {
+                    // This assumes, that a WriteLine will eventually be called. As only that resets.
+                    // Luckily LConsole.LineWriter is using WriteLine at the end of the operation.
+                    SConsole.Write(color.ToAnsiRGB() + str);
+                    break;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Options.ColorMode), Options.ColorMode, $"Invalid {nameof(ConsoleOptions.ColorLevel)}");
             }
-            else
+        }
+
+        // Overriden solely to append ANSI reset to the end of the line.
+        public override void WriteLine(string str, CColor color)
+        {
+            if (Options.ColorMode != ConsoleOptions.ColorLevel.AnsiRGBColor)
             {
-                SConsole.Write(str);
+                Write(str + '\n', color);
+                return;
             }
+            SConsole.WriteLine(color.ToAnsiRGB() + str + CColor.ANSI_RESET);
         }
 
         /// <summary>
