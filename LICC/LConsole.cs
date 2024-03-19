@@ -1,12 +1,14 @@
-﻿using LICC.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using LICC.API;
 
 namespace LICC
 {
     public delegate void LineOutputDelegate(string line);
+    public delegate void ColoredLineOutputDelegate(IReadOnlyList<(string Text, CColor? Color)> segments);
+    public delegate void ExceptionOutputDelegate(Exception exception, string prefix = null);
 
     /// <summary>
     /// Replacement for <see cref="Console"/>, meant to provide a frontend-independent way of outputting
@@ -15,15 +17,15 @@ namespace LICC
     public static class LConsole
     {
         public static event LineOutputDelegate LineWritten = delegate { };
-
-        private static object LineLock = new object();
-
-        internal static Frontend Frontend { get; set; }
+        public static event ColoredLineOutputDelegate ColoredLineWritten = delegate { };
+        public static event ExceptionOutputDelegate ExceptionWritten = delegate { };
 
         internal static void OnLineWritten(string line) => LineWritten(line);
+        internal static void OnColoredLineWritten(IReadOnlyList<(string Text, CColor? Color)> segments) => ColoredLineWritten(segments);
+        private static void OnColoredLineWritten(string Text, CColor? Color) => ColoredLineWritten(new (string Text, CColor? Color)[] {(Text, Color)});
 
-        internal static void Write(string str) => Frontend.Write(str);
-        internal static void Write(string str, CColor color) => Frontend.Write(str, color);
+        internal static void Write(string str) => FrontendManager.Frontend?.Write(str);
+        internal static void Write(string str, CColor color) => FrontendManager.Frontend?.Write(str, color);
         internal static void Write(string format, params object[] args) => Write(string.Format(format, args));
         internal static void Write(string format, CColor color, params object[] args) => Write(string.Format(format, args), color);
 
@@ -44,13 +46,18 @@ namespace LICC
         /// <param name="str">The line to write.</param>
         public static void WriteLine(string str)
         {
-            lock (LineLock)
-            {
-                LineWritten(str);
+            LineWritten(str);
+            OnColoredLineWritten(str, null);
 
-                Frontend.PauseInput();
-                Frontend.WriteLine(str);
-                Frontend.ResumeInput();
+            if (FrontendManager.HasFrontend)
+            {
+                var frontend = FrontendManager.Frontend;
+                lock (frontend.Lock)
+                {
+                    frontend.PauseInput();
+                    frontend.WriteLine(str);
+                    frontend.ResumeInput();
+                }
             }
         }
 
@@ -67,13 +74,18 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(string str, CColor color)
         {
-            lock (LineLock)
-            {
-                LineWritten(str);
+            LineWritten(str);
+            OnColoredLineWritten(str, color);
 
-                Frontend.PauseInput();
-                Frontend.WriteLine(str, color);
-                Frontend.ResumeInput();
+            if (FrontendManager.HasFrontend)
+            {
+                var frontend = FrontendManager.Frontend;
+                lock (frontend.Lock)
+                {
+                    frontend.PauseInput();
+                    frontend.WriteLine(str, color);
+                    frontend.ResumeInput();
+                }
             }
         }
 
@@ -81,6 +93,7 @@ namespace LICC
         /// Writes a colored string, delimited by a newline separator at the end.
         /// </summary>
         /// <param name="obj">The line to write.</param>
+        /// <param name="color">The color to write this line in.</param>
         public static void WriteLine(object obj, CColor color) => WriteLine(obj?.ToString(), color);
 
         /// <summary>
@@ -97,6 +110,23 @@ namespace LICC
         /// <param name="color">The color to write this line in.</param>
         /// <param name="args">The arguments to format the string with.</param>
         public static void WriteLine(string format, CColor color, params object[] args) => WriteLine(string.Format(format, args), color);
+
+        /// <summary>
+        /// Prints an exception. How this exception is printed, is up to the Frontend implementation. It can have an optional prefix.
+        /// </summary>
+        /// <param name="exception">The exception to print.</param>
+        /// <param name="messagePrefix">An nullable prefix for the exception, describing circumstances.</param>
+        public static void PrintException(Exception exception, string messagePrefix = null)
+        {
+            ExceptionWritten(exception, messagePrefix);
+
+            if(FrontendManager.HasFrontend)
+            {
+                FrontendManager.Frontend.PauseInput();
+                FrontendManager.Frontend.PrintException(exception, messagePrefix);
+                FrontendManager.Frontend.ResumeInput();
+            }
+        }
     }
 
     /// <summary>
@@ -104,21 +134,22 @@ namespace LICC
     /// </summary>
     public struct LineWriter : IDisposable
     {
-        private static readonly SemaphoreSlim WriteSemaphore = new SemaphoreSlim(1);
-
         public static LineWriter Start() => new LineWriter(new List<(string Text, CColor? Color)>());
 
         private bool Disposed;
-        private readonly IList<(string Text, CColor? Color)> TextRegions;
+        private readonly Frontend FrontendUsed;
+        private readonly List<(string Text, CColor? Color)> TextRegions;
 
-        private LineWriter(IList<(string Text, CColor? Color)> textRegions) : this()
+        private LineWriter(List<(string Text, CColor? Color)> textRegions) : this()
         {
             this.TextRegions = textRegions ?? throw new ArgumentNullException(nameof(textRegions));
 
-            if (LConsole.Frontend.SupportsPartialLines)
+            FrontendUsed = FrontendManager.Frontend;
+            if (FrontendUsed != null && FrontendUsed.SupportsPartialLines)
             {
-                WriteSemaphore.Wait();
-                LConsole.Frontend.PauseInput();
+                // Start critical section, that will block all other threads printing to this frontend.
+                Monitor.Enter(FrontendUsed.Lock);
+                FrontendUsed.PauseInput();
             }
         }
 
@@ -131,30 +162,42 @@ namespace LICC
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
-            LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
+            if (FrontendUsed != null)
+            {
+                // If the frontend got replaced or removed, we do not care about the lock of it either.
+                if (FrontendUsed.SupportsPartialLines)
+                {
+                    FrontendUsed.WriteLine("");
+                    FrontendUsed.ResumeInput();
+                    // Leave critical section, other threads may access this frontend again.
+                    Monitor.Exit(FrontendUsed.Lock);
+                }
+                else
+                {
+                    lock (FrontendUsed.Lock)
+                    {
+                        FrontendUsed.PauseInput();
+                        var FrontendUsedCopy = FrontendUsed;
+                        FrontendUsed.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? FrontendUsedCopy.DefaultForeground)).ToArray());
+                        FrontendUsed.ResumeInput();
+                    }
+                }
+            }
 
-            if (LConsole.Frontend.SupportsPartialLines)
-            {
-                WriteSemaphore.Release();
-                LConsole.Frontend.WriteLine("");
-                LConsole.Frontend.ResumeInput();
-            }
-            else
-            {
-                LConsole.Frontend.WriteLineWithRegions(TextRegions.Select(o => (o.Text, o.Color ?? LConsole.Frontend.DefaultForeground)).ToArray());
-            }
+            LConsole.OnLineWritten(string.Concat(TextRegions.Select(o => o.Text)));
+            LConsole.OnColoredLineWritten(TextRegions);
 
             Disposed = true;
         }
 
-        private LineWriter RunIfNotDisposed(Action partialAction, Func<(string, CColor?)> nonPartialRegionGetter = null)
+        private LineWriter RunIfNotDisposed(Action partialAction, Func<(string, CColor?)> nonPartialRegionGetter)
         {
             if (Disposed) throw new InvalidOperationException("Writer is ended");
 
-            if (LConsole.Frontend.SupportsPartialLines)
+            if (FrontendUsed != null && FrontendUsed.SupportsPartialLines)
                 partialAction();
-            else if (nonPartialRegionGetter != null)
-                TextRegions.Add(nonPartialRegionGetter());
+
+            TextRegions.Add(nonPartialRegionGetter());
 
             return this;
         }

@@ -4,8 +4,15 @@
     {
         internal static ConsoleOptions Default { get; } = new ConsoleOptions();
 
-        public bool UseColoredOutput { get; set; } = true;
+        public ColorLevel ColorMode { get; set; } = ColorLevel.Color;
 
         public bool ShowPrompt { get; set; } = true;
+
+        public enum ColorLevel
+        {
+            NoColor,
+            Color,
+            AnsiRGBColor,
+        }
     }
 }

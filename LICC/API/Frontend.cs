@@ -15,6 +15,8 @@ namespace LICC.API
 
         public virtual CColor DefaultForeground => ConsoleColor.Gray;
 
+        public readonly object Lock = new object();
+
         /// <summary>
         /// Command history for the current session.
         /// </summary>
@@ -36,11 +38,11 @@ namespace LICC.API
         /// <summary>
         /// Pause and clear input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
-        protected internal virtual void PauseInput() { }
+        public virtual void PauseInput() { }
         /// <summary>
         /// Resume input, only needed for one-screen frontends like <see cref="Console"/>.
         /// </summary>
-        protected internal virtual void ResumeInput() { }
+        public virtual void ResumeInput() { }
 
         /// <summary>
         /// Writes an uncolored string to the output.
@@ -71,15 +73,37 @@ namespace LICC.API
         /// <param name="color">The color to give to the line.</param>
         public virtual void WriteLine(string str, CColor color) => Write(str + "\n", color);
 
-        public virtual void PrintException(Exception ex)
+        public virtual void PrintException(Exception ex, string prefix = null)
         {
-            LConsole.BeginLine()
-                .Write("An exception occurred while executing the command: ", ConsoleColor.Red)
-                .Write(ex.Message, ConsoleColor.DarkRed)
-                .End();
+            if (prefix == null)
+            {
+                WriteLine(ex.Message, ConsoleColor.DarkRed);
+            }
+            else
+            {
+                WriteLineWithRegions(new (string Text, CColor Color)[]
+                    {
+                        (prefix + " ", ConsoleColor.Red),
+                        (ex.Message, ConsoleColor.DarkRed)
+                    }
+                );
+            }
         }
 
         public virtual void WriteLineWithRegions((string Text, CColor Color)[] regions)
-            => throw new InvalidOperationException($"This class doesn't support partial lines but doesn't override the {nameof(WriteLineWithRegions)} method");
+        {
+            if (SupportsPartialLines)
+            {
+                foreach (var (text, color) in regions)
+                {
+                    Write(text, color);
+                }
+                WriteLine("");
+            }
+            else
+            {
+                throw new InvalidOperationException($"{GetType().Name} doesn't support partial lines and didn't override the {nameof(WriteLineWithRegions)} method");
+            }
+        }
     }
 }

@@ -256,7 +256,7 @@ namespace LICC.Console
             SConsole.SetCursorPosition(StartPos.X + CursorPos + 2, StartPos.Y);
         }
 
-        protected override void PauseInput()
+        public override void PauseInput()
         {
             IsInputPaused = true;
 
@@ -265,7 +265,7 @@ namespace LICC.Console
             SConsole.SetCursorPosition(StartPos.X, StartPos.Y);
         }
 
-        protected override void ResumeInput()
+        public override void ResumeInput()
         {
             IsInputPaused = false;
 
@@ -285,7 +285,7 @@ namespace LICC.Console
         {
             if (IsVTConsoleEnabled)
             {
-                if (Options.UseColoredOutput)
+                if (Options.ColorMode != ConsoleOptions.ColorLevel.NoColor)
                 {
                     VTConsole.Write(str, Color.FromArgb(color.R, color.G, color.B));
 
@@ -299,7 +299,7 @@ namespace LICC.Console
             }
             else
             {
-                if (Options.UseColoredOutput)
+                if (Options.ColorMode != ConsoleOptions.ColorLevel.NoColor)
                 {
                     var prev = SConsole.ForegroundColor;
                     SConsole.ForegroundColor = color.ToConsoleColor();
@@ -326,6 +326,7 @@ namespace LICC.Console
             var frontend = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? (Frontend)new ConsoleFrontend(enableVtMode)
                 : new PlainTextConsoleFrontend();
+            FrontendManager.Frontend = frontend;
             console = fileSystemRoot == null ? new CommandConsole(frontend) : new CommandConsole(frontend, fileSystemRoot);
             console.Commands.RegisterCommandsInAllAssemblies();
 

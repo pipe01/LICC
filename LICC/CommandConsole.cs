@@ -1,4 +1,4 @@
-﻿using LICC.API;
+using LICC.API;
 using LICC.Exceptions;
 using LICC.Internal;
 using System;
@@ -6,12 +6,19 @@ using Environment = LICC.Internal.Environment;
 
 namespace LICC
 {
+    public delegate void LsfExecutedDelegate(string path);
+    public delegate void CommandExecutedDelegate(string command);
+
     /// <summary>
     /// The main console class.
     /// </summary>
     public sealed class CommandConsole
     {
-        internal static CommandConsole Current { get; private set; }
+        public static CommandConsole Current { get; private set; }
+
+        public event LsfExecutedDelegate LsfExecuted = delegate { };
+        public event CommandExecutedDelegate CommandExecutedExternal = delegate { };
+        public event CommandExecutedDelegate CommandExecutedInternal = delegate { };
 
         /// <summary>
         /// Command registry instance, used to register commands.
@@ -28,26 +35,21 @@ namespace LICC
             ConsoleConfiguration config)
         {
             Current = this;
-            LConsole.Frontend = frontend;
-
-            var history = new History();
-            frontend.History = history;
 
             this.Config = config ?? new ConsoleConfiguration();
             this.FileSystem = fileSystem;
             this.CommandRegistry = commandRegistry;
-            this.Shell = shell ?? new Shell(valueConverter, history, fileSystem, new CommandFinder(commandRegistry),
-                new Environment(), commandExecutor, null, config);
+            // The history cast here is kind of bad, but the history should only ever be set by LICC, thus it works.
+            this.Shell = shell ?? new Shell(valueConverter, (IWriteableHistory) frontend.History, fileSystem, new CommandFinder(commandRegistry),
+                new Environment(), commandExecutor, null, this.Config);
 
             frontend.LineInput += Frontend_LineInput;
 
             Commands.RegisterCommandsIn(this.GetType().Assembly);
             Commands.RegisterCommandsIn(frontend.GetType().Assembly);
 
-            if (config.RegisterAllCommandsOnStartup)
+            if (this.Config.RegisterAllCommandsOnStartup)
                 Commands.RegisterCommandsInAllAssemblies();
-
-            frontend.Init();
         }
 
         /// <summary>
@@ -68,6 +70,7 @@ namespace LICC
         /// </summary>
         /// <param name="frontend">The frontend to use for this console.</param>
         /// <param name="filesRootPath">The root folder for commands like exec.</param>
+        /// <param name="objectProvider">The object provider for injecting dependencies into methods.</param>
         /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, string filesRootPath, ObjectProviderDelegate objectProvider = null, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), new SystemIOFilesystem(filesRootPath), objectProvider, config)
@@ -78,6 +81,7 @@ namespace LICC
         /// Instantiate a new <see cref="CommandConsole"/> instance.
         /// </summary>
         /// <param name="frontend">The frontend to use for this console.</param>
+        /// <param name="objectProvider">The object provider for injecting dependencies into methods.</param>
         /// <param name="config">The console configuration.</param>
         public CommandConsole(Frontend frontend, ObjectProviderDelegate objectProvider = null, ConsoleConfiguration config = null)
             : this(frontend, new DefaultValueConverter(), null, objectProvider, config)
@@ -94,25 +98,27 @@ namespace LICC
             if (FileSystem != null)
             {
                 if (FileSystem.FileExists(autoExecFileName))
-                    Shell.ExecuteLsf(autoExecFileName);
+                    ExecuteLsf(autoExecFileName);
                 else
                     FileSystem.CreateFile(autoExecFileName);
             }
         }
 
-        public void SwitchFrontend(Frontend frontend)
+        public void ExecuteLsf(string path)
         {
-            LConsole.Frontend.Stop();
-            LConsole.Frontend = frontend;
+            LsfExecuted(path);
+            Shell.ExecuteLsf(path);
         }
 
         public void RunCommand(string cmd, bool addToHistory = false)
         {
+            CommandExecutedExternal(cmd);
             Shell.ExecuteLine(cmd, addToHistory);
         }
 
         private void Frontend_LineInput(string line)
         {
+            CommandExecutedInternal(line);
             try
             {
                 Shell.ExecuteLine(line);
@@ -136,8 +142,7 @@ namespace LICC
             }
             catch (Exception ex)
             {
-                LConsole.WriteLine("An error occurred when executing this command:", ConsoleColor.Red);
-                LConsole.WriteLine(ex.ToString(), ConsoleColor.Red);
+                LConsole.PrintException(ex, "An error occurred when executing this command:");
             }
         }
     }

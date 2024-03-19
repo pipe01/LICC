@@ -5,6 +5,8 @@ namespace LICC
 {
     public readonly partial struct CColor
     {
+        public const string ANSI_RESET = "\u001B[m";
+
         private static readonly CColor[] ConsoleColors = {
             new CColor(0x0C0C0C), //Black = 0
             new CColor(0x0037DA), //DarkBlue = 1
@@ -77,6 +79,11 @@ namespace LICC
                 }
                 return ret;
             }
+        }
+
+        public string ToAnsiRGB()
+        {
+            return $"\u001B[38;2;{R};{G};{B}m";
         }
 
         public override string ToString() => $"#{R:X2}{G:X2}{B:X2}";
