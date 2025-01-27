@@ -25,6 +25,15 @@ namespace LICC.Console
                     SConsole.Write("> ");
 
                 string line = SConsole.ReadLine();
+
+                
+                // If the stream was closed, dont keep reading it, as that would cause uncontrollable spam. This issue is confirmed to happen on linux when running the Logic World server via 
+                // ./Server < /dev/null
+                // it likely is however also present on other platforms.
+                // The effect of this defect is that OnLineInput keeps getting called with null as a value, which subsequently is then interpreted as a command leading to tons of log output.                
+                if (line == null)
+                    break;
+
                 OnLineInput(line);
             }
         }
