@@ -1,4 +1,4 @@
-﻿using LICC.API;
+using LICC.API;
 using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Parsing.Data;
 using NUnit.Framework;
@@ -23,6 +23,11 @@ namespace LICC.Test.Parsing
             }
 
             public bool FileExists(string path) => true;
+
+            public void CreateFile(string path)
+            {
+                // Nothing to do here. This class represents a read-only file that does not have to be created.
+            }
 
             public StreamReader OpenRead(string path)
             {
