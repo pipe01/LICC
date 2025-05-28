@@ -1,4 +1,4 @@
-﻿using LICC;
+using LICC;
 using LICC.API;
 using LICC.Console;
 using LICC.Internal.LSF.Parsing;
@@ -38,7 +38,7 @@ namespace Playground
             LConsole.WriteLine($"Hello {num}, {str} ({str?.GetType()})", ConsoleColor.Blue);
 
             if (num == 42)
-                Console.SwitchFrontend(new PlainTextConsoleFrontend());
+                FrontendManager.Frontend = new PlainTextConsoleFrontend();
 
             return new TestClass();
         }
