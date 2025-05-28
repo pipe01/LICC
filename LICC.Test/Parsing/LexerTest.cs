@@ -2,12 +2,9 @@
 using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Parsing.Data;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace LICC.Test.Parsing
 {
@@ -23,6 +20,11 @@ namespace LICC.Test.Parsing
             }
 
             public bool FileExists(string path) => true;
+
+            public void CreateFile(string path)
+            {
+                // Nothing to do here. This class represents a read-only file that does not have to be created.
+            }
 
             public StreamReader OpenRead(string path)
             {
