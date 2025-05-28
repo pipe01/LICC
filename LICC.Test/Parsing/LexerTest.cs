@@ -1,13 +1,10 @@
-using LICC.API;
+﻿using LICC.API;
 using LICC.Internal.LSF.Parsing;
 using LICC.Internal.LSF.Parsing.Data;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace LICC.Test.Parsing
 {
