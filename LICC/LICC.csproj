@@ -6,9 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <OutputPath>..\bin\</OutputPath>
-    <BaseIntermediateOutputPath>..\obj\</BaseIntermediateOutputPath>
-    <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,10 +14,6 @@
     <EmbeddedResource Remove="obj\**" />
     <None Remove="**/*.meta" />
     <None Remove="obj\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
 </Project>
